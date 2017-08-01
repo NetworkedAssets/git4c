@@ -1,0 +1,66 @@
+.container {
+    border: 1px solid #B7B7B7;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.expand-arrow {
+    display: inline-block;
+    margin-top: 3px;
+}
+
+.expandable-header {
+    cursor: pointer;
+    border-bottom: 1px solid #B7B7B7;
+}
+
+.add-page-btn {
+    margin-left: 5px;
+    width: 54px;
+}
+
+.scheduled-event {
+    border: 1px solid #B7B7B7;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    margin: 5px 0 5px 0;
+    padding-right: 5px;
+}
+
+.scheduled-event label {
+    float: left;
+    margin-left: -145px;
+    padding: 5px 0 0 0;
+    position: relative;
+    text-align: right;
+    width: 130px;
+    word-wrap: break-word;
+}
+
+.scheduled-event > div {
+    box-sizing: border-box;
+    clear: both;
+    padding: 4px 0 4px 120px;
+    position: relative;
+    margin: 1px 0;
+    width: 100%;
+}
+
+.schedule-start {
+    display: inline-block;
+}
+
+.branch {
+    display: inline-block;
+    margin-right: 5px;
+    vertical-align: top;
+    width: 460px;
+}
+
+#save-button {
+    margin-top: 5px;
+}

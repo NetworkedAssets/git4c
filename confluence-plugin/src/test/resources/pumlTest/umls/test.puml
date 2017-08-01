@@ -1,0 +1,23 @@
+@startuml
+
+skinparam linetype ortho
+together {
+component [kad-provisioning-account-central-core] as soap <<SOAP>>
+component  [kad.provisioning.listener] as  jms <<JMS>>
+}
+package ProvisionAccountPoller {
+[kad provision-account-poller-service]..>[kad provision-account-poller-impl]
+}
+[kad provision-account-poller-impl] -up..>[kdg_lib_appconfig]
+[kad provision-account-poller-impl]-up..>[error-handler]
+[kad provision-account-poller-impl]-up..>[sbp-common-utils-audit]
+[kad provision-account-poller-impl]-up..>[sbp-common-utils-camel]
+[kad provision-account-poller-impl]..>[sbp-common-utils-cxf]
+[kad provision-account-poller-impl]..>[sbp-common-utils-jaxb]
+[kad provision-account-poller-impl]..>[camel-db-poller]
+[kad provision-account-poller-impl]-up..>[sbp-provision-dao]
+[kad provision-account-poller-impl]..>[sbp-kadprovision-dao]
+[kad provision-account-poller-impl] -right..>soap
+[kad provision-account-poller-impl]..>jms
+
+@enduml

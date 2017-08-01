@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:v-bind="http://www.w3.org/1999/xhtml" xmlns:v-on="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>Markup Standalone</title>
+    <link rel="stylesheet" type="text/css" href="css/markup.css">
+    <link rel="stylesheet" type="text/css" href="css/highlightjs.min.css">
+    <link rel="stylesheet" href="//aui-cdn.atlassian.com/aui-adg/6.0.2/css/aui.min.css" media="all">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//aui-cdn.atlassian.com/aui-adg/6.0.2/css/aui-experimental.min.css" media="all">
+    <link rel="stylesheet" href="css/fakeLoader.css">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="//aui-cdn.atlassian.com/aui-adg/6.0.2/js/aui.min.js"></script>
+    <script src="//aui-cdn.atlassian.com/aui-adg/6.0.2/js/aui-experimental.min.js"></script>
+    <script src="//aui-cdn.atlassian.com/aui-adg/6.0.2/js/aui-datepicker.min.js"></script>
+    <script src="//aui-cdn.atlassian.com/aui-adg/6.0.2/js/aui-soy.min.js"></script>
+</head>
+
+<body>
+    <div style="max-width: 1000px; margin: auto;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;">
+        <cut-me-confluence>
+            <div id="app">
+                <div class="container">
+                    <section id="git4c-main-content" class="git4c-no-right-padding" role="main">
+                        <div class="git4c-overlay-parent">
+                            <overlay></overlay>
+                            <div class="aui-page-panel git4c-no-top-margin">
+                                <div class="aui-page-panel-inner">
+                                    <div id="content-nav" class="aui-page-panel-nav expanded">
+                                        <div id="git4c-branch-arrow-holder">
+                                            <h3 class="header blur" style="margin: 0">Branch</h3>
+                                            <span id="git4c-nav-collapse-span">
+                                                <nav-collapse></nav-collapse>
+                                            </span>
+                                        </div>
+                                        <branch class="blur"></branch>
+                                        <div class="markup-action-buttons">
+                                            <update-now style="display: none"></update-now>
+                                        </div>
+                                        <div class="header blur">
+                                            <h3 class="header">Files</h3>
+                                        </div>
+                                        <div id="aui-vnav" class="aui-flatpack blur">
+                                            <nav class="aui-navgroup aui-navgroup-vertical">
+                                                <div class="aui-navgroup-inner">
+                                                    <div class="tree">
+                                                        <treeview :value.sync="value" :model="tree" children="children" labelname="name" valuename="fullName"></treeview>
+                                                    </div>
+                                                </div>
+                                            </nav>
+                                        </div>
+                                    </div>
+                                    <section class="aui-page-panel-content git4c-no-padding">
+                                        <div class="content">
+                                            <router-view></router-view>
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <template id="branch">
+                <span class="git4c-branch">
+                <!-- Trigger -->
+                <a href="" aria-owns="git4c-branches" aria-haspopup="true"
+                   class="aui-button aui-style-default aui-dropdown2-trigger git4c-branches-dropdown"
+                   style="color: black">
+                    <span class="aui-icon aui-icon-small aui-iconfont-devtools-branch">Branch</span>
+                    {{currentBranch}}
+                </a>
+
+                    <!-- Dropdown -->
+                <div id="git4c-branches" class="aui-style-default aui-dropdown2">
+                    <ul class="aui-list-truncate">
+                        <li v-for="branch in branches">
+                            <a v-on:click="onChange(branch)"
+                               v-bind:class="{checked: branch == currentBranch, 'aui-dropdown2-checked': branch == currentBranch}"
+                               class="aui-dropdown2-radio">{{branch}}</a>
+                        </li>
+                    </ul>
+                </div>
+            </span>
+            </template>
+
+            <template id="overlay">
+                <div v-if="loading" class="overlay">
+                    <div style="transform:translate(-50%,-50%);position: absolute; top:50%; left: 50%; width: 100%;">
+                        <div id="spinner1" class="spinner6" style="width:60px; margin: 0 auto;">
+                            <div class="rect1" style="background-color: rgb(204, 214, 7);"></div>
+                            <div class="rect2" style="background-color: rgb(204, 214, 7);"></div>
+                            <div class="rect3" style="background-color: rgb(204, 214, 7);"></div>
+                            <div class="rect4" style="background-color: rgb(204, 214, 7);"></div>
+                            <div class="rect5" style="background-color: rgb(204, 214, 7);"></div>
+                        </div>
+                        <div>
+                            <p style="font-family: Arial; color: rgb(204, 214, 7); font-weight: bold; font-size: 20pt; text-align: center;">
+                                Loading configuration from git.</p>
+                        </div>
+                        <div>
+                            <p style="font-family: Arial; color: rgb(112, 112, 112); font-weight: normal; font-size: 14pt; text-align: center;">
+                                It shouldn't take more than one minute</p>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template id="markup">
+                <div class="markup">
+                    <div v-if="loading" class="loading">
+                        <span class="aui-icon aui-icon aui-icon-wait">Loading...</span>
+                    </div>
+                    <div class="aui-message aui-message-hint" v-if="!loading && locationPath===''">
+                        <p>Choose a file on the sidebar to display its content.</p>
+                    </div>
+                    <div v-if="!loading && locationPath!==''">
+                        <div id="git4c-breadcrumbs-div" style="display: flex; align-items: center; position: relative" class="git4c-border-bottom">
+                            <div style="width: 100%">
+                                <span style="padding-left: 20px;">
+                                    <span v-for="(item, index) in locationPath">
+                                        <span v-if="index == locationPath.length - 1">
+                                            <span class="git4c-file">{{item}}</span>
+                                        </span>
+                                        <span v-else>
+                                            <span class="git4c-directory">{{item}}</span>
+                                            <span class="git4c-directory">&nbsp/&nbsp</span>
+                                        </span>
+                                    </span>
+                                </span>
+                                <span v-if="fileData" style="float: right; padding-right: 20px">
+                        Last change: {{fileData.updateTime.toLocaleString()}} by {{fileData.authorFullName}} <{{fileData.authorEmail}}>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="git4c-content">
+                        <div class="git4c-toc" v-show="toc.children.length > 0">
+                            <toc :data="toc"></toc>
+                        </div>
+                        <div class="html-content" v-html="content"></div>
+                    </div>
+                </div>
+            </template>
+
+            <template id="treeview">
+                <div class="treeview">
+                    <div class="node-data" v-for="(node,index) in model">
+                        <div class="node" v-bind:class="{active: isSelectedFile(index)}" @click.prevent="select(index, node[valuename])">
+                            <i class="aui-icon aui-icon-small aui-iconfont-expanded" v-show="areValidNodes(node[children]) && isOpened(index)"></i>
+                            <!--
+                    --><i class="aui-icon aui-icon-small aui-iconfont-collapsed" v-if="areValidNodes(node[children]) && !isOpened(index)"></i>
+                            <!--
+                    --><i class="aui-icon aui-icon-small aui-iconfont-custom-bullet" v-if="!areValidNodes(node[children])"></i>
+                            <!--
+                    --><label>{{node[labelname]}}</label>
+                        </div>
+                        <div v-if="areValidNodes(node[children])" class="children" v-show="isOpened(index)">
+                            <div class="margin"></div>
+                            <div class="nodes">
+                                <treeview :id="id" :value.sync="value" :labelname="labelname" :valuename="valuename" :children="children" :model="node[children]"
+                                    :parent.once="index" class="inner"></treeview>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </template>
+
+            <template id="nav-collapse">
+                <button class="nav-collapse aui-button" title="Collapse/Expand sidebar" @click="toggle()" style="border: 0; background: transparent">
+                    <i v-if="isExpanded" class="fa fa-angle-double-left"></i>
+                    <i v-else class="fa fa-angle-double-right"></i>
+                </button>
+            </template>
+
+            <!--template id="update">
+        <button @click="update()" class="aui-button">
+            <span v-if="!working">Update</span>
+            <span v-else>Updating...</span>
+        </button>
+    </template-->
+
+        </cut-me-confluence>
+    </div>
+
+    <script src="lib/highlight.min.js"></script>
+    <script src="lib/vue.min.js"></script>
+    <script src="lib/vue-resource.min.js"></script>
+    <script src="lib/vue-router.min.js"></script>
+    <script src="services/url-service.js"></script>
+    <script src="services/notify-service.js"></script>
+    <script src="services/params-service.js"></script>
+    <script src="services/markup-service.js"></script>
+    <script src="components/branch.js"></script>
+    <script src="components/update-now.js"></script>
+    <script src="components/nav-collapse.js"></script>
+    <script src="components/markup.js"></script>
+    <script src="components/treeview.js"></script>
+    <script src="components/toc.js"></script>
+<script src="components/overlay.js"></script>
+    <script src="app.js"></script>
+
+</body>
+</html>

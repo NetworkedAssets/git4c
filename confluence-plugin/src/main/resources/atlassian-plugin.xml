@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<atlassian-plugin key="${project.groupId}.${project.artifactId}"
+                  name="${project.name}" plugins-version="2">
+    <plugin-info>
+        <description>${project.description}</description>
+        <version>${project.version}</version>
+        <vendor name="${project.organization.name}" url="${project.organization.url}"/>
+        <param name="plugin-icon">images/pluginIcon.png</param>
+        <param name="plugin-logo">images/pluginLogo.png</param>
+        <param name="vendor-logo">images/vendorLogo.png</param>
+        <param name="vendor-icon">images/vendorIcon.png</param>
+        <!--Licensing-->
+        <param name="atlassian-licensing-enabled">false</param>
+    </plugin-info>
+    <!-- add our i18n resource -->
+    <resource type="i18n" name="i18n" location="autodoc_confluence"/>
+    <!-- add our web resources -->
+
+    <web-resource key="ajs-compat" name="AJS compat">
+        <resource type="download" name="flag-compat.js" location="js/flag-compat.js" />
+        <context>com.networkedassets.git4c.ajscompat</context>
+    </web-resource>
+
+    <web-resource key="admin-resources" name="Admin resources">
+        <resource type="download" name="admin-ui-plugin.js" location="js/admin-ui-plugin.js"/>
+        <context>com.networkedassets.git4c.adminResources</context>
+    </web-resource>
+
+    <web-resource key="autodoc_confluence-resources" name="autodoc_confluence Web Resources">
+        <resource type="download" name="images/" location="/images"/>
+        <resource type="download" name="autodoc-style.css" location="/css/autodoc-style.css"/>
+
+        <context>autodoc_confluence</context>
+    </web-resource>
+
+    <web-resource key="autodoc-macro-params-${timestamp}" name="DoC macro parameter autocompletion">
+        <resource type="download" name="autodocMacroParams.js"
+                  location="js/autodocMacroParams.js"/>
+        <dependency>confluence.editor.actions:editor-macro-browser
+        </dependency>
+        <context>macro-browser</context>
+    </web-resource>
+
+    <web-resource key="macro-resources-${timestamp}" name="Macro web resources">
+        <resource type="download" name="macroResources/"
+                  location="/macroResources"/>
+        <resource type="download" name="lib/vue.min.js"
+                  location="macroResources/lib/vue.min.js"/>
+        <resource type="download" name="lib/vue-resource.min.js"
+                  location="macroResources/lib/vue-resource.min.js"/>
+        <resource type="download" name="lib/vue-router.min.js"
+                  location="macroResources/lib/vue-router.min.js"/>
+        <resource type="download" name="lib/highlight.min.js"
+                  location="macroResources/lib/highlight.min.js"/>
+        <resource type="download" name="css/markup.css"
+                  location="macroResources/css/markup.css"/>
+        <resource type="download" name="css/fakeLoader.css"
+                  location="macroResources/css/fakeLoader.css"/>
+        <resource type="download" name="css/highlightjs.min.css"
+                  location="macroResources/css/highlightjs.min.css"/>
+        <resource type="download" name="components/markup.js"
+                  location="macroResources/components/markup.js"/>
+        <resource type="download" name="components/toc.js"
+                  location="macroResources/components/toc.js"/>
+        <resource type="download" name="components/treeview.js"
+                  location="macroResources/components/treeview.js"/>
+        <resource type="download" name="components/branch.js"
+                  location="macroResources/components/branch.js"/>
+        <resource type="download" name="components/overlay.js"
+                  location="macroResources/components/overlay.js"/>
+        <resource type="download" name="components/update-now.js"
+                  location="macroResources/components/update-now.js"/>
+        <resource type="download" name="services/markup-service.js"
+                  location="macroResources/services/markup-service.js"/>
+        <resource type="download" name="services/notify-service.js"
+                  location="macroResources/services/notify-service.js"/>
+        <resource type="download" name="services/params-service.js"
+                  location="macroResources/services/params-service.js"/>
+        <resource type="download" name="services/url-service.js"
+                  location="macroResources/services/url-service.js"/>
+        <resource type="download" name="components/nav-collapse.js"
+                  location="macroResources/components/nav-collapse.js"/>
+        <resource type="download" name="app.js" location="macroResources/app.js"/>
+        <resource type="download" name="images/" location="macroResources/images/"/>
+        <resource type="download" name="font-awesome-min.css"
+                  location="macroResources/css/font-awesome-min.css"/>
+        <resource type="download" name="FontAwesome.otf"
+                  location="macroResources/fonts/FontAwesome.otf"/>
+        <resource type="download" name="fontawesome-webfont.eot"
+                  location="macroResources/fonts/fontawesome-webfont.eot"/>
+        <resource type="download" name="fontawesome-webfont.svg"
+                  location="macroResources/fonts/fontawesome-webfont.svg"/>
+        <resource type="download" name="fontawesome-webfont.ttf"
+                  location="macroResources/fonts/fontawesome-webfont.ttf"/>
+        <resource type="download" name="fontawesome-webfont.woff"
+                  location="macroResources/fonts/fontawesome-webfont.woff"/>
+        <resource type="download" name="fontawesome-webfont.woff2"
+                  location="macroResources/fonts/fontawesome-webfont.woff2"/>
+        <context>com.networkedassets.git4c.macroResources</context>
+    </web-resource>
+
+    <!--Licensing-->
+    <component-import key="pluginLicenseManager" interface="com.atlassian.upm.api.license.PluginLicenseManager"/>
+
+    <servlet key="git4c-servlet" class="com.networkedassets.git4c.interfaces.rest.AdminServlet">
+        <url-pattern>/git4c/admin</url-pattern>
+    </servlet>
+
+    <web-item key="conf-menu-item" name="Git4C Admin" section="system.admin/administration" weight="0">
+        <description>Link to git4c-admin page.</description>
+        <label key="git4c.admin.label" />
+        <link linkId="git4c-admin-link">/plugins/servlet/git4c/admin</link>
+    </web-item>
+
+    <resource key="icons" name="icons/" type="download" location="images"/>
+    <!--Macro-->
+    <xhtml-macro name="Git4C"
+                 class="com.networkedassets.git4c.interfaces.callback.MacroView"
+                 icon="/download/resources/${project.groupId}.${project.artifactId}:macro-resources-${timestamp}/macroResources/images/pluginMacroIcon.png"
+                 key="Git4C">
+        <description>Git4C macro displaying documentation in various forms on pages
+        </description>
+        <parameters>
+            <parameter name="url" type="string" required="true"/>
+            <parameter name="username" type="string" required="true"/>
+            <parameter name="password" type="string" required="true"/>
+            <parameter name="revision" type="string" required="false"/>
+        </parameters>
+    </xhtml-macro>
+
+    <!--Confluecom.networkedassets.com.networkedassets.git4c.restrest-->
+    <rest key="com.networkedassets.git4c.interfaces.rest" path="/doc" version="1.0">
+        <description>Provides REST endpoints used by Git4C</description>
+    </rest>
+
+    <component name="Git4C Extractor" key="git4cExtractor" class="com.networkedassets.git4c.interfaces.callback.Git4CExtractor" public="true">
+        <interface>com.atlassian.confluence.plugins.index.api.Extractor2</interface>
+    </component>
+
+    <!--Backup store-->
+    <component-import key="pluginSettingsFactory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"
+                      filter=""/>
+
+    <!-- Cache factory -->
+    <component-import key="cacheManager" interface="com.atlassian.cache.CacheManager"
+                      filter=""/>
+
+    <component-import key="userManager" interface="com.atlassian.sal.api.user.UserManager"
+                      filter=""/>
+
+    <component-import key="renderer" interface="com.atlassian.templaterenderer.TemplateRenderer"
+                      filter=""/>
+
+    <component-import key="pageBuilderService" interface="com.atlassian.webresource.api.assembler.PageBuilderService"
+                      filter=""/>
+
+    <component key="tx-annotation-processor" class="com.atlassian.activeobjects.external.TransactionalAnnotationProcessor" />
+
+    <component key="documentationsMacroSettingsDBService" class="com.networkedassets.git4c.infrastructure.database.ao.ConfluenceActiveObjectDocumentationsMacroSettings">
+        <interface>com.networkedassets.git4c.infrastructure.database.ao.EncryptedDocumentationsMacroSettingsDBService</interface>
+    </component>
+
+    <component-import key="ao" interface="com.atlassian.activeobjects.external.ActiveObjects" filter="" />
+
+    <component key="plugin" class="com.networkedassets.git4c.ConfluencePlugin">
+        <interface>com.networkedassets.git4c.application.Plugin</interface>
+    </component>
+
+    <ao key="ao-module">
+        <description>The module configuring the Active Objects service used by this plugin</description>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.DocumentationsMacroSettingsEntity</entity>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.AuthEntity</entity>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.NoAuthEntity</entity>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.SSHAuthEntity</entity>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.UsernamePasswordAuthEntity</entity>
+
+        <upgradeTask>com.networkedassets.git4c.infrastructure.database.ao.upgrade.DocumentationsMacroSettingsUpgradeTask001</upgradeTask>
+    </ao>
+    
+</atlassian-plugin>

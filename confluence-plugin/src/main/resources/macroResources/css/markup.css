@@ -1,0 +1,323 @@
+#content-nav {
+   padding-top: 10px;
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+.container .content {
+    min-height: 230px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.container .header {
+    /*height: 40px;*/
+}
+
+.container .header .right {
+    float: right;
+}
+
+.container .aui-page-panel-nav {
+    border-right: 1px solid #cccccc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.container .aui-page-panel {
+    border: 0
+}
+
+.container .expanded {
+    width: 230px;
+}
+
+.container .collapsed {
+    width: 53px;
+}
+
+.container .overlay {
+    position: absolute;
+    display: block;
+    background-color: #FFF;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    color: black;
+    text-align: center;
+}
+
+.container .overlay span {
+    left: 50%;
+    top: 30%;
+}
+
+.markup .loading {
+    display: block;
+    margin: auto;
+    width: 20%;
+}
+
+.markup .git4c-toc {
+    margin-bottom: 20px
+}
+
+.markup .html-content {
+    white-space: normal;
+}
+
+.markup .html-content code {
+    white-space: pre-wrap;
+}
+
+.treeview .node {
+    /*position: relative;*/
+    border-radius: 3px 0 0 3px;
+    padding-left: 3px;
+}
+
+.treeview .node label {
+    border-radius: 0 3px 3px 0;
+    padding-right: 3px;
+}
+
+.treeview .node i.fa {
+    margin-right: 1px;
+
+}
+
+.treeview .node:hover {
+    background-color: #eee;
+}
+
+.treeview .node:hover label {
+    position: absolute;
+    z-index: 100000000;
+    background: #eee;
+}
+
+.treeview .node.active {
+    font-weight: bold;
+}
+
+.treeview {
+    height: auto;
+}
+
+.treeview.inner {
+    border: none;
+    height: auto;
+    max-height: none;
+}
+
+.treeview .node {
+    display: inline-block;
+}
+
+.treeview .children {
+    overflow: hidden;
+}
+
+.treeview .children .margin {
+    display: inline-block;
+    width: 10px;
+}
+
+.treeview .children .nodes {
+    display: inline-block;
+}
+
+.treeview span.icon {
+    width: 20px;
+    display: inline-block;
+    text-align: center;
+
+}
+
+.treeview .aui-icon {
+    color: #999
+}
+
+/*.nav-collapsed {*/
+/*position: absolute;*/
+/*top: 0;*/
+/*left: 0;*/
+/*float: left;*/
+/*}*/
+
+.nav-collapsed .aui-button {
+    font-size: 12px;
+}
+
+.markup {
+    white-space: normal;
+}
+
+.markup ol.aui-nav-breadcrumbs {
+    /* padding: 0.5em 0.8em; */
+    /* margin-bottom: 1em; */
+}
+
+.markup .git4c-content {
+    margin: 0.5em;
+}
+
+/* #content-nav.aui-page-panel-nav:not(.expanded) .header {
+    display: none;
+}
+
+#content-nav.aui-page-panel-nav:not(.expanded) .tree {
+    display: none;
+} */
+
+/* #content-nav.aui-page-panel-nav:not(.expanded) .git4c-branch {
+    display: none;
+} */
+
+.markup-action-buttons {
+    float: right;
+    margin-right: 20px;
+}
+
+/* #content-nav.aui-page-panel-nav:not(.expanded) {
+    padding-right: 1px;
+} */
+
+.git4c-table {
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+
+.git4c-table td {
+    border: 1px solid #cccccc;
+}
+
+.git4c-table th {
+    border: 1px solid #cccccc;
+    background-color: #F0F0F0
+}
+
+#git4c-main-content {
+    border: 1px solid #cccccc;
+}
+
+#git4c-main-content .aui-button {
+    margin-top: 0;
+}
+
+#git4c-breadcrumbs-div {
+    background: #eee;
+    height: 50px;
+}
+
+.git4c-overlay-parent {
+    position: relative
+}
+
+.git4c-branch {
+    position: relative;
+    width: 210px !important;
+}
+
+.git4c-branches-dropdown {
+    min-width: 210px;
+    max-width: 210px;
+    width: 210px !important;
+    margin-left: 20px;
+}
+
+.git4c-branch .git4c-branches-dropdown {
+    margin-bottom: 20px;
+}
+.git4c-no-top-margin {
+    margin-top: 0 !important;
+}
+
+.git4c-code {
+    border: 1px #D8D8D8 solid;
+    background-color: #F5F5F5 !important;
+    border-radius: 5px;
+}
+
+.git4c-no-right-padding {
+    padding-right: 0px !important;
+}
+
+.git4c-no-padding {
+    padding: 0px !important;
+}
+
+#git4c-content {
+    padding: 10px;
+}
+
+.git4c-directory {
+    color: #707070
+}
+
+.git4c-file {
+    color: #333;
+    font-weight: bold
+}
+
+.git4c-border-bottom {
+    border-bottom: 1px solid #cccccc;
+}
+
+.git4c-move-button {
+    z-index: 1000;
+    position: absolute;
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    top: 0px;
+    bottom: 0px;
+    transform: translateX(-55px);
+}
+
+#git4c-branch-arrow-holder {
+    width: 100%;
+    position: relative;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#git4c-nav-collapse-span {
+    float: right;
+    right: 0;
+    margin-left: auto
+}
+
+#content-nav {
+    -moz-transition: width 0.5s ease-in-out, left 0.5s ease-in-out;
+    -webkit-transition: width 0.5s ease-in-out, left 0.5s ease-in-out;
+    -moz-transition: width 0.5s ease-in-out, left 0.5s ease-in-out;
+    -o-transition: width 0.5s ease-in-out, left 0.5s ease-in-out;
+    transition: width 0.5s ease-in-out, left 0.5s ease-in-out;
+}
+
+/* #content-nav */
+#content-nav .blur {
+    transition: 0.5s filter linear;
+    -webkit-transition: 0.5s -webkit-filter linear;
+    -moz-transition: 0.5s -moz-filter linear;
+    -ms-transition: 0.5s -ms-filter linear;
+    -o-transition: 0.5s -o-filter linear;
+}
+
+#content-nav.aui-page-panel-nav:not(.expanded) .blur {
+    -webkit-filter: blur(2px);
+    -moz-filter: blur(2px);
+    -o-filter: blur(2px);
+    -ms-filter: blur(2px);
+    filter: blur(2px);
+}
+
+.git4c-first-ul {
+    padding-left: 0;
+}

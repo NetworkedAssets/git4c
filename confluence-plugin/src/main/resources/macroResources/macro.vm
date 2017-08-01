@@ -1,0 +1,7 @@
+#putMetadata('macroResourcePath', $resourcesPath)
+#putMetadata('macroParamsJson', $paramsJson)
+#requireResource("com.atlassian.auiplugin:aui-select2")
+#requireResource("com.atlassian.auiplugin:aui-experimental-iconfont")
+#requireResourcesForContext("com.networkedassets.git4c.ajscompat")
+#requireResourcesForContext("com.networkedassets.git4c.macroResources")
+$macroSectionHtml
