@@ -205,6 +205,9 @@ Git Viewer For Confluence uses external libraries, which have their own licenses
 - [Kotlin standard library](https://github.com/JetBrains/kotlin) (Apache 2.0)
 - [Klutter](https://github.com/kohesive/klutter) (MIT)
 - [Android Open Source Project](https://source.android.com/source/licenses) (Apache 2.0)
+- [FontAwesome](http://fontawesome.io/license/) (SIL OFL 1.1 and MIT)
+- [Vue.js](https://github.com/vuejs/vue) (MIT)
+- [Highlight.js](https://github.com/isagalaev/highlight.js) (BSD 3-clause)
 
 For plugin testing following libraries are used:
 - [JUnit](http://junit.org/junit4/license.html) (Eclipse Public License 1.0)
