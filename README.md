@@ -5,7 +5,7 @@ User Guide: <a href="http://opensource.networkedassets.com/confluence/pdf/git4c-
 Administration Guide: <a href="http://opensource.networkedassets.com/confluence/pdf/git4c-administration-guide.pdf">Git Viewer for Confluence Administration Guide (as PDF)</a>  
   
 Plugin available to download:  
-  - <a href="#">(SOON) On Atlassian Marketplace</a>
+  - <a href="https://marketplace.atlassian.com/plugins/com.networkedassets.git4c.confluence-plugin/server/overview">On Atlassian Marketplace</a>
 
 ## Installation
 
