@@ -25,7 +25,7 @@ import org.jetbrains.ktor.routing.routing
 import java.net.URLDecoder
 import kotlin.reflect.KClass
 
-class MainServer(val plugin: Plugin): ServiceApi {
+class MainServer(val plugin: Plugin) : ServiceApi {
 
     override val dispatcher = plugin.components.dispatcherHttp
 
@@ -65,14 +65,14 @@ class MainServer(val plugin: Plugin): ServiceApi {
 
     private val objectMapper = jacksonObjectMapper()
 
-    fun <T: Any> String.deserialize(clazz: KClass<T>) = objectMapper.readValue(this, clazz.java)
+    fun <T : Any> String.deserialize(clazz: KClass<T>) = objectMapper.readValue(this, clazz.java)
 
 //    private fun <TSubject> PipelineContext<Any>.execute(subject: String) {
 //    }
 
     fun Any.serialize(): String = objectMapper.writeValueAsString(this)
 
-    suspend private fun <T: Any> PipelineContext<ApplicationCall>.executeRequest(s: BackendRequest<T>) {
+    suspend private fun <T : Any> PipelineContext<ApplicationCall>.executeRequest(s: BackendRequest<T>) {
 
         val t = plugin.components.executor.executeRequest<Any>(s)
         if (t.component1() != null) {

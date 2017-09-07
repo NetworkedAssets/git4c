@@ -2,24 +2,21 @@ package com.networkedassets.git4c.infrastructure.plugin.source.git
 
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
 import com.networkedassets.git4c.core.exceptions.ConDocException
-import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.revwalk.RevCommit
-
 import java.io.File
 import java.io.IOException
-import java.nio.charset.Charset
 import java.nio.file.Path
-import java.util.Date
+import java.util.*
 
 class ImportedSourceFile(private val git: Git, repository: File, private val file: File) {
 
     private val path: Path = repository.toPath().relativize(file.toPath())
 
-    fun getOriginalContent(): String {
+    fun getOriginalContent(): ByteArray {
         try {
-            return FileUtils.readFileToString(file, Charset.defaultCharset())
+            return file.readBytes()
         } catch (e: IOException) {
             throw ConDocException(e)
         }
@@ -41,7 +38,7 @@ class ImportedSourceFile(private val git: Git, repository: File, private val fil
         get() {
             try {
                 val log = git.log().addPath(FilenameUtils.separatorsToUnix(path.toString())).call()
-                return log.iterator().next()
+                return log.filterNotNull().iterator().next()
             } catch (e: Exception) {
                 throw RuntimeException(e)
             }
@@ -55,14 +52,13 @@ class ImportedSourceFile(private val git: Git, repository: File, private val fil
         val commit = lastCommit
         val name = commit.authorIdent.name
         val email = commit.authorIdent.emailAddress
-        val content = getOriginalContent()
         return ImportedFileData(
                 path = FilenameUtils.separatorsToUnix(path.toString()),
                 context = getSourcePath().parent,
                 updateAuthorFullName = name,
                 updateAuthorEmail = email,
                 updateDate = Date(commit.commitTime.toLong() * 1000),
-                content = content
+                contentFun = { getOriginalContent() }
         )
     }
 }

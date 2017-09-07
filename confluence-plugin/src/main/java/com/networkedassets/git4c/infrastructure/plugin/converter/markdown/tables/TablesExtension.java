@@ -30,11 +30,11 @@ package com.networkedassets.git4c.infrastructure.plugin.converter.markdown.table
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TableBlock;
 import org.commonmark.ext.gfm.tables.internal.TableNodeRenderer;
-import org.commonmark.renderer.html.HtmlRenderer;
-import org.commonmark.renderer.html.HtmlNodeRendererContext;
-import org.commonmark.renderer.html.HtmlNodeRendererFactory;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.NodeRenderer;
+import org.commonmark.renderer.html.HtmlNodeRendererContext;
+import org.commonmark.renderer.html.HtmlNodeRendererFactory;
+import org.commonmark.renderer.html.HtmlRenderer;
 
 /**
  * Extension for GFM tables using "|" pipes (GitHub Flavored Markdown).

@@ -2,7 +2,7 @@ package com.networkedassets.git4c.standalone.infrastructure
 
 import com.networkedassets.git4c.core.bussiness.DataStore
 
-abstract class HashMapDataSource<T>: DataStore<T> {
+abstract class HashMapDataSource<T> : DataStore<T> {
 
     val map = mutableMapOf<String, T>()
 

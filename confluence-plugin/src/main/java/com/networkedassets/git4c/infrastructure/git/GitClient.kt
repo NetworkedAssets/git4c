@@ -1,26 +1,19 @@
 package com.networkedassets.git4c.infrastructure.git
 
 import com.networkedassets.git4c.boundary.outbound.VerificationInfo
-import com.networkedassets.git4c.core.bussiness.ImportedFileData
-import com.networkedassets.git4c.data.macro.DocumentationsMacroSettings
-import com.networkedassets.git4c.data.macro.ShortDocumentationsMacroSettings
-import java.nio.file.Path
+import com.networkedassets.git4c.core.bussiness.ImportedFiles
+import com.networkedassets.git4c.core.bussiness.Revision
+import com.networkedassets.git4c.core.exceptions.VerificationException
+import com.networkedassets.git4c.data.Repository
 
 interface GitClient {
 
-    fun verify(documentationsMacroSettings: DocumentationsMacroSettings): VerificationInfo
+    @Throws(VerificationException::class)
+    fun revision(repository: Repository, branch: String): Revision
 
-    fun verify(documentationsMacroSettings: ShortDocumentationsMacroSettings): VerificationInfo
+    fun verify(repository: Repository): VerificationInfo
 
-    fun fetchRawData(documentationsMacroSettings: DocumentationsMacroSettings, temp: Path): List<ImportedFileData>
+    fun getBranches(repository: Repository): List<String>
 
-    fun revision(documentationsMacroSettings: DocumentationsMacroSettings): String
-
-    fun clone(documentationsMacroSettings: DocumentationsMacroSettings, path: Path)
-
-    fun getBranches(documentationsMacroSettings: DocumentationsMacroSettings): List<String>
-
-    fun changeBranch(dir: Path, documentationsMacroSettings: DocumentationsMacroSettings)
-
-    fun fetchRawData(path: Path): List<ImportedFileData>
+    fun pull(repository: Repository, branch: String): ImportedFiles
 }

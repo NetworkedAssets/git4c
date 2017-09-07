@@ -4,8 +4,7 @@ import com.networkedassets.git4c.core.common.CredentialsEncryptor
 import org.jasypt.util.text.BasicTextEncryptor;
 
 
-
-class SimpleCredentialsEncryptor : CredentialsEncryptor{
+class SimpleCredentialsEncryptor : CredentialsEncryptor {
 
     override fun encrypt(password: String, key: String): String {
         val encryptor = BasicTextEncryptor()

@@ -21,7 +21,7 @@ class MacroView(val plugin: Plugin) : Macro {
 
         try {
 
-            val content = sendToExecution(plugin.components.dispatcher, GetDocumentationsMacroViewTemplateQuery())
+            val content = sendToExecution(plugin.components.dispatcher, GetDocumentationsMacroViewTemplateQuery("macroResources"))
 
             val resourcesPath = "download/resources/com.networkedassets.git4c.confluence-plugin:macro-resources/macroResources/"
             val context = MacroUtils.defaultVelocityContext()

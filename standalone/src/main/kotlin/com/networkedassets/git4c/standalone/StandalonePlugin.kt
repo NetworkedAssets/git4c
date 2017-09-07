@@ -15,10 +15,10 @@ import com.networkedassets.git4c.standalone.infrastructure.HashMapCache
 import com.networkedassets.git4c.standalone.infrastructure.SettingsCache
 import com.networkedassets.git4c.standalone.infrastructure.SettingsDB
 
-class StandalonePlugin: Plugin() {
+class StandalonePlugin : Plugin() {
     override val components: PluginComponents = run {
 
-        val temporaryIdCache = object: HashMapCache<String>(), TemporaryIdCache {}
+        val temporaryIdCache = object : HashMapCache<String>(), TemporaryIdCache {}
         val documentsViewCache = DocumentsCache()
         val macroSettingsCache = SettingsCache()
         val macroSettingsDB = SettingsDB()

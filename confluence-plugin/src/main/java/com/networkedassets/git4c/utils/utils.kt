@@ -4,13 +4,13 @@ import com.github.kittinunf.result.Result
 import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.flatMap
 import com.networkedassets.git4c.ConfluencePlugin
-import com.networkedassets.git4c.delivery.executor.monitoring.TransactionInfo
 import com.networkedassets.git4c.delivery.executor.execution.BackendDispatcher
+import com.networkedassets.git4c.delivery.executor.monitoring.BackendTimer
+import com.networkedassets.git4c.delivery.executor.monitoring.TransactionInfo
 import com.networkedassets.git4c.delivery.executor.result.BackendRequest
 import com.networkedassets.git4c.delivery.executor.result.BlockingPresenter
 import com.networkedassets.git4c.delivery.executor.result.HttpPresenter
 import com.networkedassets.git4c.delivery.executor.result.ServiceApi
-import com.networkedassets.git4c.delivery.executor.monitoring.BackendTimer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import uy.klutter.core.common.mustStartWith
@@ -163,4 +163,8 @@ fun Logger.error(log: () -> String, exception: Throwable) {
 
 fun Logger.error(exception: Throwable, log: () -> String) {
     error(log.invoke(), exception)
+}
+
+inline infix fun <reified E> List<E>.contentEquals(map: List<E>): Boolean {
+    return Arrays.equals(this.toTypedArray(), map.toTypedArray())
 }

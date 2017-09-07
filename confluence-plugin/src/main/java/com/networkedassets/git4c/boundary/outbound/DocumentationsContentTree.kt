@@ -39,6 +39,21 @@ class DocumentationsContentTree(var name: String, var fullName: String, var type
             this.fullName + "/" + name
     }
 
+    fun normalize(root: Boolean = true) {
+        if (this.type == NodeType.DOCITEM) {
+            return
+        }
+        children.forEach { it.normalize(false) }
+
+        if (children.size == 1 && children[0].type != NodeType.DOCITEM && !root) {
+            val onlyChild = children[0]
+            name += "/${onlyChild.name}"
+            fullName = onlyChild.fullName
+            children = onlyChild.children
+        }
+
+    }
+
     fun setName(name: String): DocumentationsContentTree {
         this.name = name
         return this
@@ -67,4 +82,5 @@ class DocumentationsContentTree(var name: String, var fullName: String, var type
     enum class NodeType {
         DOCITEM, DIR
     }
+
 }

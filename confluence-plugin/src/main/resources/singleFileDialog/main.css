@@ -1,0 +1,71 @@
+.git4c-first-ul {
+    padding-left: 0;
+}
+
+.git4c-image {
+    max-width: 100%;
+}
+
+pre .git4c-code {
+    display: block;
+    padding: 0.5em;
+}
+
+.git4c-code {
+    border: 1px #D8D8D8 solid;
+    background-color: #F5F5F5 !important;
+    border-radius: 5px;
+}
+
+.git4c-prismjs-code {
+    /* https://github.com/PrismJS/prism/issues/1132 */
+    display: inline-block;
+    max-width: 1px;
+}
+
+pre.line-numbers {
+    padding-left: 0 !important;
+}
+
+.git4c-single-dialog-no-line-numbers .git4c-prismjs-div  pre {
+    white-space: pre-line !important;
+}
+
+.git4c-single-dialog-no-line-numbers .git4c-prismjs-div code {
+    padding-left: 10px;
+}
+
+.git4c-single-dialog-no-line-numbers .git4c-prismjs-div .line-numbers-rows {
+    display: none;
+}
+
+.git4c-filetree-selected {
+    color: lightblue !important;
+}
+
+#git4c-single-dialog-tree-code-holder pre.line-numbers {
+    margin: 0;
+    max-height: 800px;
+}
+
+#git4c-single-dialog-tree-code-holder .git4c-highlightjs-code {
+    /*display: table-cell;*/
+    /*display: inline;*/
+}
+
+.git4c-single-dialog-tree-code-holder-markdown {
+    padding: 20px;
+}
+
+.git4c-file-select-container .select2-container {
+    vertical-align: top !important;
+    max-width: 208px !important;
+}
+
+#git4c-single-dialog-tree-div a:hover {
+    text-decoration: none;
+}
+
+#git4c-single-dialog-tree-div a:focus {
+    text-decoration: none;
+}

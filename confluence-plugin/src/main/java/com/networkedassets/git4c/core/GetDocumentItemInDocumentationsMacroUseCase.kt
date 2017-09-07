@@ -3,9 +3,9 @@ package com.networkedassets.git4c.core
 import com.github.kittinunf.result.Result
 import com.networkedassets.git4c.boundary.GetDocumentItemInDocumentationsMacroQuery
 import com.networkedassets.git4c.boundary.outbound.DocItem
-import com.networkedassets.git4c.core.datastore.DocumentsViewCache
-import com.networkedassets.git4c.delivery.executor.execution.UseCase
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
+import com.networkedassets.git4c.core.datastore.cache.DocumentsViewCache
+import com.networkedassets.git4c.delivery.executor.execution.UseCase
 
 
 class GetDocumentItemInDocumentationsMacroUseCase(

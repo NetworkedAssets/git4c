@@ -92,10 +92,10 @@ Vue.component('treeview', {
          */
         select: function (index, value) {
             // Unselect from current level, children and parents
-            this.toggleOpen(index);
+            this.toggleOpen(this.model[index], index);
             this.value = value;
             if (!this.areValidNodes(this.model[index][this.children])) {
-                this.$router.push('/' + encodeURIComponent(this.model[index][this.valuename]));
+                this.$router.push('/' + encodeURIComponent(this.model[index][this.valuename]) + "&" + encodeURIComponent(this.$route.params.branch));
             }
         },
 
@@ -104,15 +104,19 @@ Vue.component('treeview', {
          * Toggles open / close node.
          * @param int index Index to open
          */
-        toggleOpen: function (index) {
+        toggleOpen: function (node, index) {
             // Return if no children
-            if (!this.areValidNodes(this.model[index][this.children]))
+            if (node == undefined || !this.areValidNodes(node.children))
                 return;
             // Init
-            if (this.model[index].isOpened == undefined)
-                Vue.set(this.model[index], 'isOpened', this.hasSelectedChild(index));
+            if (node.isOpened == undefined)
+                Vue.set(node, 'isOpened', this.hasSelectedChild(index));
             // General
-            Vue.set(this.model[index], 'isOpened', !this.model[index].isOpened);
+            Vue.set(node, 'isOpened', !node.isOpened);
+
+            if (node.children.length == 1){
+                this.toggleOpen(node.children[0],0)
+            }
         },
         /**
          * Returns flag indicating if nodes are valid or not.
@@ -161,7 +165,7 @@ Vue.component('treeview', {
         },
 
         isSelectedFile: function (index) {
-            return "/" + this.model[index][this.valuename] == decodeURIComponent(this.$route.path);
+            return this.model[index][this.valuename] == decodeURIComponent(this.$route.params.fullName);
         },
 
         /**

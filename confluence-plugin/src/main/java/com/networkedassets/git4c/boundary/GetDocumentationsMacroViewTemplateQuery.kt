@@ -4,4 +4,5 @@ import com.networkedassets.git4c.delivery.executor.result.BackendRequest
 
 
 class GetDocumentationsMacroViewTemplateQuery(
+        val type: String
 ) : BackendRequest<String>()

@@ -2,23 +2,18 @@ package com.networkedassets.git4c.infrastructure.plugin.filter
 
 import com.networkedassets.git4c.core.bussiness.FilterPlugin
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
-import org.apache.commons.lang3.SystemUtils
 import java.io.File
 import java.nio.file.FileSystems
 
-class GlobFilterPlugin (val glob: String) : FilterPlugin {
+class GlobFilterPlugin(globs: List<String>) : FilterPlugin {
 
     companion object {
+        private val fs = FileSystems.getDefault()
         val EVERYTHING = "**"
     }
 
-    override fun filter(file: ImportedFileData): Boolean {
-        val safeGlob = if (glob.isNotEmpty()) {
-            glob
-        } else {
-            EVERYTHING
-        }
+    val globs = globs.map { fs.getPathMatcher("glob:$it") }
 
-        return FileSystems.getDefault().getPathMatcher("glob:$safeGlob").matches(File(file.path).toPath())
-    }
+    override fun filter(file: ImportedFileData) = globs.isEmpty() || globs.any { glob -> glob.matches(File(file.path).toPath()) }
+
 }

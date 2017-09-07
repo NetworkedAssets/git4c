@@ -17,58 +17,130 @@
     <resource type="i18n" name="i18n" location="autodoc_confluence"/>
     <!-- add our web resources -->
 
-    <web-resource key="ajs-compat" name="AJS compat">
-        <resource type="download" name="flag-compat.js" location="js/flag-compat.js" />
+    <web-resource key="components-overlay-${timestamp}" name="Overlay component">
+        <resource type="download" name="overlay.css" location="components/overlay/overlay.css"/>
+        <resource type="download" name="overlay.js" location="components/overlay/overlay.js"/>
+        <resource type="download" name="fakeLoader.css" location="components/overlay/fakeLoader.css"/>
+        <context>com.networkedassets.git4c.components.overlay</context>
+    </web-resource>
+
+    <web-resource key="components-markup-${timestamp}" name="Markup styles">
+        <resource type="download" name="markup.css" location="components/markup/markup.css"/>
+        <context>com.networkedassets.git4c.components.markup</context>
+    </web-resource>
+
+    <web-resource key="utils-${timestamp}" name="Utils">
+        <resource type="download" name="utils.js" location="js/utils.js"/>
+        <context>com.networkedassets.git4c.utils</context>
+    </web-resource>
+
+    <web-resource key="prism-${timestamp}" name="Prism">
+        <resource type="download" name="prism.js" location="lib/prism/prism.js"/>
+        <resource type="download" name="prism.css" location="lib/prism/prism.css"/>
+        <context>com.networkedassets.git4c.prism</context>
+    </web-resource>
+
+    <web-resource key="vuejs-${timestamp}" name="Vue JS">
+        <resource type="download" name="vue.min.js" location="lib/vue/vue.min.js"/>
+        <resource type="download" name="vue-resource.min.js" location="lib/vue/vue-resource.min.js"/>
+        <resource type="download" name="vue-router.min.js" location="lib/vue/vue-router.min.js"/>
+        <context>com.networkedassets.git4c.vuejs</context>
+    </web-resource>
+
+    <web-resource key="lodash-${timestamp}" name="Lodash">
+        <resource type="download" name="lodash.min.js" location="lib/lodash/lodash.min.js"/>
+        <context>com.networkedassets.git4c.lodash</context>
+    </web-resource>
+
+    <web-resource key="highlightjs-${timestamp}" name="Highlight.js">
+        <resource type="download" name="highlight.min.js" location="lib/highlightjs/highlight.min.js"/>
+        <resource type="download" name="highlightjs.min.css" location="lib/highlightjs/highlightjs.min.css"/>
+        <context>com.networkedassets.git4c.highlightjs</context>
+    </web-resource>
+
+    <web-resource key="ajs-compat-${timestamp}" name="AJS compat">
+        <resource type="download" name="flag-compat.js" location="js/flag-compat.js"/>
         <context>com.networkedassets.git4c.ajscompat</context>
     </web-resource>
 
-    <web-resource key="admin-resources" name="Admin resources">
-        <resource type="download" name="admin-ui-plugin.js" location="js/admin-ui-plugin.js"/>
+    <web-resource key="admin-resources-${timestamp}" name="Admin resources">
+        <resource type="download" name="admin-panel.js" location="adminPanel/app.js"/>
+
+        <resource type="download" name="predefinedRepositoryList.js"
+                  location="adminPanel/components/predefinedRepositoryList.js"/>
+        <resource type="download" name="removeRepositoryWarning.js"
+                  location="adminPanel/components/removeRepositoryWarning.js"/>
+
+        <resource type="download" name="otherOptions.js" location="adminPanel/components/otherOptions.js"/>
+        <resource type="download" name="cleanDataWarning.js" location="adminPanel/components/cleanDataWarning.js"/>
+        <resource type="download" name="restoreDefaultGlobsWarning.js"
+                  location="adminPanel/components/restoreDefaultGlobsWarning.js"/>
+
+        <resource type="download" name="predefinedGlobList.js" location="adminPanel/components/predefinedGlobList.js"/>
+        <resource type="download" name="removeGlobWarning.js" location="adminPanel/components/removeGlobWarning.js"/>
+        <resource type="download" name="customGlobDialog.js" location="adminPanel/components/customGlobDialog.js"/>
+
+
         <context>com.networkedassets.git4c.adminResources</context>
     </web-resource>
 
     <web-resource key="autodoc_confluence-resources" name="autodoc_confluence Web Resources">
         <resource type="download" name="images/" location="/images"/>
         <resource type="download" name="autodoc-style.css" location="/css/autodoc-style.css"/>
-
         <context>autodoc_confluence</context>
     </web-resource>
 
-    <web-resource key="autodoc-macro-params-${timestamp}" name="DoC macro parameter autocompletion">
-        <resource type="download" name="autodocMacroParams.js"
-                  location="js/autodocMacroParams.js"/>
-        <dependency>confluence.editor.actions:editor-macro-browser
-        </dependency>
+    <web-resource key="multi-file-dialog-${timestamp}" name="DoC macro parameter autocompletion">
+        <dependency>com.atlassian.auiplugin:aui-experimental-tooltips</dependency>
+        <dependency>com.atlassian.auiplugin:aui-select2</dependency>
+        <dependency>com.networkedassets.git4c.customRepositoryDialog</dependency>
+        <dependency>confluence.editor.actions:editor-macro-browser</dependency>
+        <resource type="download" name="multifileDialog.js" location="multiFileDialog/main.js"/>
         <context>macro-browser</context>
+    </web-resource>
+
+    <web-resource key="single-file-dialog-${timestamp}" name="Create Single file dialog">
+        <dependency>com.atlassian.auiplugin:aui-experimental-iconfont</dependency>
+        <dependency>confluence.editor.actions:editor-macro-browser</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:vuejs-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:prism-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:highlightjs-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:prism-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:lodash-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:utils-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:components-overlay-${timestamp}</dependency>
+        <resource type="download" name="styles-main.css" location="singleFileDialog/main.css"/>
+        <resource type="download" name="filetree.js" location="singleFileDialog/filetree.js"/>
+        <resource type="download" name="select2single.js" location="singleFileDialog/select2single.js"/>
+        <resource type="download" name="dialog-main.js" location="singleFileDialog/main.js"/>
+        <resource type="download" name="customRepositoryDialog.js" location="customRepositoryDialog/customRepositoryDialog.js"/>
+        <context>macro-browser</context>
+    </web-resource>
+
+    <web-resource key="custom-repository-dialog-${timestamp}" name="Create Custom repository dialog">
+        <dependency>com.networkedassets.git4c.confluence-plugin:vuejs-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:lodash-${timestamp}</dependency>
+        <resource type="download" name="dialog-main.js" location="customRepositoryDialog/customRepositoryDialog.js"/>
+        <context>com.networkedassets.git4c.customRepositoryDialog</context>
     </web-resource>
 
     <web-resource key="macro-resources-${timestamp}" name="Macro web resources">
         <resource type="download" name="macroResources/"
                   location="/macroResources"/>
-        <resource type="download" name="lib/vue.min.js"
-                  location="macroResources/lib/vue.min.js"/>
-        <resource type="download" name="lib/vue-resource.min.js"
-                  location="macroResources/lib/vue-resource.min.js"/>
-        <resource type="download" name="lib/vue-router.min.js"
-                  location="macroResources/lib/vue-router.min.js"/>
-        <resource type="download" name="lib/highlight.min.js"
-                  location="macroResources/lib/highlight.min.js"/>
         <resource type="download" name="css/markup.css"
                   location="macroResources/css/markup.css"/>
         <resource type="download" name="css/fakeLoader.css"
                   location="macroResources/css/fakeLoader.css"/>
-        <resource type="download" name="css/highlightjs.min.css"
-                  location="macroResources/css/highlightjs.min.css"/>
         <resource type="download" name="components/markup.js"
                   location="macroResources/components/markup.js"/>
+        <resource type="download" name="components/globs.js"
+                  location="macroResources/components/globs.js"/>
         <resource type="download" name="components/toc.js"
                   location="macroResources/components/toc.js"/>
         <resource type="download" name="components/treeview.js"
                   location="macroResources/components/treeview.js"/>
         <resource type="download" name="components/branch.js"
                   location="macroResources/components/branch.js"/>
-        <resource type="download" name="components/overlay.js"
-                  location="macroResources/components/overlay.js"/>
         <resource type="download" name="components/update-now.js"
                   location="macroResources/components/update-now.js"/>
         <resource type="download" name="services/markup-service.js"
@@ -100,16 +172,30 @@
         <context>com.networkedassets.git4c.macroResources</context>
     </web-resource>
 
+    <web-resource key="single-file-macro-resources-${timestamp}" name="Single file macro web resources">
+        <resource type="download" name="singleFile/" location="/singleFile/"/>
+        <resource type="download" name="utils.js"
+                  location="singleFile/utils.js"/>
+        <resource type="download" name="services/source-dialog.js"
+                  location="singleFile/services/source-dialog.js"/>
+        <resource type="download" name="services/url-service.js"
+                  location="singleFile/services/url-service.js"/>
+        <resource type="download" name="topbar.js" location="singleFile/components/topbar.js"/>
+        <resource type="download" name="app.css" location="singleFile/app.css"/>
+        <resource type="download" name="app.js" location="singleFile/app.js"/>
+        <context>com.networkedassets.git4c.singleFileMacro</context>
+    </web-resource>
+
     <!--Licensing-->
     <component-import key="pluginLicenseManager" interface="com.atlassian.upm.api.license.PluginLicenseManager"/>
 
-    <servlet key="git4c-servlet" class="com.networkedassets.git4c.interfaces.rest.AdminServlet">
+    <servlet key="git4c-servlet" class="com.networkedassets.git4c.interfaces.callback.AdminServlet">
         <url-pattern>/git4c/admin</url-pattern>
     </servlet>
 
     <web-item key="conf-menu-item" name="Git4C Admin" section="system.admin/administration" weight="0">
         <description>Link to git4c-admin page.</description>
-        <label key="git4c.admin.label" />
+        <label key="git4c.admin.label"/>
         <link linkId="git4c-admin-link">/plugins/servlet/git4c/admin</link>
     </web-item>
 
@@ -129,12 +215,26 @@
         </parameters>
     </xhtml-macro>
 
+    <xhtml-macro name="Git4C Single File"
+                 class="com.networkedassets.git4c.interfaces.callback.SingleFileMacroView"
+                 icon="/download/resources/${project.groupId}.${project.artifactId}:macro-resources-${timestamp}/macroResources/images/pluginMacroIcon.png"
+                 key="Git4C-Single-Sile">
+        <description>Git4C macro that displays one file from repository</description>
+        <parameters>
+            <parameter name="url" type="string" required="true"/>
+            <parameter name="username" type="string" required="true"/>
+            <parameter name="password" type="string" required="true"/>
+            <parameter name="revision" type="string" required="false"/>
+        </parameters>
+    </xhtml-macro>
+
     <!--Confluecom.networkedassets.com.networkedassets.git4c.restrest-->
     <rest key="com.networkedassets.git4c.interfaces.rest" path="/doc" version="1.0">
         <description>Provides REST endpoints used by Git4C</description>
     </rest>
 
-    <component name="Git4C Extractor" key="git4cExtractor" class="com.networkedassets.git4c.interfaces.callback.Git4CExtractor" public="true">
+    <component name="Git4C Extractor" key="git4cExtractor"
+               class="com.networkedassets.git4c.interfaces.callback.Git4CExtractor" public="true">
         <interface>com.atlassian.confluence.plugins.index.api.Extractor2</interface>
     </component>
 
@@ -155,13 +255,35 @@
     <component-import key="pageBuilderService" interface="com.atlassian.webresource.api.assembler.PageBuilderService"
                       filter=""/>
 
-    <component key="tx-annotation-processor" class="com.atlassian.activeobjects.external.TransactionalAnnotationProcessor" />
+    <component key="tx-annotation-processor"
+               class="com.atlassian.activeobjects.external.TransactionalAnnotationProcessor"/>
 
-    <component key="documentationsMacroSettingsDBService" class="com.networkedassets.git4c.infrastructure.database.ao.ConfluenceActiveObjectDocumentationsMacroSettings">
-        <interface>com.networkedassets.git4c.infrastructure.database.ao.EncryptedDocumentationsMacroSettingsDBService</interface>
+    <component-import key="ao" interface="com.atlassian.activeobjects.external.ActiveObjects" filter=""/>
+
+    <component key="macroSettingsDatabase"
+               class="com.networkedassets.git4c.infrastructure.database.ao.repository.ConfluenceActiveObjectMacroSettings">
+        <interface>com.networkedassets.git4c.core.datastore.repositories.MacroSettingsDatabase</interface>
     </component>
 
-    <component-import key="ao" interface="com.atlassian.activeobjects.external.ActiveObjects" filter="" />
+    <component key="predefinedRepositoryDatabase"
+               class="com.networkedassets.git4c.infrastructure.database.ao.repository.ConfluenceActiveObjectPredefinedRepository">
+        <interface>com.networkedassets.git4c.core.datastore.repositories.PredefinedRepositoryDatabase</interface>
+    </component>
+
+    <component key="encryptedRepositoryDatabase"
+               class="com.networkedassets.git4c.infrastructure.database.ao.repository.ConfluenceActiveObjectRepository">
+        <interface>com.networkedassets.git4c.core.datastore.repositories.EncryptedRepositoryDatabase</interface>
+    </component>
+
+    <component key="globsForMacroDatabase"
+               class="com.networkedassets.git4c.infrastructure.database.ao.repository.ConfluenceActiveObjectGlobForMacro">
+        <interface>com.networkedassets.git4c.core.datastore.repositories.GlobForMacroDatabase</interface>
+    </component>
+
+    <component key="predefinedGlobsDatabase"
+               class="com.networkedassets.git4c.infrastructure.database.ao.repository.ConfluenceActiveObjectPredefinedGlobs">
+        <interface>com.networkedassets.git4c.core.datastore.repositories.PredefinedGlobsDatabase</interface>
+    </component>
 
     <component key="plugin" class="com.networkedassets.git4c.ConfluencePlugin">
         <interface>com.networkedassets.git4c.application.Plugin</interface>
@@ -169,13 +291,30 @@
 
     <ao key="ao-module">
         <description>The module configuring the Active Objects service used by this plugin</description>
-        <entity>com.networkedassets.git4c.infrastructure.database.ao.DocumentationsMacroSettingsEntity</entity>
-        <entity>com.networkedassets.git4c.infrastructure.database.ao.AuthEntity</entity>
-        <entity>com.networkedassets.git4c.infrastructure.database.ao.NoAuthEntity</entity>
-        <entity>com.networkedassets.git4c.infrastructure.database.ao.SSHAuthEntity</entity>
-        <entity>com.networkedassets.git4c.infrastructure.database.ao.UsernamePasswordAuthEntity</entity>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.MacroSettingsEntity</entity>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.RepositoryEntity</entity>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.RepositoryWithNoAuthorizationEntity</entity>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.RepositoryWithSshKeyEntity</entity>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.RepositoryWithUsernameAndPasswordEntity</entity>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.PredefinedRepositoryEntity</entity>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.GlobEntity</entity>
 
-        <upgradeTask>com.networkedassets.git4c.infrastructure.database.ao.upgrade.DocumentationsMacroSettingsUpgradeTask001</upgradeTask>
+        <upgradeTask>com.networkedassets.git4c.infrastructure.database.ao.upgrade.v1.MacroSettingsUpgradeTask001
+        </upgradeTask>
+        <upgradeTask>com.networkedassets.git4c.infrastructure.database.ao.upgrade.v2.MacroSettingsUpgradeTask002
+        </upgradeTask>
+        <upgradeTask>com.networkedassets.git4c.infrastructure.database.ao.upgrade.v3.MacroSettingsUpgradeTask003
+        </upgradeTask>
+        <upgradeTask>com.networkedassets.git4c.infrastructure.database.ao.upgrade.v4.MacroSettingsUpgradeTask004
+        </upgradeTask>
+        <upgradeTask>com.networkedassets.git4c.infrastructure.database.ao.upgrade.v5.MacroSettingsUpgradeTask005
+        </upgradeTask>
+        <upgradeTask>com.networkedassets.git4c.infrastructure.database.ao.upgrade.v6.MacroSettingsUpgradeTask006
+        </upgradeTask>
+        <upgradeTask>com.networkedassets.git4c.infrastructure.database.ao.upgrade.v7.PredefinedGlobsUpgradeTask007
+        </upgradeTask>
+        <upgradeTask>com.networkedassets.git4c.infrastructure.database.ao.upgrade.v8.PredefinedRepositoryUpgradeTask008
+        </upgradeTask>
     </ao>
-    
+
 </atlassian-plugin>

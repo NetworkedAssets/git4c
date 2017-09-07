@@ -15,9 +15,9 @@ var MarkupService = (function () {
                 });
         },
 
-        getItem: (fullName) => {
-            return Vue.http.get(
-                UrlService.getRestUrl('documentation', ParamsService.getUuid(), 'doc-items', encodeURIComponent(fullName)))
+        getItem: (file) => {
+            return Vue.http.post(
+                UrlService.getRestUrl('documentation', ParamsService.getUuid(), 'doc-item'), file)
                 .then((response) => {
                     if (response.status !== 200) {
                         throw new Error(response.statusText);
@@ -29,7 +29,6 @@ var MarkupService = (function () {
                 });
         },
 
-
         getDocumentation: () => {
             return Vue.http.get(
                 UrlService.getRestUrl('documentation', ParamsService.getUuid()))
@@ -37,6 +36,7 @@ var MarkupService = (function () {
                     if (response.status !== 200) {
                         throw new Error(response.statusText);
                     }
+
                     return response.json();
                 }).catch((err) => {
                     console.log("MarkupService.getDocumentation", err);
@@ -71,16 +71,43 @@ var MarkupService = (function () {
                 });
         },
 
-        createTemporary: (branch) => {
+        temporary: (branch) => {
             return Vue.http.post(
-                UrlService.getRestUrl('documentation', ParamsService.getInitialUuid(), 'createTemporary'), branch)
+                UrlService.getRestUrl('documentation', ParamsService.getInitialUuid(), 'temporary'), branch)
                 .then((response) => {
                     if (response.status !== 200) {
                         throw new Error(response.statusText);
                     }
                     return response.json();
                 }).catch((err) => {
-                    console.log("MarkupService.createTemporary", err);
+                    console.log("MarkupService.temporary", err);
+                    return Promise.reject(err);
+                });
+        },
+        getDefaultBranch: () => {
+            return Vue.http.get(
+                UrlService.getRestUrl('documentation', ParamsService.getInitialUuid(), "defaultBranch" ))
+                .then((response) => {
+                    if (response.status !== 200) {
+                        throw new Error(response.statusText);
+                    }
+                    return Promise.resolve(response);
+                }).catch((err) => {
+                    console.log("MarkupService.temporary", err);
+                    return Promise.reject(err);
+                });
+        },
+
+        getGlobs: () => {
+            return Vue.http.get(
+                UrlService.getRestUrl('documentation', ParamsService.getUuid(), 'globs'))
+                .then((response) => {
+                    if (response.status !== 200) {
+                        throw new Error(response.statusText);
+                    }
+                    return response.json();
+                }).catch((err) => {
+                    console.log("MarkupService.getItem", err);
                     return Promise.reject(err);
                 });
         },

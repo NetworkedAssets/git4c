@@ -1,13 +1,12 @@
 package com.networkedassets.git4c.infrastructure.plugin.converter.markdown
 
-import com.networkedassets.git4c.utils.Patterns
-import com.networkedassets.git4c.core.bussiness.ConverterPlugin
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
 import com.networkedassets.git4c.core.common.IdentifierGenerator
 import com.networkedassets.git4c.core.exceptions.ConDocException
 import com.networkedassets.git4c.data.macro.documents.item.DocumentsItem
 import com.networkedassets.git4c.infrastructure.UuidIdentifierGenerator
 import com.networkedassets.git4c.infrastructure.plugin.converter.markdown.tables.TablesExtension
+import com.networkedassets.git4c.utils.Patterns
 import net.sourceforge.plantuml.FileFormat
 import net.sourceforge.plantuml.FileFormatOption
 import net.sourceforge.plantuml.SourceFileReader
@@ -37,7 +36,7 @@ import java.nio.file.Paths
 import java.util.*
 import java.util.regex.Pattern
 
-class MarkdownConverterPlugin : ConverterPlugin {
+class MarkdownConverterPlugin : InternalConverterPlugin {
 
     private val log = LoggerFactory.getLogger(MarkdownConverterPlugin::class.java)
 
@@ -52,10 +51,10 @@ class MarkdownConverterPlugin : ConverterPlugin {
     }
 
     override fun convert(fileData: ImportedFileData): DocumentsItem? {
-        if (fileData.getExtension().toLowerCase() == "md") {
-            val content = fileData.getOriginalContent()
+        if (fileData.extension.toLowerCase() == "md") {
+            val content = fileData.contentString
             val (tree, processedContent) = generateMarkdown(fileData.getAbsolutePath().toFile(), content, fileData.context)
-            return DocumentsItem(fileData.path, fileData.updateAuthorFullName, fileData.updateAuthorEmail, fileData.updateDate, """<span>$processedContent</span>""", tree.toTableOfContents())
+            return DocumentsItem(fileData.path, fileData.updateAuthorFullName, fileData.updateAuthorEmail, fileData.updateDate, content, """<span>$processedContent</span>""", tree.toTableOfContents())
         } else {
             return null
         }
@@ -143,13 +142,17 @@ class MarkdownConverterPlugin : ConverterPlugin {
         return HtmlRenderer.builder().extensions(extensions)
                 .attributeProviderFactory {
                     AttributeProvider { node, tagName, attributes ->
+                        // "".split(" ") == []
+                        val classes = (attributes["class"] ?: "").split(" ")
                         if (tagName == "table") {
-                            attributes.put("class", "aui git4c-table")
+                            val finalClasses = classes + listOf("aui", "git4c-table")
+                            attributes.put("class", finalClasses.joinToString(separator = " "))
                         } else if (tagName == "code") {
-                            val clz = attributes["class"] ?: ""
-                            attributes.put("class", "$clz git4c-code")
+                            val finalClasses = classes + listOf("git4c-code", "git4c-highlightjs-code")
+                            attributes.put("class", finalClasses.joinToString(separator = " "))
                         } else if (tagName == "img") {
-                            attributes.put("style", "max-width: 100%")
+                            val finalClasses = classes + listOf("git4c-image")
+                            attributes.put("class", finalClasses.joinToString(separator = " "))
                             if (isLocalUri(attributes["src"])) {
                                 val imageUrl = attributes["src"]!!
 
@@ -172,7 +175,13 @@ class MarkdownConverterPlugin : ConverterPlugin {
                                     }
                                 } else {
                                     imagePath = Paths.get(path.parent.toUri().resolve(imageUrl))
-                                    imageType = URLConnection.guessContentTypeFromName(imagePath.fileName.toString())
+                                    val fileName = imagePath.toString()
+                                    imageType = if (fileName.endsWith(".svg")) {
+                                        // URLConnection.guessContentTypeFromName doesn't like .svg files
+                                        "image/svg+xml"
+                                    } else {
+                                        URLConnection.guessContentTypeFromName(imagePath.fileName.toString())
+                                    }
                                 }
 
                                 try {
@@ -194,12 +203,18 @@ class MarkdownConverterPlugin : ConverterPlugin {
                             } else {
                                 val hrefWithoutHash = href.removePrefix("#")
                                 val target = path.parent.toUri().resolve(hrefWithoutHash)
-                                try {
-                                    attributes.put("href", "#/" + URLEncoder.encode(startDirectoryPath.toUri().relativize(target).toString(), "UTF-8"))
-                                } catch (e: UnsupportedEncodingException) {
-                                    throw ConDocException(e)
+                                if (File(target).exists()) {
+                                    try {
+                                        attributes.put("v-on:click", "moveToFile('" + URLEncoder.encode(startDirectoryPath.toUri().relativize(target).toString()) + "')")
+                                        attributes.put("href", "javascript:void(0)")
+                                    } catch (e: UnsupportedEncodingException) {
+                                        throw ConDocException(e)
+                                    }
+                                } else {
+                                    val clz = attributes["class"] ?: ""
+                                    attributes.put("class", "$clz git4c-unclickable-link")
+                                    attributes.put("href", "javascript:void(0)")
                                 }
-
                             }
                         } else if (tagName.matches(Regex("h\\d"))) {
                             val type = Integer.valueOf(tagName.substring(1))!!
@@ -228,11 +243,13 @@ class MarkdownConverterPlugin : ConverterPlugin {
                 .build()
     }
 
-    fun Node.getLiteral() = when(this) {
+    fun Node.getLiteral() = when (this) {
         is Text -> literal
         is Code -> literal
         else -> null
     }
+
+    override fun supportedExtensions() = listOf("md")
 
     fun nodeToText(node: Node): String? {
 

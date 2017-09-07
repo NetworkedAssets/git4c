@@ -10,12 +10,11 @@ class GetDocumentationsMacroViewTemplateUseCase : UseCase<GetDocumentationsMacro
 
     override fun execute(request: GetDocumentationsMacroViewTemplateQuery): Result<String, Exception> {
 
-        val content = IOUtils.toString(this.javaClass.classLoader.getResourceAsStream("/macroResources/index.html"), "UTF-8")
+        val content = IOUtils.toString(this.javaClass.classLoader.getResourceAsStream("/${request.type}/index.html"), "UTF-8")
                 .split("<cut-me-confluence>".toRegex())
                 .dropLastWhile { it.isEmpty() }.toTypedArray()[1]
                 .split("</cut-me-confluence>".toRegex())
                 .dropLastWhile { it.isEmpty() }.toTypedArray()[0]
-
 
         return Result.of(content)
     }

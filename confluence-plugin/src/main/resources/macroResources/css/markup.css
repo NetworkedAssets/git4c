@@ -38,24 +38,6 @@
     width: 53px;
 }
 
-.container .overlay {
-    position: absolute;
-    display: block;
-    background-color: #FFF;
-    top: 0;
-    left: 0;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    color: black;
-    text-align: center;
-}
-
-.container .overlay span {
-    left: 50%;
-    top: 30%;
-}
-
 .markup .loading {
     display: block;
     margin: auto;
@@ -63,16 +45,16 @@
 }
 
 .markup .git4c-toc {
-    margin-bottom: 20px
+    margin-bottom: 30px
 }
 
 .markup .html-content {
     white-space: normal;
 }
 
-.markup .html-content code {
-    white-space: pre-wrap;
-}
+/*.markup .html-content code {*/
+    /*white-space: pre-wrap;*/
+/*}*/
 
 .treeview .node {
     /*position: relative;*/
@@ -116,6 +98,12 @@
 
 .treeview .node {
     display: inline-block;
+    cursor: pointer;
+}
+
+.treeview .node label {
+    /* Because label has "user-agent" cursor */
+    cursor: pointer;
 }
 
 .treeview .children {
@@ -187,20 +175,6 @@
     padding-right: 1px;
 } */
 
-.git4c-table {
-    table-layout: fixed;
-    word-wrap: break-word;
-}
-
-.git4c-table td {
-    border: 1px solid #cccccc;
-}
-
-.git4c-table th {
-    border: 1px solid #cccccc;
-    background-color: #F0F0F0
-}
-
 #git4c-main-content {
     border: 1px solid #cccccc;
 }
@@ -214,10 +188,6 @@
     height: 50px;
 }
 
-.git4c-overlay-parent {
-    position: relative
-}
-
 .git4c-branch {
     position: relative;
     width: 210px !important;
@@ -228,6 +198,7 @@
     max-width: 210px;
     width: 210px !important;
     margin-left: 20px;
+    margin-bottom: 10px !important;
 }
 
 .git4c-branch .git4c-branches-dropdown {
@@ -319,5 +290,82 @@
 }
 
 .git4c-first-ul {
-    padding-left: 0;
+    padding-left: 0 !important;
+}
+
+.git4c-unclickable-link {
+    cursor: default !important;
+    color: black !important;
+    text-decoration: none !important;
+}
+
+.git4c-image {
+    max-width: 100%;
+}
+
+pre .git4c-code {
+    display: block;
+    padding: 0.5em;
+}
+
+#git4c-dialog-code {
+    white-space: pre-wrap;
+}
+
+.git4c-prismjs-code {
+    /* https://github.com/PrismJS/prism/issues/1132 */
+    display: inline-block;
+}
+
+pre.line-numbers {
+    padding-left: 0 !important;
+}
+
+#git4c-content pre[class*="language-"] {
+    margin: 0;
+}
+
+#git4c-content :not(pre) > code {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.git4c-globs-container {
+    white-space: normal
+}
+
+.git4c-current-branch-div {
+    overflow: hidden;
+    word-break: break-all;
+    width: 170px;
+}
+
+.git4c-white-aui-dropdown2 {
+    background-color: white !important;
+}
+
+.git4c-white-aui-dropdown2:focus {
+    background-color: white !important;
+}
+
+.git4c-branch > .aui-dropdown2-active {
+    background-color: #dddddd !important;
+}
+
+/*TODO: Fix dot near selected element*/
+/*#git4c-branches .aui-dropdown2-radio:hover {*/
+   /*background-color: #e9e9e9;*/
+   /*color: black;*/
+/*}*/
+
+.git4c-toc li:hover .git4c-toc-li-content {
+    background-color: #eee;
+}
+
+.git4c-toc-li-content a {
+    text-decoration: none;
+}
+
+.git4c-link-black {
+    color: black !important;
 }

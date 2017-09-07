@@ -1,0 +1,13 @@
+.git4c-table {
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+
+.git4c-table td {
+    border: 1px solid #cccccc;
+}
+
+.git4c-table th {
+    border: 1px solid #cccccc;
+    background-color: #F0F0F0
+}

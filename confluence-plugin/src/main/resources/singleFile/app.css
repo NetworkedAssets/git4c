@@ -1,0 +1,87 @@
+.git4c-singlefile-app {
+    border: 1px #cccccc solid;
+    /*border-radius: 5px;*/
+    display: flex;
+    flex-direction: column;
+}
+
+.git4c-singlefile-content {
+    min-height: 200px;
+}
+
+.git4c-singlefile-topbar-outer {
+    height: 50px;
+    background-color: #eee;
+    border-bottom: 1px solid #cccccc;
+    width:100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+    /*flex-wrap: wrap;*/
+    justify-content: space-between
+}
+
+.git4c-singlefile-content-markdown {
+    padding: 20px;
+}
+
+.git4c-singlefile-topbar-inner {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.git4c-singlefile-content {
+}
+
+pre[class*="language-"] {
+    margin: 0 !important;
+}
+
+.git4c-code {
+    border: 1px #D8D8D8 solid;
+    background-color: #F5F5F5 !important;
+    border-radius: 5px;
+}
+
+.git4c-prismjs-code {
+    /* https://github.com/PrismJS/prism/issues/1132 */
+    display: inline-block;
+    max-width: 1px;
+}
+
+pre.line-numbers {
+    padding-left: 0 !important;
+}
+
+.git4c-directory {
+    color: #707070
+}
+
+.git4c-file {
+    color: #333;
+    font-weight: bold
+}
+
+.git4c-single-dialog-no-line-numbers .git4c-prismjs-div  pre {
+    white-space: pre-line !important;
+}
+
+.git4c-single-dialog-no-line-numbers .git4c-prismjs-div code {
+    padding-left: 10px;
+}
+
+.git4c-single-dialog-no-line-numbers .git4c-prismjs-div .line-numbers-rows {
+    display: none;
+}
+
+.git4c-singlefile-no-height {
+    min-height: 0 !important;
+}
+
+.git4c-link-black {
+    color: black !important;
+}

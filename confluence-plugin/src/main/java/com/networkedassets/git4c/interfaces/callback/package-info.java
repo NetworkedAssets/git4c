@@ -1,4 +1,3 @@
-
 package com.networkedassets.git4c.interfaces.callback;
 
 /*

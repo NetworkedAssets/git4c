@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.networkedassets.git4c</groupId>
     <artifactId>git4c</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-RELEASE</version>
+    <version>1.1.0-RELEASE</version>
 
     <modules>
         <module>confluence-plugin</module>
@@ -27,7 +27,7 @@
         <atlassian.plugin.key>${project.groupId}.${project.artifactId}</atlassian.plugin.key>
         <amps.version>6.3.1</amps.version>
         <plugin.testrunner.version>1.2.3</plugin.testrunner.version>
-        <kotlin.version>1.1.2-4</kotlin.version>
+        <kotlin.version>1.1.4</kotlin.version>
     </properties>
 
     <pluginRepositories>

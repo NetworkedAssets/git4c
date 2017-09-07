@@ -1,55 +1,53 @@
 package com.networkedassets.git4c.core.process
 
 import com.networkedassets.git4c.core.bussiness.ConverterPlugin
+import com.networkedassets.git4c.core.bussiness.ParserPlugin
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
-import com.networkedassets.git4c.core.datastore.DocumentsViewCache
-import com.networkedassets.git4c.core.datastore.MacroSettingsRepository
-import com.networkedassets.git4c.data.macro.DocumentationsMacroSettings
+import com.networkedassets.git4c.core.datastore.cache.DocumentsViewCache
+import com.networkedassets.git4c.core.exceptions.VerificationException
+import com.networkedassets.git4c.data.GlobForMacro
+import com.networkedassets.git4c.data.MacroSettings
+import com.networkedassets.git4c.data.Repository
 import com.networkedassets.git4c.data.macro.documents.DocumentationsMacro
 import com.networkedassets.git4c.infrastructure.plugin.filter.GlobFilterPlugin
+import com.networkedassets.git4c.utils.contentEquals
 
 class RefreshMacroProcess(
         val cache: DocumentsViewCache,
         val importer: SourcePlugin,
         val converter: ConverterPlugin,
-        val macroSettingsRepository: MacroSettingsRepository
+        val parser: ParserPlugin
 ) {
 
-    fun fetchDataFromSourceThenConvertAndSave(
-            documentationsMacroSettings: DocumentationsMacroSettings,
-            save: Boolean = true
+    @Throws(VerificationException::class)
+    fun fetchDataFromSourceThenConvertAndCache(
+            macroSettings: MacroSettings,
+            globs: List<GlobForMacro>,
+            repository: Repository
     ): DocumentationsMacro {
 
-        val filter = GlobFilterPlugin(documentationsMacroSettings.glob)
+        val filter = GlobFilterPlugin(globs.map { it.glob })
+        val method = macroSettings.method
 
-        return cache.get(documentationsMacroSettings.id).takeIf {
-            it?.currentBranch == documentationsMacroSettings.branch
-                    && importer.verify(documentationsMacroSettings).isOk()
-                    && importer.revision(documentationsMacroSettings) == it.revision
-                    && documentationsMacroSettings.glob == it.glob
-        } ?: importer.createFetchProcess(documentationsMacroSettings).use { fetchProcess ->
-            fetchProcess.fetch()
-                    .filter { filter.filter(it) }
-                    .mapNotNull { converter.convert(it) }
-        }
-                .let {
-                    val revision = importer.revision(documentationsMacroSettings)
-                    DocumentationsMacro(documentationsMacroSettings, revision, it)
-                }
-                .apply {
-                    cache.put(this.uuid, this)
-                }
-                .apply {
-                    if (save) {
-                        save(documentationsMacroSettings)
+        return cache.get(macroSettings.uuid).takeIf {
+            it?.currentBranch == macroSettings.branch
+                    && importer.revision(macroSettings, repository).use { it.revision } == it.revision
+                    && globs.map { it.glob } contentEquals it.glob.map { it.glob }
+        } ?: importer.pull(repository, macroSettings.branch).use {
+            it.imported.filter { filter.filter(it) }
+                    .map {
+                        if (method.isNullOrEmpty()) {
+                            Pair(it, null)
+                        } else {
+                            parser.getMethod(it, method!!)
+                        }
                     }
-                }
-    }
-
-    private fun save(documentationsMacroSettings: DocumentationsMacroSettings) {
-        macroSettingsRepository.put(
-                documentationsMacroSettings.id,
-                documentationsMacroSettings
-        )
+                    .mapNotNull { converter.convert(it.first, it.second?.range?.start ?: 0) }
+        }.let {
+            val revision = importer.revision(macroSettings, repository).use { it.revision }
+            DocumentationsMacro(macroSettings, revision, it, globs)
+        }.apply {
+            cache.insert(this.uuid, this)
+        }
     }
 }

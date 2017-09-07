@@ -1,112 +1,86 @@
 package com.networkedassets.git4c.infrastructure.plugin.source.git
 
 import com.networkedassets.git4c.boundary.outbound.VerificationInfo
-import com.networkedassets.git4c.core.bussiness.ImportedFileData
+import com.networkedassets.git4c.boundary.outbound.VerificationStatus
+import com.networkedassets.git4c.core.bussiness.ImportedFiles
+import com.networkedassets.git4c.core.bussiness.Revision
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
-import com.networkedassets.git4c.core.bussiness.SourcePlugin.FetchProcess
-import com.networkedassets.git4c.core.exceptions.ConDocException
-import com.networkedassets.git4c.data.macro.DocumentationsMacroSettings
-import com.networkedassets.git4c.data.macro.ShortDocumentationsMacroSettings
+import com.networkedassets.git4c.core.exceptions.VerificationException
+import com.networkedassets.git4c.data.*
 import com.networkedassets.git4c.infrastructure.git.GitClient
-import uy.klutter.core.common.deleteRecursively
-import uy.klutter.core.common.exists
-import java.io.IOException
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.locks.ReentrantLock
 
 class GitSourcePlugin(
         private val gitClient: GitClient
 ) : SourcePlugin {
 
-    val parentTempDirectory = Paths.get(System.getProperty("java.io.tmpdir"), "git_source_plugin_cache").toFile()!!
+    override val identifier: String get() = "git-source"
 
-    init {
-        if (parentTempDirectory.exists()) {
-            parentTempDirectory.deleteRecursively()
+    override fun pull(repository: Repository, branch: String): ImportedFiles {
+        return gitClient.pull(repository, branch)
+    }
+
+    @Throws(VerificationException::class)
+    override fun revision(macroSettings: MacroSettings, repository: Repository?): Revision {
+        if (macroSettings.repositoryUuid == null) throw VerificationException(VerificationInfo(VerificationStatus.REMOVED))
+        if (repository == null) throw VerificationException(VerificationInfo(VerificationStatus.REMOVED))
+        if (!verifyUrl(repository)) throw VerificationException(VerificationInfo(VerificationStatus.WRONG_URL))
+        val authDataVerifyStatus = verifyAuthData(repository)
+        if (!authDataVerifyStatus.isOk()) {
+            throw VerificationException(authDataVerifyStatus)
         }
-        parentTempDirectory.mkdir()
+        return gitClient.revision(repository, macroSettings.branch)
     }
 
-    val lockMap = ConcurrentHashMap<String, ReentrantLock>()
-    val fileCache = mutableMapOf<String, Path>()
-
-    override val identifier = "git-source"
-
-    override fun createFetchProcess(documentationsMacroSettings: DocumentationsMacroSettings): FetchProcess {
-        val path = createTempDirectory()
-        return GitFetchProcess(documentationsMacroSettings, path)
-    }
-
-    override fun verify(documentationsMacroSettings: DocumentationsMacroSettings): VerificationInfo {
-        return gitClient.verify(documentationsMacroSettings)
-    }
-
-    override fun verify(documentationsMacroSettings: ShortDocumentationsMacroSettings): VerificationInfo {
-        return gitClient.verify(documentationsMacroSettings)
-    }
-
-    override fun revision(documentationsMacroSettings: DocumentationsMacroSettings): String {
-        return gitClient.revision(documentationsMacroSettings)
-    }
-
-    override fun getBranches(documentationsMacroSettings: DocumentationsMacroSettings): List<String> {
-        return gitClient.getBranches(documentationsMacroSettings)
-    }
-
-    private fun createTempDirectory() = try {
-        Files.createTempDirectory(parentTempDirectory.toPath(), null)
-    } catch (e: IOException) {
-        throw ConDocException("Couldn't create a temp dir!", e)
-    }
-
-    inner class GitFetchProcess(val documentationsMacroSettings: DocumentationsMacroSettings, val temp: Path): FetchProcess {
-
-        val lock: ReentrantLock
-        lateinit var dir: Path
-        var closed = false
-
-        init {
-            lockMap.putIfAbsent(documentationsMacroSettings.repositoryPath, ReentrantLock())
-            lock = lockMap[documentationsMacroSettings.repositoryPath]!!
+    override fun verify(repository: Repository?): VerificationInfo {
+        if (repository == null) return VerificationInfo(VerificationStatus.REMOVED)
+        if (!verifyUrl(repository)) {
+            return VerificationInfo(VerificationStatus.WRONG_URL)
         }
 
-        override fun fetch(): List<ImportedFileData> {
-            if (closed) {
-                throw IllegalStateException("GitFetchProcess was closed")
+        val authDataVerifyStatus = verifyAuthData(repository)
+        if (!authDataVerifyStatus.isOk()) {
+            return authDataVerifyStatus
+        }
+        return gitClient.verify(repository)
+    }
+
+    override fun getBranches(repository: Repository?): List<String> {
+        if (repository == null) return ArrayList()
+        return gitClient.getBranches(repository)
+    }
+
+    private fun verifyAuthData(authType: Repository?): VerificationInfo {
+        if (authType is RepositoryWithSshKey) {
+            val sshKey = authType.sshKey.trim()
+            //Key cannot have "ENCRYPTED" in it
+            if (!sshKey.startsWith("-----BEGIN RSA PRIVATE KEY-----")
+                    || !sshKey.endsWith("-----END RSA PRIVATE KEY-----")
+                    || sshKey.contains("ENCRYPTED")) {
+                return VerificationInfo(VerificationStatus.WRONG_KEY_FORMAT)
             }
+        }
+        return VerificationInfo(VerificationStatus.OK)
+    }
 
-            lock.lock()
-
-            if (fileCache[documentationsMacroSettings.repositoryPath] != null) {
-                //We already have directory
-                if (fileCache[documentationsMacroSettings.repositoryPath]!!.exists()) {
-                    //And it exists - let's remove directory that was created for us - we don't need it
-                    temp.deleteRecursively()
-                } else {
-                    //Weird - we're supposed to have directory but it doesn't exist. Let's use directory that was
-                    //created for us then
-                    fileCache[documentationsMacroSettings.repositoryPath] = temp
-                    gitClient.clone(documentationsMacroSettings, temp)
+    private fun verifyUrl(repository: Repository): Boolean {
+        when (repository) {
+            is RepositoryWithSshKey -> {
+                if (repository.repositoryPath.startsWith("http")) {
+                    return false
                 }
-            } else {
-                fileCache[documentationsMacroSettings.repositoryPath] = temp
-                gitClient.clone(documentationsMacroSettings, temp)
             }
-
-            dir = fileCache[documentationsMacroSettings.repositoryPath]!!
-
-            gitClient.changeBranch(dir, documentationsMacroSettings)
-            return gitClient.fetchRawData(dir)
-        }
-
-        override fun close() {
-            if (!closed && lock.isHeldByCurrentThread) {
-                lock.unlock()
+            is RepositoryWithUsernameAndPassword -> {
+                if (repository.repositoryPath.startsWith("ssh")) {
+                    return false
+                }
             }
-            closed = true
+            is RepositoryWithNoAuthorization -> {
+                if (repository.repositoryPath.startsWith("ssh")) {
+                    return false
+                }
+            }
         }
+        return true
     }
+
 }

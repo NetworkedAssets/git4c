@@ -4,4 +4,4 @@ import com.networkedassets.git4c.core.datastore.DocumentsViewCache
 import com.networkedassets.git4c.data.macro.documents.DocumentationMacro
 import com.networkedassets.git4c.data.macro.documents.item.DocumentsItem
 
-class DocumentsCache: HashMapCache<DocumentationMacro>(), DocumentsViewCache
+class DocumentsCache : HashMapCache<DocumentationMacro>(), DocumentsViewCache

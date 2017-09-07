@@ -1,11 +1,11 @@
 package com.networkedassets.git4c.delivery.executor.result
 
 import com.github.kittinunf.result.Result
-import com.networkedassets.git4c.utils.SerializationUtils.serialize
-import com.networkedassets.git4c.delivery.executor.monitoring.TransactionInfo
-import com.networkedassets.git4c.delivery.executor.monitoring.BackendTimer
 import com.networkedassets.git4c.boundary.outbound.exceptions.ConflictException
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
+import com.networkedassets.git4c.delivery.executor.monitoring.BackendTimer
+import com.networkedassets.git4c.delivery.executor.monitoring.TransactionInfo
+import com.networkedassets.git4c.utils.SerializationUtils.serialize
 import java.util.*
 import java.util.Objects.isNull
 import javax.ws.rs.core.Response

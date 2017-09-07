@@ -6,7 +6,7 @@ import java.io.Serializable
 abstract class BackendRequest<out ANSWER>() : Serializable {
 
     var transactionInfo: TransactionInfo = TransactionInfo(this.javaClass)
-        private set
+        internal set
 
     constructor(transactionInfo: TransactionInfo) : this() {
         this.transactionInfo = transactionInfo

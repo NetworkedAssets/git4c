@@ -1,0 +1,12 @@
+.git4c-component-overlay {
+    position: absolute;
+    display: block;
+    background-color: #FFF;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    color: black;
+    text-align: center;
+}

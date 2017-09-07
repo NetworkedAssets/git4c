@@ -3,10 +3,10 @@ package com.networkedassets.git4c.core
 import com.github.kittinunf.result.Result
 import com.networkedassets.git4c.boundary.GetDocumentationsContentTreeByDocumentationsMacroIdQuery
 import com.networkedassets.git4c.boundary.outbound.DocumentationsContentTree
-import com.networkedassets.git4c.core.bussiness.DocumentsTreeConverter
-import com.networkedassets.git4c.core.datastore.DocumentsViewCache
-import com.networkedassets.git4c.delivery.executor.execution.UseCase
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
+import com.networkedassets.git4c.core.bussiness.DocumentsTreeConverter
+import com.networkedassets.git4c.core.datastore.cache.DocumentsViewCache
+import com.networkedassets.git4c.delivery.executor.execution.UseCase
 
 
 class GetDocumentationsContentTreeByDocumentationsMacroIdUseCase(

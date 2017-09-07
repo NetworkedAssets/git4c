@@ -1,7 +1,6 @@
 package com.networkedassets.git4c.utils
 
 import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.networkedassets.git4c.core.exceptions.ConDocException
 import java.io.IOException

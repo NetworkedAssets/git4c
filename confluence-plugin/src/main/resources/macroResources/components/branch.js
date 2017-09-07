@@ -10,10 +10,10 @@ Vue.component("branch", {
         }
     },
 
-    mounted: function() {
+    mounted: function () {
         MarkupService.getBranches().then((branches) => {
             const allBranches = branches.allBranches
-            const currentBranch = branches.currentBranch ? branches.currentBranch : "master"
+            const currentBranch = this.$route.params.branch ? this.$route.params.branch : branches.currentBranch? branches.currentBranch : "master"
 
             allBranches.sort()
             this.branches = allBranches
@@ -25,12 +25,13 @@ Vue.component("branch", {
         onChange: function (selected) {
             this.selectedBranch = selected
             this.currentBranch = selected
+            this.$root.pushBranch(selected)
             var newBranch = {
                 branch: this.selectedBranch
             }
             Events.$emit('branchChanging')
-            MarkupService.createTemporary(newBranch).then((id) => {
-                Events.$emit('branchChanged', id)
+            MarkupService.temporary(newBranch).then((id) => {
+                Events.$emit('branchChanged', id, newBranch.branch)
             });
         }
     }

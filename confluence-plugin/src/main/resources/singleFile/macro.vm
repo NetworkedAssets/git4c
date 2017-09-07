@@ -1,0 +1,40 @@
+#putMetadata('macroResourcePath', $resourcesPath)
+#putMetadata('macroParamsJson', $paramsJson)
+#requireResource("com.atlassian.auiplugin:dialog2")
+#requireResource("com.atlassian.auiplugin:aui-select2")
+#requireResource("com.atlassian.auiplugin:aui-experimental-iconfont")
+#requireResource("com.atlassian.auiplugin:aui-experimental-tooltips")
+#requireResourcesForContext("com.networkedassets.git4c.ajscompat")
+#requireResourcesForContext("com.networkedassets.git4c.vuejs")
+#requireResourcesForContext("com.networkedassets.git4c.highlightjs")
+#requireResourcesForContext("com.networkedassets.git4c.prism")
+#requireResourcesForContext("com.networkedassets.git4c.components.markup")
+#requireResourcesForContext("com.networkedassets.git4c.components.overlay")
+#requireResourcesForContext("com.networkedassets.git4c.utils")
+#requireResourcesForContext("com.networkedassets.git4c.singleFileMacro")
+
+<div id="app-${UUID}-${RANDOM}" class="git4c-singlefile-app">
+    <topbar v-if="showTopBar"></topbar>
+    <div v-show="!collapsed">
+        <overlay>
+            <div class="git4c-singlefile-content"
+                 v-bind:class="{ 'git4c-singlefile-content-markdown': markdown, 'git4c-single-dialog-no-line-numbers': !lines, 'git4c-singlefile-no-height': showsError }"
+                 v-show="!collapsed" v-html="content"></div>
+        </overlay>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+AJS.toInit(function () {
+    const uuid = "$UUID"
+    const random = "$RANDOM"
+    const showLineNumbers = $LINENUMBERS
+    const showTopBar = $SHOWTOPBAR
+    const collapseByDefault = $COLLAPSEBYDEFAULT
+    const collapsible = $COLLAPSIBLE
+    Git4CSingleFileMacro.start(uuid, random, showLineNumbers, collapsible, showTopBar, collapseByDefault)
+})
+
+
+</script>

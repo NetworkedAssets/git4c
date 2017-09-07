@@ -5,4 +5,4 @@ import com.networkedassets.git4c.delivery.executor.result.BackendRequest
 
 class GetAllDocumentsByDocumentationsMacroIdQuery(
         val macroId: String
-): BackendRequest<List<DocumentsItem>>()
+) : BackendRequest<List<DocumentsItem>>()

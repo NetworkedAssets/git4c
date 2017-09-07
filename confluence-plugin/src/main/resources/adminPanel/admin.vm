@@ -1,0 +1,19 @@
+<html>
+<head>
+    <meta name="decorator" content="atl.admin" />
+    <title>Git4C configuration</title>
+</head>
+<body>
+    <div id="git4c_admin-root"></div>
+
+    <script type="text/javascript">
+        AJS.toInit(function () {
+            Git4CAdminPanel.start()
+        })
+
+    </script>
+</body>
+</html>
+
+
+

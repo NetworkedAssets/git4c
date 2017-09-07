@@ -5,186 +5,145 @@ import com.jcraft.jsch.JSchException
 import com.jcraft.jsch.Session
 import com.networkedassets.git4c.boundary.outbound.VerificationInfo
 import com.networkedassets.git4c.boundary.outbound.VerificationStatus.*
-import com.networkedassets.git4c.core.bussiness.ImportedFileData
+import com.networkedassets.git4c.core.bussiness.ImportedFiles
+import com.networkedassets.git4c.core.bussiness.Revision
 import com.networkedassets.git4c.core.exceptions.ConDocException
-import com.networkedassets.git4c.data.macro.*
-import com.networkedassets.git4c.utils.ThrowableUtils.isCausedBy
+import com.networkedassets.git4c.core.exceptions.VerificationException
+import com.networkedassets.git4c.data.Repository
+import com.networkedassets.git4c.data.RepositoryWithNoAuthorization
+import com.networkedassets.git4c.data.RepositoryWithSshKey
+import com.networkedassets.git4c.data.RepositoryWithUsernameAndPassword
 import com.networkedassets.git4c.infrastructure.plugin.source.git.ImportedSourceFile
+import com.networkedassets.git4c.utils.ThrowableUtils.isCausedBy
 import org.apache.commons.lang3.StringUtils
+import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.LsRemoteCommand
 import org.eclipse.jgit.api.TransportCommand
 import org.eclipse.jgit.api.errors.GitAPIException
 import org.eclipse.jgit.internal.JGitText
-import org.eclipse.jgit.transport.JschConfigSessionFactory
-import org.eclipse.jgit.transport.OpenSshConfig
-import org.eclipse.jgit.transport.SshTransport
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
+import org.eclipse.jgit.transport.*
 import org.eclipse.jgit.util.FS
 import org.slf4j.LoggerFactory
+import java.io.Closeable
 import java.io.File
 import java.nio.file.Path
 import java.util.*
 import java.util.Collections.emptySet
 import java.util.stream.Collectors
-import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode
 
 class DefaultGitClient : GitClient {
 
     private val log = LoggerFactory.getLogger(DefaultGitClient::class.java)
 
-    override fun verify(documentationsMacroSettings: DocumentationsMacroSettings): VerificationInfo {
+    private val cache = GitDiskCache(this)
 
-        if (!verifyUrl(documentationsMacroSettings)) {
-            return VerificationInfo(WRONG_URL)
-        }
-
-        val authDataVerifyStatus = verifyAuthData(documentationsMacroSettings.credentials)
-        if (!authDataVerifyStatus.isOk()) {
-            return authDataVerifyStatus
-        }
-
-        val connectionStatus = verifyConnection(documentationsMacroSettings)
-        if (!connectionStatus.isOk()) {
-            return connectionStatus
-        }
-
-        val branchStatus = verifyBranch(documentationsMacroSettings)
-        if (!branchStatus.isOk()) {
-            return branchStatus
-        }
-
-        return VerificationInfo(OK)
-
+    @Throws(VerificationException::class)
+    override fun revision(repository: Repository, branch: String): Revision {
+        val branchStatus = branchRevision(repository, branch)
+        return branchStatus
     }
 
-    private fun verifyBranch(documentationsMacroSettings: DocumentationsMacroSettings): VerificationInfo {
+    @Throws(VerificationException::class)
+    private fun branchRevision(repository: Repository, branch: String): Revision {
+        val repositoryBranch = getBranchOrDefault(branch)
+        val git = cache.lock(repository, branch)
+        val command = git.fetch().addAuthData(repository)
+        try {
+            val refs = command.call()
+            val revs = parseRevisions(refs)
+            val commit = parseLastCommitForBranch(refs, repositoryBranch)
+            if (!revs.contains(repositoryBranch)) throw VerificationException(VerificationInfo(WRONG_BRANCH))
+            return closeableRevision(commit, repository)
+        } catch (e: Exception) {
+            cache.unlock(repository)
+            throwRepositoryError(e)
+        }
+        throw VerificationException(VerificationInfo(SOURCE_NOT_FOUND))
+    }
 
-        val url = documentationsMacroSettings.repositoryPath
-        val branch = getBranch(documentationsMacroSettings.branch)
-        val lsCmd = LsRemoteCommand(null)
-        addAuthData(lsCmd, documentationsMacroSettings.credentials)
-                .setRemote(url)
-        val refs = lsCmd.call()
-        val revs = refs.stream()
-                .map<String>({ it.name })
+    private fun closeableRevision(commit: String, repository: Repository): Revision {
+        return Revision(commit, Closeable { cache.unlock(repository) })
+    }
+
+    private fun parseRevisions(refs: FetchResult): List<String> {
+        return refs.advertisedRefs
+                .map({ it.name })
                 .filter { ref -> ref.startsWith("refs/heads/") }
                 .map { ref -> StringUtils.removeStart(ref, "refs/heads/") }
-                .collect(Collectors.toList<String>())
-
-        if (!revs.contains(branch)) {
-            return VerificationInfo(WRONG_BRANCH)
-        } else
-            return VerificationInfo(OK)
     }
 
-    private fun verifyAuthData(authType: RepositoryAuthorization): VerificationInfo {
-        if (authType is SshKeyCredentials) {
-            val sshKey = authType.sshKey.trim()
-            //Key cannot have "ENCRYPTED" in it
-            if (!sshKey.startsWith("-----BEGIN RSA PRIVATE KEY-----")
-                    || !sshKey.endsWith("-----END RSA PRIVATE KEY-----")
-                    || sshKey.contains("ENCRYPTED")) {
-                return VerificationInfo(WRONG_KEY_FORMAT)
-            }
+    private fun parseLastCommitForBranch(refs: FetchResult, repositoryBranch: String): String {
+        return refs.advertisedRefs
+                .filter { ref -> ref.name.startsWith("refs/heads/") }
+                .filter { ref -> StringUtils.removeStart(ref.name, "refs/heads/") == repositoryBranch }
+                .map { ref -> ref.objectId.name }[0]
+    }
+
+
+    @Throws(VerificationException::class)
+    private fun throwRepositoryError(e: Exception) {
+        log.error("Problem with repository: {}", e.message)
+
+        if (e.message?.contains(JGitText.get().notAuthorized) ?: false) {
+            throw VerificationException(VerificationInfo(WRONG_CREDENTIALS))
         }
-        return VerificationInfo(OK)
+
+        if (e.message?.contains("Auth fail") ?: false) {
+            throw VerificationException(VerificationInfo(WRONG_CREDENTIALS))
+        }
+
+        if (e.message?.contains(JGitText.get().notFound) ?: false) {
+            throw VerificationException(VerificationInfo(SOURCE_NOT_FOUND))
+        }
+
+        if (e.message?.contains("CAPTCHA") ?: false) {
+            throw VerificationException(VerificationInfo(CAPTCHA_REQUIRED))
+        }
+
+        if (e.isCausedBy(JSchException::class) && e.message.orEmpty().contains("invalid privatekey")) {
+            throw VerificationException(VerificationInfo(WRONG_KEY_FORMAT))
+        }
+
+        throw VerificationException(VerificationInfo(SOURCE_NOT_FOUND))
     }
 
-    private fun verifyConnection(documentationsMacroSettings: DocumentationsMacroSettings): VerificationInfo {
-        val url = documentationsMacroSettings.repositoryPath
-        val lsCmd = LsRemoteCommand(null)
-        addAuthData(lsCmd, documentationsMacroSettings.credentials)
-                .setRemote(url)
+    override fun verify(repository: Repository): VerificationInfo {
+        val url = repository.repositoryPath
         try {
-            lsCmd.call()
+            Git.lsRemoteRepository().setRemote(url).addAuthData(repository).call()
         } catch (e: GitAPIException) {
-
-            log.error("Problem with get repository", e)
-
-            if (e.message?.contains(JGitText.get().notAuthorized) ?: false) {
-                return VerificationInfo(WRONG_CREDENTIALS)
-            }
-
-            if (e.message?.contains("Auth fail") ?: false) {
-                return VerificationInfo(WRONG_CREDENTIALS)
-            }
-
-            if (e.message?.contains(JGitText.get().notFound) ?: false) {
-                return VerificationInfo(SOURCE_NOT_FOUND)
-            }
-
-            if (e.message?.contains("CAPTCHA") ?: false) {
-                return VerificationInfo(CAPTCHA_REQUIRED)
-            }
-
-            if (e.isCausedBy(JSchException::class) && e.message.orEmpty().contains("invalid privatekey")) {
-                return VerificationInfo(WRONG_KEY_FORMAT)
-            }
-
-            return VerificationInfo(SOURCE_NOT_FOUND)
+            return getRepositoryError(e)
         }
         return VerificationInfo(OK)
     }
 
-    override fun verify(documentationsMacroSettings: ShortDocumentationsMacroSettings): VerificationInfo {
-        val settings = DocumentationsMacroSettings("", documentationsMacroSettings.repositoryPath, documentationsMacroSettings.credentials, "", "", "")
-        if (!verifyUrl(settings)) {
-            return VerificationInfo(WRONG_URL)
+    private fun getRepositoryError(e: GitAPIException): VerificationInfo {
+        try {
+            throwRepositoryError(e)
+            return VerificationInfo(SOURCE_NOT_FOUND)
+        } catch (e: VerificationException) {
+            return e.verification
         }
-
-        val authDataVerifyStatus = verifyAuthData(documentationsMacroSettings.credentials)
-        if (!authDataVerifyStatus.isOk()) {
-            return authDataVerifyStatus
-        }
-
-        return verifyConnection(settings)
     }
 
-
-    private fun verifyUrl(documentationsMacroSettings: DocumentationsMacroSettings): Boolean {
-        val credentials = documentationsMacroSettings.credentials
-
-        when (credentials) {
-            is SshKeyCredentials -> {
-                if (documentationsMacroSettings.repositoryPath.startsWith("http")) {
-                    return false
-                }
-            }
-            is UsernameAndPasswordCredentials -> {
-                if (documentationsMacroSettings.repositoryPath.startsWith("ssh")) {
-                    return false
-                }
-            }
-            is NoAuthCredentials -> {
-                if (documentationsMacroSettings.repositoryPath.startsWith("ssh")) {
-                    return false
-                }
-
-            }
-        }
-
-        return true
-    }
-
-
-    private fun <T : TransportCommand<*, *>> addAuthData(command: T, authType: RepositoryAuthorization): T {
-        if (authType is UsernameAndPasswordCredentials) {
+    private fun <T : TransportCommand<*, *>> T.addAuthData(authType: Repository?): T {
+        if (authType is RepositoryWithUsernameAndPassword) {
             val auth = authType
             val provider = UsernamePasswordCredentialsProvider(auth.username, auth.password)
-            command.setCredentialsProvider(provider)
-            return command
-        } else if (authType is SshKeyCredentials) {
-            prepareSshKeyTransport(command, authType)
-            return command
-        } else if (authType is NoAuthCredentials) {
-            return command
+            setCredentialsProvider(provider)
+        } else if (authType is RepositoryWithSshKey) {
+            prepareSshKeyTransport(authType)
+        } else if (authType is RepositoryWithNoAuthorization) {
+            //Do nothing
         } else {
-            throw RuntimeException("Unknown GitAuthType: " + authType.javaClass.toString())
+            throw RuntimeException("Unknown GitAuthType: " + authType!!::class.java.toString())
         }
+
+        return this
     }
 
-    private fun <T : TransportCommand<*, *>> prepareSshKeyTransport(command: T, authType: SshKeyCredentials) {
+    private fun <T : TransportCommand<*, *>> T.prepareSshKeyTransport(authType: RepositoryWithSshKey): T {
         val auth = authType
         val sshSessionFactory = object : JschConfigSessionFactory() {
             override fun configure(hc: OpenSshConfig.Host, session: Session) {
@@ -200,10 +159,11 @@ class DefaultGitClient : GitClient {
                 return defaultJSch
             }
         }
-        command.setTransportConfigCallback { transport ->
+        setTransportConfigCallback { transport ->
             val sshTransport = transport as SshTransport
             sshTransport.sshSessionFactory = sshSessionFactory
         }
+        return this
     }
 
     private fun getFilesFromDir(dir: File): Collection<File> {
@@ -228,56 +188,53 @@ class DefaultGitClient : GitClient {
 
     }
 
-    override fun getBranches(documentationsMacroSettings: DocumentationsMacroSettings): List<String> {
-
-        val url = documentationsMacroSettings.repositoryPath
-        val lsCmd = LsRemoteCommand(null)
-        addAuthData(lsCmd, documentationsMacroSettings.credentials)
+    override fun getBranches(repository: Repository): List<String> {
+        val url = repository.repositoryPath
+        val command = Git.lsRemoteRepository().addAuthData(repository)
                 .setRemote(url)
-
-        return lsCmd.call()
+        return command.call()
                 .map { it.name }
                 .filter { ref -> ref.startsWith("refs/heads/") }
                 .map { ref -> StringUtils.removeStart(ref, "refs/heads/") }
-
     }
 
-    override fun fetchRawData(documentationsMacroSettings: DocumentationsMacroSettings, temp: Path): List<ImportedFileData> {
-
-        val git = doClone(documentationsMacroSettings, temp)
-
-        return getFilesFromDir(temp.toFile())
-                .map { file -> ImportedSourceFile(git, temp.toFile(), file) }
-                .filter { file -> !file.isInternalGitFile() }
-                .map { it.convert() }
-
-    }
-
-    override fun revision(documentationsMacroSettings: DocumentationsMacroSettings): String {
+    override fun pull(repository: Repository, branch: String): ImportedFiles {
+        val git = cache.lock(repository, branch)
         try {
-
-            val url = documentationsMacroSettings.repositoryPath
-            val branch = getBranch(documentationsMacroSettings.branch)
-
-            val lsCmd = LsRemoteCommand(null)
-            val commit = addAuthData(lsCmd, documentationsMacroSettings.credentials)
-                    .setRemote(url).call()
-                    .stream()
-                    .filter { ref -> ref.name.startsWith("refs/heads/") }
-                    .filter { ref -> StringUtils.removeStart(ref.name, "refs/heads/") == branch }
-                    .map { ref -> ref.objectId.name }
-                    .collect(Collectors.toList<String>())[0]
-
-            return commit
+            git.pull().addAuthData(repository).call()
         } catch (e: Exception) {
-            throw ConDocException("There was an error while cloning the repository.. " + e)
+            cache.unlock(repository)
+            throw e
         }
-
+        return ImportedFiles(
+                getFilesFromDir(git.repository.workTree)
+                        .map { file -> ImportedSourceFile(git, git.repository.workTree, file) }
+                        .filter { file -> !file.isInternalGitFile() }
+                        .map { it.convert() }, Closeable { cache.unlock(repository) }
+        )
     }
 
-    override fun changeBranch(dir: Path, documentationsMacroSettings: DocumentationsMacroSettings) {
+    fun getBranchOrDefault(branch: String): String {
+        return if (StringUtils.isEmpty(branch)) "master" else branch
+    }
+
+    fun clone(repository: Repository, branch: String, path: Path): Git {
+        try {
+            val url = repository.repositoryPath
+            val repositoryBranch = getBranchOrDefault(branch)
+
+            val clone = Git.cloneRepository().setURI(url).setDirectory(path.toFile())
+                    .setBranch(repositoryBranch).addAuthData(repository)
+            return clone.call()
+
+        } catch (e: GitAPIException) {
+            throw ConDocException("There was an error while clonning of repository. " + e)
+        }
+    }
+
+    fun changeBranch(dir: Path, branch: String): Git {
         val git = dir.toGit()
-        val trueBranch = getBranch(documentationsMacroSettings.branch)
+        val trueBranch = getBranchOrDefault(branch)
 
         val branchExists = git.repository.findRef(trueBranch) != null
         if (!branchExists) {
@@ -285,51 +242,12 @@ class DefaultGitClient : GitClient {
                     .setName(trueBranch)
                     .setUpstreamMode(SetupUpstreamMode.TRACK)
                     .setStartPoint("origin/" + trueBranch)
+                    .setForce(true)
                     .call()
         }
 
         git.checkout().setName(trueBranch).call()
-
-        val pull = git.pull()
-        addAuthData(pull, documentationsMacroSettings.credentials)
-        pull.call()
-    }
-
-    override fun fetchRawData(path: Path): List<ImportedFileData> {
-        val git = path.toGit()
-        val temp = path
-
-        return getFilesFromDir(temp.toFile())
-                .map { file -> ImportedSourceFile(git, temp.toFile(), file) }
-                .filter { file -> !file.isInternalGitFile() }
-                .map { it.convert() }
-
-    }
-
-    fun getBranch(branch: String): String {
-        return if (StringUtils.isEmpty(branch)) "master" else branch
-    }
-
-    override fun clone(documentationsMacroSettings: DocumentationsMacroSettings, path: Path) {
-        doClone(documentationsMacroSettings, path)
-    }
-
-    private fun doClone(documentationsMacroSettings: DocumentationsMacroSettings, path: Path): Git {
-
-        try {
-
-            val url = documentationsMacroSettings.repositoryPath
-            val branch = getBranch(documentationsMacroSettings.branch)
-
-            val clone = Git.cloneRepository().setURI(url).setDirectory(path.toFile())
-                    .setBranch(branch)
-            addAuthData(clone, documentationsMacroSettings.credentials)
-            return clone.call()
-
-        } catch (e: GitAPIException) {
-            throw ConDocException("There was an error while cloning the repository.. " + e)
-        }
-
+        return git
     }
 
     private fun Path.toGit() = Git.open(this.toFile())
