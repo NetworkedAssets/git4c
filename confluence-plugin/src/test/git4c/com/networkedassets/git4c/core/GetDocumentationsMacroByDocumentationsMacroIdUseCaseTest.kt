@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 class GetDocumentationsMacroByDocumentationsMacroIdUseCaseTest : UseCaseTest<GetDocumentationsMacroByDocumentationsMacroIdUseCase>() {
 
     override fun getUseCase(plugin: PluginComponents): GetDocumentationsMacroByDocumentationsMacroIdUseCase {
-        return GetDocumentationsMacroByDocumentationsMacroIdUseCase(plugin.refreshProcess, plugin.macroSettingsCachableDatabase, plugin.globsForMacroDatabase, plugin.repositoryDatabase)
+        return GetDocumentationsMacroByDocumentationsMacroIdUseCase(plugin.refreshProcess, plugin.macroSettingsCachableDatabase, plugin.globsForMacroDatabase, plugin.repositoryDatabase, plugin.extractorDataDatabase)
     }
 
     @Test

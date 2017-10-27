@@ -19,6 +19,11 @@ class MacroView(val plugin: Plugin) : Macro {
     @Throws(MacroExecutionException::class)
     override fun execute(params: Map<String, String>, s: String, conversionContext: ConversionContext): String {
 
+        if (conversionContext.outputType == "pdf" || conversionContext.outputType == "word") {
+            //We don't support exporting multi file
+            return ""
+        }
+
         try {
 
             val content = sendToExecution(plugin.components.dispatcher, GetDocumentationsMacroViewTemplateQuery("macroResources"))

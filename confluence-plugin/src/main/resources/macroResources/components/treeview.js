@@ -1,123 +1,138 @@
 //noinspection JSValidateTypes
 Vue.component('treeview', {
-    template: '#treeview',
+    template:
+            '<div class="treeview">'+
+            '    <div class="node-data" v-for="(node,index) in model">'+
+            '        <!--<div class="node" v-bind:class="{active: isSelectedFile(index)}" @click.prevent="select(index, node[valuename])">-->'+
+            '        <div class="node" v-bind:class="{active: node.fullName === selectedFile}">'+
+            '            <i @click.prevent="select(index)" class="aui-icon aui-icon-small" '+
+            '                v-bind:class="{'+
+            '                    \'aui-iconfont-expanded\': isDirectory(node) && isExpanded[index],'+
+            '                    \'aui-iconfont-collapsed\': isDirectory(node) && !isExpanded[index],'+
+            '                    \'aui-iconfont-custom-bullet\':!isDirectory(node)'+
+            '                }">'+
+            '            </i>'+
+            '            <span @click.prevent="selectAndOpen(index)">'+
+            '                <label>{{node.name}}</label>'+
+            '            </span>'+
+            '        </div>'+
+            '        <div v-if="isDirectory(node)" class="children" v-show="isExpanded[index]">'+
+            '            <div class="margin"></div>'+
+            '            <div class="nodes">'+
+            '                <treeview :model="node.children"></treeview>'+
+            '            </div>'+
+            '        </div>'+
+            '    </div>'+
+            '</div>'
+    ,
     data: function () {
         return {
-            isExpanded: true
+            isExpanded: this.model.map(function() {
+                return false
+            }),
+            selectedFile: undefined
         };
     },
     props: {
-        /**
-         * Unique identifier for treeview.
-         * @var string
-         */
-        id: {
-            Type: String,
-            default: 'tv_' + Math.ceil(Math.random() * 100000)
-        },
-        /**
-         * Value of the selected node in the tree.
-         * @var mixed
-         */
-        value: [String, Number],
-        /**
-         * Initial tree composition.
-         * @var array
-         */
         model: {
             Type: Array,
             default: function () {
                 return [];
             }
         },
-        /**
-         * Additional CSS class to apply to component.
-         * @var string
-         */
-        class: {
-            Type: String,
-            default: ''
-        },
-        /**
-         * Name of the child nodes property.
-         * @var string
-         */
-        children: {
-            Type: String,
-            default: 'nodes'
-        },
-        /**
-         * Name of the property holding the node name.
-         * @var string
-         */
-        labelname: {
-            Type: String,
-            default: 'label'
-        },
-        /**
-         * Name of the property holding the node value.
-         * @var string
-         */
-        valuename: {
-            Type: String,
-            default: 'value'
-        },
-        /**
-         * Parent node model index.
-         * @var int
-         */
-        parent: {
-            Type: Number,
-            default: undefined
-        }
     },
 
-    mounted() {
-        Events.$on('navCollapse', () => {
+    mounted: function () {
+        const vm = this
+        Events.$on('navCollapse', function () {
             $("#content-nav").removeClass("expanded").addClass("collapsed");
-            this.isExpanded = false;
         });
-        Events.$on('navExpand', () => {
+        Events.$on('navExpand', function () {
             $("#content-nav").removeClass("collapsed").addClass("expanded");
-            this.isExpanded = true;
         });
-    },
+        Events.$on("fileSelected", function (file) {
+            vm.selectedFile = file
+        })
+        Events.$on("select", function (file) {
+            vm.model.forEach(function (item, index) {
+                if(item.fullName === file) {
+                    if (item.type === "DOCITEM") {
+                        vm.selectedFile = item.fullName
+                    } else {
+                        Vue.set(vm.isExpanded, index, true)
+                    }
+                }
+            })
+        })
 
+        Events.$on("TreeviewInvalidate", function () {
+            vm.invalidate()
+        })
+    },
 
     methods: {
-        /**
-         * Selects a node from tree view.
-         * @param int   index Tree index selected.
-         * @param mixed value Value selected.
-         */
-        select: function (index, value) {
-            // Unselect from current level, children and parents
-            this.toggleOpen(this.model[index], index);
-            this.value = value;
-            if (!this.areValidNodes(this.model[index][this.children])) {
-                this.$router.push('/' + encodeURIComponent(this.model[index][this.valuename]) + "&" + encodeURIComponent(this.$route.params.branch));
+
+        invalidate: function () {
+            const fullName = this.$route.params.fullName
+            this.selectedFile = fullName
+            const vm = this
+            //Open "Route" to this file
+            this.model.forEach(function (item, index) {
+                if (fullName.startsWith(item.fullName)) {
+                    vm.expandSelect(index)
+                }
+            })
+        },
+
+        expandSelect: function (index) {
+            const item = this.model[index]
+            if (item.type === "DOCITEM") {
+                this.selectedFile = item.fullName
+            } else {
+                Vue.set(this.isExpanded, index, true)
             }
         },
 
-
-        /**
-         * Toggles open / close node.
-         * @param int index Index to open
-         */
-        toggleOpen: function (node, index) {
-            // Return if no children
-            if (node == undefined || !this.areValidNodes(node.children))
-                return;
-            // Init
-            if (node.isOpened == undefined)
-                Vue.set(node, 'isOpened', this.hasSelectedChild(index));
-            // General
-            Vue.set(node, 'isOpened', !node.isOpened);
-
-            if (node.children.length == 1){
-                this.toggleOpen(node.children[0],0)
+        select: function (index) {
+            this.toggle(index)
+            if (this.model[index].type === "DOCITEM") {
+                this.$router.push('/' + encodeURIComponent(this.model[index].fullName) + "&" + encodeURIComponent(this.$route.params.branch));
             }
         },
+
+        selectAndOpen: function (index) {
+            this.toggle(index)
+            const item = this.model[index]
+            if (item.type === "DOCITEM") {
+                this.$router.push('/' + encodeURIComponent(this.model[index].fullName) + "&" + encodeURIComponent(this.$route.params.branch));
+            }
+            if(item.type === "DIR" && this.isExpanded[index]){
+                if(item.children.length != 0){
+                    const child = item.children.filter(function(it) { return it.type === "DOCITEM"})[0]
+                    if(child) {
+                        if (child.type === "DOCITEM") {
+                            Events.$emit("fileSelected", child.fullName)
+                            this.$router.push('/' + encodeURIComponent(child.fullName) + "&" + encodeURIComponent(this.$route.params.branch));
+                        }
+                    }
+                }
+            }
+
+        },
+
+        toggle: function (index) {
+            const item = this.model[index]
+            if (item.type === "DOCITEM") {
+                Events.$emit("fileSelected", item.fullName)
+            } else {
+                Vue.set(this.isExpanded, index, !this.isExpanded[index])
+            }
+        },
+
+        isDirectory: function (node) {
+            return this.areValidNodes(node.children)
+        },
+
         /**
          * Returns flag indicating if nodes are valid or not.
          * @param array nodes Nodes to validate.
@@ -126,56 +141,6 @@ Vue.component('treeview', {
             return nodes != undefined
                 && Object.prototype.toString.call(nodes) === '[object Array]'
                 && nodes.length > 0;
-        },
-        /**
-         * Returns flag indicating if tree view has a node selected.
-         * @return bool
-         */
-        hasSelected: function () {
-            // Check children
-            for (var i in this.model) {
-                if (this.isSelected(i) || this.hasSelectedChild(i))
-                    return true;
-            }
-            return false;
-        },
-        /**
-         * Returns flag indicating if node at specified index has a child selected or not.
-         * @param int index Index to check
-         * @return bool
-         */
-
-        hasSelectedChild: function (index) {
-            for (var i in this.$children) {
-                if (this.$children[i].parent == index
-                    && this.$children[i].hasSelected()
-                )
-                    return true;
-            }
-            return false;
-        },
-
-        /**
-         * Returns flag indicating if node at specified index is selected or not.
-         * @param int index Index to check
-         * @return bool
-         */
-        isSelected: function (index) {
-            return this.value && this.model[index][this.valuename] == this.value;
-        },
-
-        isSelectedFile: function (index) {
-            return this.model[index][this.valuename] == decodeURIComponent(this.$route.params.fullName);
-        },
-
-        /**
-         * Returns flag indicating if node is opened or not.
-         * @param int index Index to check
-         * @return bool
-         */
-        isOpened: function (index) {
-            return (this.model[index].isOpened != undefined && this.model[index].isOpened)
-                || this.hasSelectedChild(index);
         }
     }
 });

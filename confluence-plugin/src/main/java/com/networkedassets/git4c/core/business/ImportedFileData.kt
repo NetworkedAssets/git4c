@@ -7,29 +7,24 @@ import java.util.*
 data class ImportedFileData(
         val path: String,
         val context: Path,
-        val updateAuthorFullName: String,
-        val updateAuthorEmail: String,
-        val updateDate: Date,
-        val contentFun: () -> ByteArray
+        private val updateAuthorFullNameFun: () -> String,
+        private val updateAuthorEmailFun: () -> String,
+        private val updateDateFun: () -> Date,
+        private val contentFun: () -> ByteArray
 ) {
 
     val content by lazy { contentFun() }
 
-    /**
-     * Should only be used if we're sure that file is text
-     */
+    val updateDate by lazy { updateDateFun() }
+
+    val updateAuthorFullName by lazy { updateAuthorFullNameFun() }
+
+    val updateAuthorEmail by lazy { updateAuthorEmailFun() }
+
     val contentString by lazy { String(content) }
 
-    fun getAbsolutePath(): Path {
-        return context.resolve(path)
-//        return path.split("/").dropLast(1).toString()
-    }
+    fun getAbsolutePath(): Path = context.resolve(path)
 
-    val extension: String
-    get() = FilenameUtils.getExtension(path)
-
-//    fun getExtension(): String {
-//        return FilenameUtils.getExtension(path)
-//    }
+    val extension: String get() = FilenameUtils.getExtension(path)
 
 }

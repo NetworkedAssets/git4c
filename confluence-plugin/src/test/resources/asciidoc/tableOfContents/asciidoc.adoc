@@ -1,0 +1,41 @@
+Document Title
+==============
+Doc Writer <thedoc@asciidoctor.org>
+
+Something something
+
+= Heading 1 (`--dev-config`)
+
+Something something
+
+== Subheading 1.1 (`&lt;code&gt;`)
+
+Something something
+
+=== Subheading 1.1.1
+
+Something something
+
+== Subheading 1.2
+
+Something something
+
+= Heading 2
+
+Something something
+
+== Subheading 2.1
+
+Something something
+
+= Heading 3
+
+Something something
+
+== Subheading 3.1
+
+Something something
+
+=== Subheading 3.1.1
+
+Something something

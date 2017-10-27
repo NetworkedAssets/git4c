@@ -9,6 +9,7 @@ import com.networkedassets.git4c.core.bussiness.ImportedFiles
 import com.networkedassets.git4c.core.bussiness.Revision
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
 import com.networkedassets.git4c.core.exceptions.VerificationException
+import com.networkedassets.git4c.data.CommitInfo
 import com.networkedassets.git4c.data.MacroSettings
 import com.networkedassets.git4c.data.Repository
 import org.apache.commons.io.FileUtils
@@ -40,8 +41,12 @@ class DirectorySourcePlugin : SourcePlugin {
                     }
 
                     val relativePath = root.relativize(absolutePath)
-                    ImportedFileData(separatorsToUnix(relativePath.toString()), root, "", "", Date(), { content })
+                    ImportedFileData(separatorsToUnix(relativePath.toString()), root, { "" }, { "" }, { Date() }, { content })
                 }.let { ImportedFiles(it, Closeable {}) }
+    }
+
+    override fun get(repository: Repository, branch: String): ImportedFiles {
+        return pull(repository, branch)
     }
 
     override fun revision(macroSettings: MacroSettings, repository: Repository?): Revision {
@@ -55,6 +60,8 @@ class DirectorySourcePlugin : SourcePlugin {
         if (repository.repositoryPath.isNullOrBlank()) return (VerificationInfo(SOURCE_NOT_FOUND))
         return VerificationInfo(OK)
     }
+
+    override fun getCommitsForFile(repository: Repository, branch: String, file: String): List<CommitInfo> = listOf()
 
     override val identifier: String get() = "Directory"
 

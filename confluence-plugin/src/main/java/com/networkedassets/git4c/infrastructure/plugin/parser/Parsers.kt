@@ -21,21 +21,16 @@ class Parsers : ParserPlugin {
         }
     }
 
-    override fun getMethod(file: ImportedFileData, methodName: String): Pair<ImportedFileData, Method?> {
+    override fun getMethod(file: ImportedFileData, methodName: String): Method? {
 
         val methods = getMethods(file)
         val method = methods.find { it.name == methodName }
 
         if (method == null) {
             logger.warn("Couldn't find method {} in file {}", method, file.path)
-            return Pair(file, null)
+            return null
         }
 
-        val range = method.range
-
-        val methodLines = file.contentString.lines().slice(range.start..range.end)
-        val str = methodLines.joinToString(separator = "\n")
-        val f = file.copy(contentFun = { str.toByteArray() })
-        return Pair(f, method)
+        return method
     }
 }

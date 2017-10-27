@@ -2,15 +2,15 @@ package com.networkedassets.git4c.core
 
 import com.github.kittinunf.result.Result
 import com.networkedassets.git4c.boundary.CreateDocumentationsMacroCommand
-import com.networkedassets.git4c.boundary.inbound.CustomRepository
-import com.networkedassets.git4c.boundary.inbound.DocumentationMacro
-import com.networkedassets.git4c.boundary.inbound.ExistingRepository
-import com.networkedassets.git4c.boundary.inbound.PredefinedRepositoryToCreate
+import com.networkedassets.git4c.boundary.inbound.*
 import com.networkedassets.git4c.boundary.outbound.SavedDocumentationsMacro
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
 import com.networkedassets.git4c.core.bussiness.ConverterPlugin
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
 import com.networkedassets.git4c.core.common.IdentifierGenerator
+import com.networkedassets.git4c.core.datastore.repositories.ExtractorDataDatabase
+import com.networkedassets.git4c.core.datastore.extractors.LineNumbersExtractorData
+import com.networkedassets.git4c.core.datastore.extractors.MethodExtractorData
 import com.networkedassets.git4c.core.datastore.repositories.GlobForMacroDatabase
 import com.networkedassets.git4c.core.datastore.repositories.MacroSettingsDatabase
 import com.networkedassets.git4c.core.datastore.repositories.PredefinedRepositoryDatabase
@@ -28,6 +28,7 @@ class CreateDocumentationsMacroUseCase(
         val repositoryDatabase: RepositoryDatabase,
         val globForMacroDatabase: GlobForMacroDatabase,
         val predefinedRepositoryDatabase: PredefinedRepositoryDatabase,
+        val extractorDataDatabase: ExtractorDataDatabase,
         val importer: SourcePlugin,
         val converter: ConverterPlugin,
         val idGenerator: IdentifierGenerator
@@ -36,14 +37,14 @@ class CreateDocumentationsMacroUseCase(
     override fun execute(request: CreateDocumentationsMacroCommand): Result<SavedDocumentationsMacro, Exception> {
         val documentationMacroToCreate = request.documentMacroMacroToCreate
         val branch = documentationMacroToCreate.branch
-        val method = documentationMacroToCreate.method
+        val extractorData = extractorConvert(documentationMacroToCreate.extractor)
         val repository = repositoryConvert(documentationMacroToCreate)
         val newMacroId = idGenerator.generateNewIdentifier()
-        val macroSettings = MacroSettings(newMacroId, repository?.uuid, branch, documentationMacroToCreate.defaultDocItem, method)
+        val macroSettings = MacroSettings(newMacroId, repository?.uuid, branch, documentationMacroToCreate.defaultDocItem, extractorData?.uuid)
 
         importer.verify(repository).apply {
             if (isOk()) {
-                save(newMacroId, macroSettings, repository!!, documentationMacroToCreate)
+                save(newMacroId, macroSettings, repository!!, extractorData, documentationMacroToCreate)
                 return@execute Result.of { SavedDocumentationsMacro(macroSettings.uuid) }
             } else {
                 return@execute Result.error(IllegalArgumentException(status.name))
@@ -52,11 +53,32 @@ class CreateDocumentationsMacroUseCase(
         return Result.error(NotFoundException(request.transactionInfo, ""))
     }
 
-    private fun save(newMacroId: String, macroSettings: MacroSettings, repository: Repository, documentationMacroToCreate: DocumentationMacro) {
+    fun extractorConvert(extractor: ExtractorData?): com.networkedassets.git4c.core.datastore.extractors.ExtractorData? {
+
+        val uuid = idGenerator.generateNewIdentifier()
+
+        return when(extractor) {
+            is LineNumbers -> LineNumbersExtractorData(uuid, extractor.start, extractor.end)
+            is Method -> MethodExtractorData(uuid, extractor.method)
+            else -> {
+                if (extractor != null) {
+                    //This is just in case developer forgets to add extract type to this method
+                    throw RuntimeException("Unknown extractor type: ${extractor::class.java}")
+                } else {
+                    null
+                }
+            }
+        }
+
+    }
+
+    private fun save(newMacroId: String, macroSettings: MacroSettings, repository: Repository, extractorData: com.networkedassets.git4c.core.datastore.extractors.ExtractorData?, documentationMacroToCreate: DocumentationMacro) {
         saveMacro(newMacroId, macroSettings)
         if (!isPredefined(documentationMacroToCreate)) saveRepository(repository)
         saveGlobsForMacro(documentationMacroToCreate, newMacroId)
+        saveExtractorData(extractorData)
     }
+
 
     private fun saveMacro(newMacroId: String, macroSettings: MacroSettings) {
         macroSettingsDatabase.insert(newMacroId, macroSettings)
@@ -70,6 +92,12 @@ class CreateDocumentationsMacroUseCase(
         documentationMacroToCreate.glob.forEach {
             val glob = GlobForMacro(idGenerator.generateNewIdentifier(), newMacroId, it)
             globForMacroDatabase.insert(glob.uuid, glob)
+        }
+    }
+
+    fun saveExtractorData(extractorData: com.networkedassets.git4c.core.datastore.extractors.ExtractorData?) {
+        if (extractorData != null) {
+            extractorDataDatabase.insert(extractorData.uuid, extractorData)
         }
     }
 

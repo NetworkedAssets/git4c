@@ -10,3 +10,10 @@
     color: black;
     text-align: center;
 }
+
+/* a cage for the dragon */
+.dragonCage {
+    height: 0;
+    width: 0;
+    background-image: url(images/404Dragon.png);
+}

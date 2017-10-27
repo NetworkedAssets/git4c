@@ -1,0 +1,16 @@
+
+.git4c-filetree-selected {
+    color: lightblue !important;
+}
+
+.git4c-single-dialog-tree-code-holder-markdown {
+    padding: 20px;
+}
+
+#git4c-single-dialog-tree-div a:hover {
+    text-decoration: none;
+}
+
+#git4c-single-dialog-tree-div a:focus {
+    text-decoration: none;
+}

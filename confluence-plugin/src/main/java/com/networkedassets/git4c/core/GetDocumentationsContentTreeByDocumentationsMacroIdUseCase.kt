@@ -3,6 +3,7 @@ package com.networkedassets.git4c.core
 import com.github.kittinunf.result.Result
 import com.networkedassets.git4c.boundary.GetDocumentationsContentTreeByDocumentationsMacroIdQuery
 import com.networkedassets.git4c.boundary.outbound.DocumentationsContentTree
+import com.networkedassets.git4c.boundary.outbound.VerificationStatus
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
 import com.networkedassets.git4c.core.bussiness.DocumentsTreeConverter
 import com.networkedassets.git4c.core.datastore.cache.DocumentsViewCache
@@ -19,6 +20,6 @@ class GetDocumentationsContentTreeByDocumentationsMacroIdUseCase(
 
         return cache.get(searchedMacroId)
                 ?.let { Result.of { DocumentsTreeConverter.treeify(it.files) } }
-                ?: Result.error(NotFoundException(request.transactionInfo, ""))
+                ?: Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
     }
 }

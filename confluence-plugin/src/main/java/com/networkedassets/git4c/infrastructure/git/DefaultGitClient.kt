@@ -9,28 +9,25 @@ import com.networkedassets.git4c.core.bussiness.ImportedFiles
 import com.networkedassets.git4c.core.bussiness.Revision
 import com.networkedassets.git4c.core.exceptions.ConDocException
 import com.networkedassets.git4c.core.exceptions.VerificationException
-import com.networkedassets.git4c.data.Repository
-import com.networkedassets.git4c.data.RepositoryWithNoAuthorization
-import com.networkedassets.git4c.data.RepositoryWithSshKey
-import com.networkedassets.git4c.data.RepositoryWithUsernameAndPassword
+import com.networkedassets.git4c.data.*
 import com.networkedassets.git4c.infrastructure.plugin.source.git.ImportedSourceFile
 import com.networkedassets.git4c.utils.ThrowableUtils.isCausedBy
 import org.apache.commons.lang3.StringUtils
 import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode
 import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.api.LsRemoteCommand
 import org.eclipse.jgit.api.TransportCommand
 import org.eclipse.jgit.api.errors.GitAPIException
+import org.eclipse.jgit.api.errors.NoHeadException
 import org.eclipse.jgit.internal.JGitText
+import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.transport.*
 import org.eclipse.jgit.util.FS
 import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.File
 import java.nio.file.Path
-import java.util.*
 import java.util.Collections.emptySet
-import java.util.stream.Collectors
+import java.util.concurrent.TimeUnit
 
 class DefaultGitClient : GitClient {
 
@@ -51,7 +48,7 @@ class DefaultGitClient : GitClient {
         val command = git.fetch().addAuthData(repository)
         try {
             val refs = command.call()
-            val revs = parseRevisions(refs)
+            val revs = getAllBranchesAndTags(refs)
             val commit = parseLastCommitForBranch(refs, repositoryBranch)
             if (!revs.contains(repositoryBranch)) throw VerificationException(VerificationInfo(WRONG_BRANCH))
             return closeableRevision(commit, repository)
@@ -65,21 +62,6 @@ class DefaultGitClient : GitClient {
     private fun closeableRevision(commit: String, repository: Repository): Revision {
         return Revision(commit, Closeable { cache.unlock(repository) })
     }
-
-    private fun parseRevisions(refs: FetchResult): List<String> {
-        return refs.advertisedRefs
-                .map({ it.name })
-                .filter { ref -> ref.startsWith("refs/heads/") }
-                .map { ref -> StringUtils.removeStart(ref, "refs/heads/") }
-    }
-
-    private fun parseLastCommitForBranch(refs: FetchResult, repositoryBranch: String): String {
-        return refs.advertisedRefs
-                .filter { ref -> ref.name.startsWith("refs/heads/") }
-                .filter { ref -> StringUtils.removeStart(ref.name, "refs/heads/") == repositoryBranch }
-                .map { ref -> ref.objectId.name }[0]
-    }
-
 
     @Throws(VerificationException::class)
     private fun throwRepositoryError(e: Exception) {
@@ -169,15 +151,11 @@ class DefaultGitClient : GitClient {
     private fun getFilesFromDir(dir: File): Collection<File> {
 
         if (dir.isDirectory) {
-            //Git shouldn't have empty directories, but let's do this just to be sure
-            val content = dir.listFiles()
-            val safeContent = content ?: arrayOf<File>()
+            val content = dir.listFiles().filter { !it.name.contains(".git") }
 
-            //TODO: Ignore ".git/"?
-            return Arrays.stream(safeContent)
-                    .map<Collection<File>>({ this.getFilesFromDir(it) })
-                    .flatMap<File>({ it.stream() })
-                    .collect(Collectors.toSet<File>())
+            return content
+                    .map({ this.getFilesFromDir(it) })
+                    .flatMap({ it })
 
         } else if (dir.isFile) {
             return setOf(dir)
@@ -192,31 +170,37 @@ class DefaultGitClient : GitClient {
         val url = repository.repositoryPath
         val command = Git.lsRemoteRepository().addAuthData(repository)
                 .setRemote(url)
-        return command.call()
-                .map { it.name }
-                .filter { ref -> ref.startsWith("refs/heads/") }
-                .map { ref -> StringUtils.removeStart(ref, "refs/heads/") }
+        return getAllBranchesAndTags(command.call())
     }
 
     override fun pull(repository: Repository, branch: String): ImportedFiles {
         val git = cache.lock(repository, branch)
         try {
             git.pull().addAuthData(repository).call()
+        } catch (e: NoHeadException) {
+            //Everything's fine - we're just trying to pull a tag which is not possible
         } catch (e: Exception) {
             cache.unlock(repository)
             throw e
         }
-        return ImportedFiles(
-                getFilesFromDir(git.repository.workTree)
-                        .map { file -> ImportedSourceFile(git, git.repository.workTree, file) }
-                        .filter { file -> !file.isInternalGitFile() }
-                        .map { it.convert() }, Closeable { cache.unlock(repository) }
-        )
+        val answers = getFilesFromDir(git.repository.workTree)
+        val answer = answers
+                .map { file -> ImportedSourceFile(git, git.repository.workTree, file) }
+                .filter { file -> !file.isInternalGitFile() }
+                .map { it.convert() }
+        return ImportedFiles(answer, Closeable { cache.unlock(repository) })
     }
 
-    fun getBranchOrDefault(branch: String): String {
-        return if (StringUtils.isEmpty(branch)) "master" else branch
+    override fun get(repository: Repository, branch: String): ImportedFiles {
+        val git = cache.lock(repository, branch)
+        val answers = getFilesFromDir(git.repository.workTree)
+        val answer = answers
+                .map { file -> ImportedSourceFile(git, git.repository.workTree, file) }
+                .filter { file -> !file.isInternalGitFile() }
+                .map { it.convert() }
+        return ImportedFiles(answer, Closeable { cache.unlock(repository) })
     }
+
 
     fun clone(repository: Repository, branch: String, path: Path): Git {
         try {
@@ -250,6 +234,52 @@ class DefaultGitClient : GitClient {
         return git
     }
 
+    fun getBranchOrDefault(branch: String): String {
+        return if (StringUtils.isEmpty(branch)) "master" else branch
+    }
+
+    private fun getAllBranchesAndTags(operationResult: OperationResult): List<String> {
+        return getAllBranchesAndTags(operationResult.advertisedRefs)
+    }
+
+    private fun getAllBranchesAndTags(refs: Collection<Ref>): List<String> {
+        return getAllBranches(refs) + getAllTags(refs)
+    }
+
+    private fun parseLastCommitForBranch(refs: OperationResult, repositoryBranch: String): String {
+        return getBranchOrTag(refs, repositoryBranch)!!.objectId.name
+    }
+
+    private fun getAllBranches(refs: Collection<Ref>): List<String> {
+        return refs
+                .map({ it.name })
+                .filter { ref -> ref.startsWith("refs/heads/") }
+                .map { ref -> StringUtils.removeStart(ref, "refs/heads/") }
+    }
+
+    private fun getAllTags(refs: Collection<Ref>): List<String> {
+        return refs
+                .map({ it.name })
+                .filter { ref -> ref.startsWith("refs/tags/") }
+                .map { ref -> StringUtils.removeStart(ref, "refs/tags/") }
+    }
+
+    private fun getBranchOrTag(refs: OperationResult, name: String): Ref? {
+        return refs.advertisedRefs.find { it.name == "refs/heads/$name" || it.name == "refs/tags/$name" }
+    }
+
     private fun Path.toGit() = Git.open(this.toFile())
 
+    override fun getCommits(repository: Repository, branch: String, file: String): List<CommitInfo> {
+        val git = cache.lock(repository, branch)
+        try {
+            val commits = git.log().addPath(file).call()
+            return commits.map { commit -> CommitInfo(commit.id.name, commit.authorIdent.name, commit.fullMessage, TimeUnit.SECONDS.toMillis(commit.commitTime.toLong())) }
+        } catch (e: Exception) {
+            throwRepositoryError(e)
+        } finally {
+            cache.unlock(repository)
+        }
+        throw VerificationException(VerificationInfo(SOURCE_NOT_FOUND))
+    }
 }

@@ -10,7 +10,7 @@ class GetBranchesProcess(
 ) {
 
     fun fetchBranchList(macroSettings: MacroSettings, repository: Repository): Branches {
-        val branches = importer.getBranches(repository)
+        val branches = importer.getBranches(repository).sorted()
         return Branches(macroSettings.branch, branches)
     }
 

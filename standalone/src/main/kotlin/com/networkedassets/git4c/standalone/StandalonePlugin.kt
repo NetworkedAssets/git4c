@@ -8,7 +8,7 @@ import com.networkedassets.git4c.data.macro.NoAuthCredentials
 import com.networkedassets.git4c.infrastructure.MacroSettingsProvider
 import com.networkedassets.git4c.infrastructure.UnifiedDataStore
 import com.networkedassets.git4c.infrastructure.UuidIdentifierGenerator
-import com.networkedassets.git4c.infrastructure.plugin.converter.markdown.MarkdownConverterPlugin
+import com.networkedassets.git4c.infrastructure.plugin.converter.main.markdown.MarkdownConverterPlugin
 import com.networkedassets.git4c.infrastructure.plugin.source.directory.DirectorySourcePlugin
 import com.networkedassets.git4c.standalone.infrastructure.DocumentsCache
 import com.networkedassets.git4c.standalone.infrastructure.HashMapCache

@@ -2,6 +2,7 @@ package com.networkedassets.git4c.core
 
 import com.github.kittinunf.result.Result
 import com.networkedassets.git4c.boundary.GetPredefinedRepositoryCommand
+import com.networkedassets.git4c.boundary.outbound.VerificationStatus
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
 import com.networkedassets.git4c.core.datastore.repositories.PredefinedRepositoryDatabase
@@ -20,8 +21,8 @@ class GetPredefinedRepositoryUseCase(
 
     override fun execute(request: GetPredefinedRepositoryCommand): Result<com.networkedassets.git4c.boundary.outbound.PredefinedRepository, Exception> {
 
-        val predefinedRepository = predefinedRepositoryDatabase.get(request.repositoryId) ?: return@execute Result.error(NotFoundException(request.transactionInfo, ""))
-        val repository = repositoryDatabase.get(predefinedRepository.repositoryUuid) ?: return@execute Result.error(NotFoundException(request.transactionInfo, ""))
+        val predefinedRepository = predefinedRepositoryDatabase.get(request.repositoryId) ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+        val repository = repositoryDatabase.get(predefinedRepository.repositoryUuid) ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
 
         importer.verify(repository).apply {
             if (isOk()) {
@@ -30,7 +31,7 @@ class GetPredefinedRepositoryUseCase(
                 return@execute Result.error(IllegalArgumentException(status.name))
             }
         }
-        return Result.error(NotFoundException(request.transactionInfo, ""))
+        return Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
     }
 
     private fun authType(repository: Repository) = when (repository) {

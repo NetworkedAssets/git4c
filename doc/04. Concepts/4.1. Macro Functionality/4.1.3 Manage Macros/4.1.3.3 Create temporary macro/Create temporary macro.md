@@ -3,7 +3,6 @@ Add new macro
 
 The endpoint creating temporary macro is available at
 ```
-
 POST {git4c-backend-url}/
 ```
 

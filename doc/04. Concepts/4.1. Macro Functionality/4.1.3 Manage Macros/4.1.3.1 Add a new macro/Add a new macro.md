@@ -4,7 +4,6 @@ Add new macro
 The endpoint for adding new mecro is:
 
 ```
-
 POST {git4c-backend-url}/
 ```
 

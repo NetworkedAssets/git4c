@@ -1,5 +1,6 @@
 package com.networkedassets.git4c.infrastructure.plugin.converter.plaintext
 
+import com.networkedassets.git4c.core.business.ExtractionResult
 import com.networkedassets.git4c.core.bussiness.ConverterPlugin
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
 import com.networkedassets.git4c.data.macro.documents.item.DocumentsItem
@@ -8,9 +9,9 @@ import org.apache.commons.lang3.StringEscapeUtils
 
 class PlainTextConverterPlugin : ConverterPlugin {
 
-    override fun convert(fileData: ImportedFileData): DocumentsItem {
+    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult): DocumentsItem? {
 
-        val content = fileData.contentString
+        val content = extractionResult.content
 
         val pageContent = """
             <div class="git4c-prismjs-div">

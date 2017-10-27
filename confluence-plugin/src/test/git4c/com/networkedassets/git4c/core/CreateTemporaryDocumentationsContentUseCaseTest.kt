@@ -11,7 +11,7 @@ import kotlin.test.assertNotNull
 class CreateTemporaryDocumentationsContentUseCaseTest : UseCaseTest<CreateTemporaryDocumentationsContentUseCase>() {
 
     override fun getUseCase(plugin: PluginComponents): CreateTemporaryDocumentationsContentUseCase {
-        return CreateTemporaryDocumentationsContentUseCase(plugin.macroSettingsCache, plugin.documentsViewCache, plugin.converter, plugin.macroSettingsDatabase, plugin.repositoryDatabase, plugin.globsForMacroDatabase, plugin.idGenerator, plugin.temporaryIdCache, plugin.refreshProcess)
+        return CreateTemporaryDocumentationsContentUseCase(plugin.macroSettingsCache, plugin.documentsViewCache, plugin.converter, plugin.macroSettingsDatabase, plugin.repositoryDatabase, plugin.globsForMacroDatabase, plugin.extractorDataDatabase, plugin.idGenerator, plugin.temporaryIdCache, plugin.refreshProcess)
     }
 
     @Test

@@ -19,6 +19,10 @@ class GitSourcePlugin(
         return gitClient.pull(repository, branch)
     }
 
+    override fun get(repository: Repository, branch: String): ImportedFiles {
+        return gitClient.get(repository, branch)
+    }
+
     @Throws(VerificationException::class)
     override fun revision(macroSettings: MacroSettings, repository: Repository?): Revision {
         if (macroSettings.repositoryUuid == null) throw VerificationException(VerificationInfo(VerificationStatus.REMOVED))
@@ -47,6 +51,10 @@ class GitSourcePlugin(
     override fun getBranches(repository: Repository?): List<String> {
         if (repository == null) return ArrayList()
         return gitClient.getBranches(repository)
+    }
+
+    override fun getCommitsForFile(repository: Repository, branch: String, file: String): List<CommitInfo> {
+        return gitClient.getCommits(repository, branch, file)
     }
 
     private fun verifyAuthData(authType: Repository?): VerificationInfo {

@@ -9,7 +9,7 @@ var Git4CSingleFileMacro = {
             el: root,
             data: {
                 // Events,
-                uuid,
+                uuid: uuid,
                 content: undefined,
                 collapsed: showTopBar && collapseByDefault,
                 markdown: false,
@@ -22,52 +22,63 @@ var Git4CSingleFileMacro = {
                 topbar: TopBar.getComponent(Events, uuid, lineNumbers, collapsible, collapseByDefault)
             },
             mounted: function () {
+                const vm = this
                 downloadFile(uuid)
-                    .then((docItem) => {
-                        this.document = docItem.document
-                        this.content = docItem.content
-                        this.markdown = docItem.name.endsWith(".md")
+                    .then(function (docItem) {
+                        vm.document = docItem.document
+                        vm.content = docItem.content
+                        vm.markdown = docItem.name.endsWith(".md")
                         if (!Git4CUtils.hasLines(docItem.name)) {
-                            this.lines = false
+                            vm.lines = false
                         }
                         Events.$emit("DocumentDownloaded", docItem)
                         Events.$emit("OverlayChange", false)
-                        this.$nextTick(() => {
-                            $(root +" pre code.git4c-highlightjs-code").each(function (i, block) {
+                        vm.$nextTick(function () {
+                            $(root + " pre code.git4c-highlightjs-code").each(function (i, block) {
                                 hljs.highlightBlock(block);
                             });
-                            $(root +" code.git4c-prismjs-code").each(function (i, block) {
+                            $(root + " code.git4c-prismjs-code").each(function (i, block) {
                                 Prism.highlightElement(block)
+                                if (vm.lines) {
+                                    $(this).css('margin-left', '-30px')
+                                }
                             });
                         })
                     })
-                    .catch((error) => {
+                    .catch(function (error) {
                         console.log("Error during downloading file, ", error)
-                        let errorMessage
+                        var errorMessage
                         if (error.status === 404) {
                             errorMessage = "<div>Repository has been removed by admin</div>"
                         } else {
                             errorMessage = "<div>An error occurred while updating content</div>"
                         }
 
-                        this.content =
-                       `<div class="aui-message aui-message-error">
-                            <p class="title">
-                                <strong>Error!</strong>
-                            </p>
-                            <p>` + errorMessage + `</p>
-                        </div>`
+                        vm.content =
+                            '<div class="aui-message aui-message-error">' +
+                            '    <p class="title">' +
+                            '        <strong>Error!</strong>' +
+                            '    </p>' +
+                            '    <p>' + errorMessage + '</p>' +
+                            '</div>'
 
-                        this.showsError = true
+                        vm.showsError = true
 
                         Events.$emit("OverlayChange", false)
                     })
 
-                Events.$on("setCollapse", (collapsed) => {
-                    this.collapsed = collapsed
+                Events.$on("setCollapse", function (collapsed) {
+                    vm.collapsed = collapsed
                 })
-                Events.$on("setLines", (lines) => {
-                    this.lines = lines
+                Events.$on("setLines", function (lines) {
+                    vm.lines = lines
+                    if (lines) {
+                        $(root + " code.git4c-prismjs-code").css('margin-left', '-30px')
+                    } else {
+                        $(root + " code.git4c-prismjs-code").css('margin-left', '')
+
+                    }
+
                 })
             }
         })

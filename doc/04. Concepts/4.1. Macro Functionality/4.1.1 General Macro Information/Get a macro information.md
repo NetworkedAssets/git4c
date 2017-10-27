@@ -4,7 +4,6 @@ Get a macro information
 The endpoint for getting a general mecro information is:
 
 ```
-
 GET {git4c-backend-url}/{uuid}
 ```
 

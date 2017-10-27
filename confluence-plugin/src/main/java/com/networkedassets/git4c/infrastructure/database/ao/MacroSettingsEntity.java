@@ -25,8 +25,8 @@ public interface MacroSettingsEntity extends Entity {
 
     void setDefaultDocItem(String defaultDocItem);
 
-    String getMethod();
+    String getExtractor();
 
-    void setMethod(String method);
+    void setExtractor(String extractor);
 
 }

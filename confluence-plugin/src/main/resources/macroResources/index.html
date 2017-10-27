@@ -27,9 +27,14 @@
                         <overlay>
                             <div class="aui-page-panel git4c-no-top-margin">
                                 <div class="aui-page-panel-inner">
-                                    <div id="content-nav" class="aui-page-panel-nav expanded">
+                                    <div id="content-nav" class="aui-page-panel-nav expanded" v-show="!sticky">
                                         <div id="git4c-branch-arrow-holder">
-                                            <h3 class="header blur" style="margin: 0">Branch</h3>
+                                            <span id="git4c-fullscreen-trigger">
+                                                <fullscreen-trigger></fullscreen-trigger>
+                                            </span>
+                                            <span ref="sticky_toolbar_trigger_div" id="git4c-sticky-toolbar-trigger">
+                                                <sticky-toolbar-trigger ref="sticky_toolbar_trigger"></sticky-toolbar-trigger>
+                                            </span>
                                             <span id="git4c-nav-collapse-span">
                                                 <nav-collapse></nav-collapse>
                                             </span>
@@ -39,23 +44,24 @@
                                             <update-now style="display: none"></update-now>
                                         </div>
                                         <div class="header blur">
-                                            <h3 class="header">Files</h3>
+                                            <h3 class="header" style="display: inline-block">Files</h3>
+                                            <a ref="globtooltip" style="margin-left: 5px;" class="aui-icon aui-icon-small aui-iconfont-error"></a>
                                         </div>
                                         <div id="aui-vnav" class="aui-flatpack blur">
                                             <nav class="aui-navgroup aui-navgroup-vertical">
                                                 <div class="aui-navgroup-inner">
                                                     <div class="tree">
-                                                        <treeview :value.sync="value" :model="tree" children="children" labelname="name" valuename="fullName"></treeview>
+                                                        <treeview :model="tree"></treeview>
                                                     </div>
                                                 </div>
                                             </nav>
                                         </div>
-                                        <div class="blur">
-                                            <globs></globs>
-                                        </div>
+                                        <!--<div class="blur">-->
+                                            <!--<globs></globs>-->
+                                        <!--</div>-->
                                     </div>
                                     <section class="aui-page-panel-content git4c-no-padding">
-                                        <div class="content">
+                                        <div class="git4c-markup-content">
                                             <router-view></router-view>
                                         </div>
                                     </section>
@@ -66,87 +72,73 @@
                 </div>
             </div>
 
-            <template id="branch">
-                <span class="git4c-branch">
-                <!-- Trigger -->
-                <a v-if="branches.length == 0" href="" aria-owns="git4c-branches" aria-haspopup="true"
-                   class="aui-button aui-style-default aui-dropdown2-trigger git4c-branches-dropdown git4c-white-aui-dropdown2"
-                   style="color: black">
-                    <span class="aui-icon aui-icon-small aui-iconfont-devtools-branch">Branch</span>
-                    No Branches Present
-                </a>
-                <a v-else href="" aria-owns="git4c-branches" aria-haspopup="true"
-                   class="aui-button aui-style-default aui-dropdown2-trigger git4c-branches-dropdown git4c-white-aui-dropdown2"
-                   style="color: black">
-                    <div class="git4c-current-branch-div">
-                        <span class="aui-icon aui-icon-small aui-iconfont-devtools-branch">Branch</span>
-                        {{currentBranch}}
-                    </div>
-                </a>
-
-                    <!-- Dropdown -->
-                <div id="git4c-branches" class="aui-style-default aui-dropdown2">
-                    <ul class="aui-list-truncate" >
-                        <li v-for="branch in branches">
-                            <a v-on:click="onChange(branch)"
-                               v-bind:class="{checked: branch == currentBranch, 'aui-dropdown2-checked': branch == currentBranch}"
-                               class="aui-dropdown2-radio">{{branch}}</a>
-                        </li>
-                    </ul>
-                </div>
-            </span>
-            </template>
 
             <template id="markup">
                 <div>
                     <div class="markup">
-                        <div v-if="loading" class="loading">
-                            <span class="aui-icon aui-icon aui-icon-wait">Loading...</span>
-                        </div>
-                        <div class="aui-message aui-message-hint" v-if="!loading && locationPath===''">
+                        <div class="aui-message aui-message-hint" v-if="locationPath===''">
                             <p>Choose a file on the sidebar to display its content.</p>
                         </div>
-                        <div v-if="!loading && locationPath!==''">
+                        <div v-show="locationPath!==''">
                             <div>
                                 <div id="git4c-breadcrumbs-div"
-                                     style="display: flex; align-items: center; justify-content: space-between"
+                                     style="display: flex; align-items: center; justify-content: space-between; z-index: 90"
                                      class="git4c-border-bottom">
                                         <div style="width:100%; display: flex; align-items: center;
                                         position: relative; flex-wrap: wrap; justify-content: space-between">
                                         <span style="padding-left: 20px;">
-                                            <span v-for="(item, index) in locationPath">
-                                                <span v-if="index == locationPath.length - 1">
-                                                    <span class="git4c-file">{{item}}</span>
-                                                </span>
-                                                <span v-else>
-                                                    <span class="git4c-directory">{{item}}</span>
-                                                    <span class="git4c-directory">&nbsp/&nbsp</span>
-                                                </span>
+                                            <span style="padding-right: 5px" v-show="sticky">
+                                                <button v-if="false" class="aui-button" v-on:click="disableFullscreen()">
+                                                    <span class="aui-icon aui-icon-small aui-iconfont-unfocus" style="margin-right: 1px">
+                                                        Disable fullscreen mode
+                                                    </span>
+                                                </button>
+                                                <button id="git4c-filetree-expand_button" class="aui-button" v-on:click="toggleSidebar()">
+                                                    <span  class="aui-icon aui-icon-small aui-iconfont-arrows-right" style="margin-right: 1px">
+                                                        Disable sticky toolbar
+                                                    </span>
+                                                </button>
+                                                <button id="git4c-toolbar_filetree-button" data-aui-trigger aria-controls="git4c-tree-dialog" class="aui-button" v-on:click="openTree()">
+                                                    <span class="aui-icon aui-icon-small aui-iconfont-nav-children-large" style="margin-right: 1px">
+                                                        Open tree
+                                                    </span>
+                                                </button>
+                                                <aui-inline-dialog id="git4c-tree-dialog" alignment="bottom center">
+                                                        <div class="aui-inline-dialog-contents git4c-tree-container">
+                                                            <treeview :model="tree"></treeview>
+                                                        </div>
+                                                </aui-inline-dialog>
+                                            </span>
+                                            <span ref="pathholder" class="git4c-file">
+                                                {{path}}
                                             </span>
                                         </span>
-                                            <span v-if="fileData" style="float: right; padding-left: 20px; padding-right: 5px; font-size: 12px">
+                                        <span v-show="fileData" style="float: right; padding-left: 20px; padding-right: 5px; font-size: 12px">
                                             <span>
                                                 Last change:
-                                                <a ref="updatetime" class="git4c-link-black" id="git4c-markup-filedata-updatetime" href="javascript:void(0)">{{fileData.updateTime.toLocaleDateString()}}</a>
+                                                <a ref="updatetime" class="git4c-link-black" id="git4c-markup-filedata-updatetime" href="javascript:void(0)"><span v-if="fileData">{{fileData.updateTime.toLocaleDateString()}}</span></a>
                                                 by
-                                                <a ref="author" class="git4c-link-black" id="git4c-markup-filedata-author" href="javascript:void(0)">{{fileData.authorFullName}}</a>
+                                                <a ref="author" class="git4c-link-black" id="git4c-markup-filedata-author" href="javascript:void(0)"><span v-if="fileData">{{fileData.authorFullName}}</span></a>
                                             </span>
                                         </span>
                                     </div>
                                     <div>
-                                        <div style="padding-right: 20px">
-                                            <button class="aui-button" v-on:click="openDialog()" v-if="hasSource">
+                                        <div style="padding-right: 5px">
+                                            <button ref="raw_file_button" class="aui-button" v-on:click="openDialog()" v-show="hasSource">
                                                 <span class="aui-icon aui-icon-small aui-iconfont-devtools-file" style="margin-right: 1px">
                                                     Show raw markdown
                                                 </span>
                                             </button>
                                         </div>
                                     </div>
+                                    <div ref="commit_history_div" style="margin-right: 20px; display: flex; flex-direction: column; justify-content: center">
+                                        <commit-history ref="commit_history"></commit-history>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div id="git4c-content" v-bind:class="{ 'git4c-no-padding': singleFile }">
-                            <div class="git4c-toc" v-show="toc.children.length > 0">
+                            <div class="git4c-toc" v-show="toc && toc.children.length > 0">
                                 <toc :data="toc"></toc>
                             </div>
                             <div v-show="!overlayVisible">
@@ -156,7 +148,7 @@
                     </div>
 
                     <!-- Render the dialog -->
-                    <section role="dialog" id="git4c-raw-markdown-dialog" class="aui-layer aui-dialog2 aui-dialog2-xlarge"
+                    <section ref="git4c_raw_file_dialog" role="dialog" id="git4c-raw-markdown-dialog" class="aui-layer aui-dialog2 aui-dialog2-xlarge"
                              aria-hidden="true">
                         <!-- Dialog header -->
                         <header class="aui-dialog2-header">
@@ -169,7 +161,7 @@
                             </a>
                         </header>
                         <!-- Main dialog content -->
-                        <div class="aui-dialog2-content">
+                        <div class="aui-dialog2-content" id="git4c-source-content">
                         <pre>
                             <code id="git4c-dialog-code" class="git4c-code markdown">
                             </code>
@@ -178,7 +170,7 @@
                         <!-- Dialog footer -->
                         <footer class="aui-dialog2-footer">
                             <div class="aui-dialog2-footer-actions">
-                                <button id="git4c-markdown-dialog-close-button" class="aui-button">Close</button>
+                                <button id="git4c-markdown-dialog-close-button" @click="closeRawContentDialog" class="aui-button">Close</button>
                             </div>
                         </footer>
                     </section>
@@ -186,35 +178,22 @@
 
             </template>
 
-            <template id="treeview">
-                <div class="treeview">
-                    <div class="node-data" v-for="(node,index) in model">
-                        <div class="node" v-bind:class="{active: isSelectedFile(index)}" @click.prevent="select(index, node[valuename])">
-                            <i class="aui-icon aui-icon-small aui-iconfont-expanded" v-show="areValidNodes(node[children]) && isOpened(index)"></i>
-                            <!--
-                    --><i class="aui-icon aui-icon-small aui-iconfont-collapsed" v-if="areValidNodes(node[children]) && !isOpened(index)"></i>
-                            <!--
-                    --><i class="aui-icon aui-icon-small aui-iconfont-custom-bullet" v-if="!areValidNodes(node[children])"></i>
-                            <!--
-                    --><label>{{node[labelname]}}</label>
-                        </div>
-                        <div v-if="areValidNodes(node[children])" class="children" v-show="isOpened(index)">
-                            <div class="margin"></div>
-                            <div class="nodes">
-                                <treeview :id="id" :value.sync="value" :labelname="labelname" :valuename="valuename" :children="children" :model="node[children]"
-                                    :parent.once="index" class="inner"></treeview>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </template>
-
             <template id="nav-collapse">
                 <button class="nav-collapse aui-button" title="Collapse/Expand sidebar" @click="toggle()" style="border: 0; background: transparent">
-                    <i v-if="isExpanded" class="fa fa-angle-double-left"></i>
-                    <i v-else class="fa fa-angle-double-right"></i>
+                    <i id="git4c-filetree-collapse_button" class="aui-icon aui-icon-small aui-iconfont-arrows-left"></i>
                 </button>
+            </template>
+
+            <template id="fullscreen-trigger">
+                    <button v-if="false" class="aui-button" title="Toggle fullscreen mode" @click="toggle()" style="border: 0; background: transparent">
+                        <i class="aui-icon aui-icon-small aui-iconfont-focus"></i>
+                    </button>
+            </template>
+
+            <template id="sticky-toolbar-trigger">
+                    <button v-if="false" class="aui-button" v-on:click="toggle()" title="Toggle sticky toolbar" style="border: 0; background: transparent">
+                        <i class="fa fa-thumb-tack"></i>
+                    </button>
             </template>
 
             <!--template id="update">
@@ -239,9 +218,10 @@
     <script src="components/update-now.js"></script>
     <script src="components/nav-collapse.js"></script>
     <script src="components/markup.js"></script>
+    <script src="components/commit-history.js"></script>
     <script src="components/treeview.js"></script>
     <script src="components/toc.js"></script>
-<script src="components/overlay.js"></script>
+    <script src="components/overlay.js"></script>
     <script src="app.js"></script>
 
 </body>

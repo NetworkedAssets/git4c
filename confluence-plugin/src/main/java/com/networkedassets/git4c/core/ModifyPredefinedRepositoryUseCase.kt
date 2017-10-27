@@ -4,6 +4,7 @@ import com.github.kittinunf.result.Result
 import com.networkedassets.git4c.boundary.ModifyPredefinedRepositoryCommand
 import com.networkedassets.git4c.boundary.inbound.PredefinedRepository
 import com.networkedassets.git4c.boundary.outbound.SavedPredefinedRepository
+import com.networkedassets.git4c.boundary.outbound.VerificationStatus
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
 import com.networkedassets.git4c.core.datastore.repositories.PredefinedRepositoryDatabase
@@ -23,8 +24,8 @@ class ModifyPredefinedRepositoryUseCase(
     override fun execute(request: ModifyPredefinedRepositoryCommand): Result<SavedPredefinedRepository, Exception> {
 
 
-        val existingPredefinedRepository = predefinedRepositoryDatabase.get(request.repositoryId) ?: return@execute Result.error(NotFoundException(request.transactionInfo, ""))
-        val existingRepository = repositoryDatabase.get(existingPredefinedRepository.repositoryUuid) ?: return@execute Result.error(NotFoundException(request.transactionInfo, ""))
+        val existingPredefinedRepository = predefinedRepositoryDatabase.get(request.repositoryId) ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+        val existingRepository = repositoryDatabase.get(existingPredefinedRepository.repositoryUuid) ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
 
 
         val repository = inboundRepositoryToCore(request.predefinedRepositoryToModify, existingRepository.uuid)
@@ -41,7 +42,7 @@ class ModifyPredefinedRepositoryUseCase(
                 return@execute Result.error(IllegalArgumentException(status.name))
             }
         }
-        return Result.error(NotFoundException(request.transactionInfo, ""))
+        return Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
     }
 
 

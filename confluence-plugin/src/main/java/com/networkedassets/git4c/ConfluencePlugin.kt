@@ -1,6 +1,9 @@
 package com.networkedassets.git4c
 
 import com.atlassian.cache.CacheManager
+import com.atlassian.confluence.pages.PageManager
+import com.atlassian.confluence.spaces.SpaceManager
+import com.atlassian.sal.api.transaction.TransactionTemplate
 import com.networkedassets.git4c.application.Plugin
 import com.networkedassets.git4c.application.PluginComponents
 import com.networkedassets.git4c.core.datastore.repositories.*
@@ -9,13 +12,16 @@ import com.networkedassets.git4c.infrastructure.cache.AtlassianDocumentsViewCach
 import com.networkedassets.git4c.infrastructure.cache.AtlassianMacroSettingsCache
 import com.networkedassets.git4c.infrastructure.cache.AtlassianTemporaryIdCache
 import com.networkedassets.git4c.infrastructure.git.DefaultGitClient
-import com.networkedassets.git4c.infrastructure.plugin.parser.Parsers
 import com.networkedassets.git4c.infrastructure.plugin.converter.ConverterPluginList
 import com.networkedassets.git4c.infrastructure.plugin.converter.images.ImageConverterPlugin
-import com.networkedassets.git4c.infrastructure.plugin.converter.markdown.MarkdownConverterPlugin
+import com.networkedassets.git4c.infrastructure.plugin.converter.main.JSoupPostProcessor
+import com.networkedassets.git4c.infrastructure.plugin.converter.main.MainConverterPluginList
+import com.networkedassets.git4c.infrastructure.plugin.converter.main.asciidoc.AsciidocConverterPlugin
+import com.networkedassets.git4c.infrastructure.plugin.converter.main.markdown.MarkdownConverterPlugin
 import com.networkedassets.git4c.infrastructure.plugin.converter.plaintext.PlainTextConverterPlugin
 import com.networkedassets.git4c.infrastructure.plugin.converter.plantuml.PUMLConverterPlugin
 import com.networkedassets.git4c.infrastructure.plugin.converter.prismjs.PrismJSConverterPlugin
+import com.networkedassets.git4c.infrastructure.plugin.parser.Parsers
 import com.networkedassets.git4c.infrastructure.plugin.source.git.GitSourcePlugin
 import com.networkedassets.git4c.utils.info
 import org.slf4j.LoggerFactory
@@ -26,7 +32,11 @@ class ConfluencePlugin(
         val encryptedRepositoryDatabase: EncryptedRepositoryDatabase,
         val globsForMacroDatabase: GlobForMacroDatabase,
         val predefinedGlobsDatabase: PredefinedGlobsDatabase,
-        val cacheManager: CacheManager
+        val extractorDataDatabase: ExtractorDataDatabase,
+        val cacheManager: CacheManager,
+        val spaceManager: SpaceManager,
+        val pageManager: PageManager,
+        val transationTemplate: TransactionTemplate
 ) : Plugin() {
 
     private val log = LoggerFactory.getLogger(ConfluencePlugin::class.java)
@@ -42,14 +52,25 @@ class ConfluencePlugin(
         val gitClient = DefaultGitClient()
         val importer = GitSourcePlugin(gitClient)
 
-        val converterPlugins = listOf(MarkdownConverterPlugin(), PrismJSConverterPlugin(), ImageConverterPlugin(), PUMLConverterPlugin())
-        val converter = ConverterPluginList(converterPlugins, PlainTextConverterPlugin())
-
         val identifierGenerator = UuidIdentifierGenerator()
+
+        val postProcessor = JSoupPostProcessor(identifierGenerator)
+
+        val mainPlugins = MainConverterPluginList(listOf(AsciidocConverterPlugin(), MarkdownConverterPlugin()), postProcessor)
+        val converterPlugins = listOf(mainPlugins, PrismJSConverterPlugin(), ImageConverterPlugin(), PUMLConverterPlugin())
+        val converter = ConverterPluginList(converterPlugins, PlainTextConverterPlugin())
 
         val encryptor = RepositoryDesEncryptor()
 
         val parser = Parsers()
+
+        val pageManager = AtlassianPageManager(spaceManager, pageManager, transationTemplate)
+
+        val spaceManager = AtlassianSpaceManager(spaceManager, transationTemplate)
+
+        val pageBuilder = HtmlErrorPageBuilder()
+
+        val pageMacroExtractor = AtlassianPageMacroExtractor()
 
         log.info { "Initialization of Git4C Confluence Plugin components has been finished." }
 
@@ -63,10 +84,15 @@ class ConfluencePlugin(
                 globsForMacroDatabase,
                 predefinedRepositoryDatabase,
                 encryptedRepositoryDatabase,
+                extractorDataDatabase,
                 encryptor,
                 identifierGenerator,
                 predefinedGlobsDatabase,
-                parser
+                parser,
+                pageBuilder,
+                spaceManager,
+                pageManager,
+                pageMacroExtractor
         )
     }
 }

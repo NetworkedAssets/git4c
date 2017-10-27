@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 class CreateDocumentationsMacroUseCaseTest : UseCaseTest<CreateDocumentationsMacroUseCase>() {
 
     override fun getUseCase(plugin: PluginComponents): CreateDocumentationsMacroUseCase {
-        return CreateDocumentationsMacroUseCase(plugin.macroSettingsDatabase, plugin.repositoryDatabase, plugin.globsForMacroDatabase, plugin.predefinedRepositoryDatabase, plugin.importer, plugin.converter, plugin.idGenerator)
+        return CreateDocumentationsMacroUseCase(plugin.macroSettingsDatabase, plugin.repositoryDatabase, plugin.globsForMacroDatabase, plugin.predefinedRepositoryDatabase, plugin.extractorDataDatabase, plugin.importer, plugin.converter, plugin.idGenerator)
     }
 
 

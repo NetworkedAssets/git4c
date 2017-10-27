@@ -28,7 +28,7 @@ class GherkinParser : Parser {
         return ranges.map {
             val r = it.filter { lines[it].isNotEmpty() }
             val name = lines[r.first()].trim().removePrefix("Scenario:").trim()
-            Method(name, Range(r.first(), r.last()))
+            Method(name, Range(r.first() + 1, r.last() + 1))
         }.drop(1)
     }
 }

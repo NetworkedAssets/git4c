@@ -19,7 +19,7 @@ class GherkinTest extends Specification {
         def range = parser.getMethods(resourceDirectory.toFile().getText())
 
         then:
-        [new Method("Buy last coffee", new Range(6 - 1, 10 - 1))] == range
+        [new Method("Buy last coffee", new Range(6, 10))] == range
 
     }
 
@@ -31,8 +31,8 @@ class GherkinTest extends Specification {
         def range = parser.getMethods(resourceDirectory.toFile().getText())
 
         then:
-        def method1 = new Method("Wilson posts to his own blog", new Range(9 - 1, 12 - 1))
-        def method2 = new Method("Greg posts to a client's blog", new Range(14 - 1, 17 - 1))
+        def method1 = new Method("Wilson posts to his own blog", new Range(9, 12))
+        def method2 = new Method("Greg posts to a client's blog", new Range(14, 17))
         [method1, method2] == range
 
     }

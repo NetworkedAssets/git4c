@@ -1,32 +1,17 @@
 package com.networkedassets.git4c.infrastructure.plugin.converter.markdown
 
+import com.networkedassets.git4c.core.business.ExtractionResult
 import com.networkedassets.git4c.core.common.IdentifierGenerator
 import com.networkedassets.git4c.data.macro.documents.item.TableOfContents
 import spock.lang.Specification
 
-import java.nio.file.Path
-import java.nio.file.Paths
-
-import static com.networkedassets.git4c.test.Utils.getDataFromDirectory
+import static com.networkedassets.git4c.infrastructure.plugin.converter.ConverterUtils.getMarkdown
 
 class TableOfContentsTest extends Specification {
-
-    class UUIDGen implements IdentifierGenerator {
-
-        private int i = 0
-
-        @Override
-        String generateNewIdentifier() {
-            i++
-            return i
-        }
-    }
 
     def "Basic test passes"() {
 
         given:
-        Path resourceDirectory = Paths.get("src/test/resources", "tableOfContents/Markdown.md")
-
         def expected = new TableOfContents("", "", [
                 new TableOfContents("Heading 1 (--dev-config)", "1", [
                         new TableOfContents("Subheading 1.1 (&lt;code&gt;)", "2", [
@@ -44,17 +29,10 @@ class TableOfContentsTest extends Specification {
                 ])
         ])
 
-        def source = getDataFromDirectory(resourceDirectory.parent)
-
-        def converter = new MarkdownConverterPlugin()
-        converter.generator = new UUIDGen()
+        def source = getMarkdown("tableOfContents")
 
         when:
-        def data = source.collect { converter.convert(it) }.grep()
-        def table = data[0].tableOfContents
-//        def webPage = data[0].content
-//        def xml = new XmlParser().parseText("""<span xmlns:v-on="http://www.w3.org/1999/xhtml">$webPage</span>""")
-//        def xml2 = new XmlParser().parseText(result)
+        def table = source.tableOfContents
 
         then:
         table == expected

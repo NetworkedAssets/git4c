@@ -210,7 +210,9 @@ Git Viewer For Confluence uses external libraries, which have their own licenses
 - [Highlight.js](https://github.com/isagalaev/highlight.js) (BSD 3-clause)
 - [Prism](http://prismjs.com/) (MIT)
 - [ANTLR](http://www.antlr.org/license.html) (BSD)
-
+- [AsciidoctorJ](https://github.com/asciidoctor/asciidoctorj) (Apache 2.0)
+- [WNUMB](https://refreshless.com/wnumb/) (WTFPL)
+- [NoUiSlider](https://refreshless.com/nouislider/) (WTFPL)
 For plugin testing following libraries are used:
 - [JUnit](http://junit.org/junit4/license.html) (Eclipse Public License 1.0)
 - [Spock Framework](https://github.com/spockframework/spock) (Apache 2.0)

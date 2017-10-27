@@ -3,6 +3,7 @@ package com.networkedassets.git4c.core
 import com.github.kittinunf.result.Result
 import com.networkedassets.git4c.boundary.GetBranchesByDocumentationsMacroIdQuery
 import com.networkedassets.git4c.boundary.outbound.Branches
+import com.networkedassets.git4c.boundary.outbound.VerificationStatus
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
 import com.networkedassets.git4c.core.datastore.repositories.MacroSettingsDatabase
 import com.networkedassets.git4c.core.datastore.repositories.RepositoryDatabase
@@ -18,9 +19,9 @@ class GetBranchesByDocumentationsMacroIdUseCase(
 ) : UseCase<GetBranchesByDocumentationsMacroIdQuery, Branches> {
 
     override fun execute(request: GetBranchesByDocumentationsMacroIdQuery): Result<Branches, Exception> {
-        val macroSettings = macroSettingsDatabase.get(request.macroId) ?: return@execute Result.error(NotFoundException(request.transactionInfo, ""))
-        if (macroSettings.repositoryUuid == null) return@execute Result.error(NotFoundException(request.transactionInfo, ""))
-        val repository = repositoryDatabase.get(macroSettings.repositoryUuid) ?: return@execute Result.error(NotFoundException(request.transactionInfo, ""))
+        val macroSettings = macroSettingsDatabase.get(request.macroId) ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+        if (macroSettings.repositoryUuid == null) return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+        val repository = repositoryDatabase.get(macroSettings.repositoryUuid) ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
         return Result.of { getBranches(macroSettings, repository) }
     }
 

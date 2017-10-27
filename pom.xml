@@ -7,11 +7,10 @@
     <groupId>com.networkedassets.git4c</groupId>
     <artifactId>git4c</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.0-RELEASE</version>
+    <version>1.2.0-RELEASE</version>
 
     <modules>
         <module>confluence-plugin</module>
-        <module>standalone</module>
     </modules>
 
     <properties>
@@ -51,6 +50,18 @@
             <name>bintray</name>
             <url>https://kotlin.bintray.com/ktor</url>
         </pluginRepository>
+        <pluginRepository>
+            <id>public</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+            </releases>
+        </pluginRepository>
     </pluginRepositories>
 
     <repositories>
@@ -59,11 +70,9 @@
             <url>https://maven.atlassian.com/repository/public</url>
             <snapshots>
                 <enabled>true</enabled>
-                <checksumPolicy>warn</checksumPolicy>
             </snapshots>
             <releases>
                 <enabled>true</enabled>
-                <checksumPolicy>warn</checksumPolicy>
             </releases>
         </repository>
         <repository>
@@ -73,6 +82,14 @@
             <id>bintray-kotlin-ktor</id>
             <name>bintray</name>
             <url>https://kotlin.bintray.com/ktor</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>public</id>
+            <name>public</name>
+            <url>https://repo.maven.apache.org/maven2</url>
         </repository>
     </repositories>
 

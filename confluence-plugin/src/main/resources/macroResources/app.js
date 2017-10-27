@@ -9,9 +9,10 @@ var Events = new Vue({});
 
 AJS.toInit(function () {
 
-    let lastRevision = undefined;
-    let alertShown = false;
-    let intervalId = undefined;
+
+    var lastRevision = undefined;
+    var alertShown = false;
+    var intervalId = undefined;
 
     const startInterval = function () {
 
@@ -20,14 +21,14 @@ AJS.toInit(function () {
         }
 
         intervalId = setInterval(function () {
-            MarkupService.getDocumentation().then((documentation) => {
+            MarkupService.getDocumentation().then(function(documentation) {
                 if (!lastRevision) {
                     lastRevision = documentation.revision
                 } else {
                     if (lastRevision !== documentation.revision) {
                         lastRevision = documentation.revision;
                         if (!alertShown) {
-                            NotifyService.persistent("Git Viewer for Confluence macro is out of date",
+                            NotifyService.persistent("Content of Git4C Macro is out of date. There is a new version of document available.",
                                 '<ul class="aui-nav-actions-list">' +
                                 '<li><a href="#" onclick="location.reload(true); return false;">Refresh page</a></li>' +
                                 '</ul>');
@@ -49,7 +50,8 @@ AJS.toInit(function () {
         el: "#app",
         data: {
             value: '',
-            tree: []
+            tree: [],
+            sticky: false
         },
         components: {
             overlay: Git4COverlay.getComponent(Events)
@@ -64,88 +66,87 @@ AJS.toInit(function () {
                             docItemName = el.fullName
                             contains = true;
                         }
-                        else el.children.forEach(ele => f(ele))
+                        else el.children.forEach(function(ele) { f(ele) })
                     });
                     if (contains) {
                         return docItemName
                     }
                 }
                 if (element.children != null) {
-                    docItemName = element.children.filter((docItem) => {
-                        return (defaultFileName == docItem.name.toLowerCase());
-                    }).map((docItem) => {
-                        return docItem.name;
-                    });
+                    function findfirstItem(element) {
+                        const maybeFile = element.children.find(function (file) {return file.type === "DOCITEM"})
+                        const child = element.children[0]
 
-                    if (docItemName.length == 0) {
-                        docItemName = element.children.filter((docItem) => {
-                            return (docItem.type !== "DIR");
-                        }).map((docItem) => {
-                            return docItem.name;
-                        });
+                        if (maybeFile) {
+                            return maybeFile.fullName
+                        } else {
+                            return findfirstItem(child)
+                        }
                     }
+                    docItemName = findfirstItem(element)
                 }
                 return $.isArray(docItemName) ? docItemName[0] : docItemName;
 
             },
             getTree: function () {
-                MarkupService.getTree().then((tree) => {
-                    Vue.set(this, 'tree', tree.children);
-                    if (!this.$route.params.fullName) {
-                        var defaultDocItemName = this.getDefaultDocItemName(tree);
+                const vm = this
+                MarkupService.getTree().then(function(tree) {
+                    if(tree.children.length == 0){
+                        NotifyService.error('Error', 'There are no files present on this branch.')
+                    }
+                    Vue.set(vm, 'tree', tree.children);
+                    Events.$emit("tree", tree.children)
+                    if (!vm.$route.params.fullName) {
+                        var defaultDocItemName = vm.getDefaultDocItemName(tree);
                         if (defaultDocItemName) {
-                            this.$router.push('/' + encodeURIComponent(defaultDocItemName) + "&" + encodeURIComponent(this.getBranchNameFromPath()));
+                            vm.$router.push('/' + encodeURIComponent(defaultDocItemName) + "&" + vm.getBranchNameFromPath());
                         }
                     }
-                    var nodesToOpen = decodeURIComponent(this.$route.params.fullName).split('/');
-                    const fullFileName = this.$route.params.fullName
+                    var nodesToOpen = decodeURIComponent(vm.$route.params.fullName).split('/');
+                    const fullFileName = vm.$route.params.fullName
                     if (nodesToOpen.length > 1) {
-                        function openTree(node, level) {
 
-                            if (node.type === "DOCITEM") {
-                                if (node.fullName === fullFileName) {
-                                    return node
-                                } else {
-                                    return null
+                        function recSearch(currentElement, toFind) {
+                            var found = false
+                            function f(tree){
+                                if(tree.fullName == toFind){
+                                    found = true
+                                }
+                                else{
+                                    tree.children.forEach(function (it) { f(it) })
                                 }
                             }
-
-                            const below = node.children.filter(n => fullFileName.startsWith(n.fullName)).map(n => openTree(n, level + 1)).filter(n => n)[0];
-
-                            let finalArr;
-
-                            if (below) {
-                                finalArr = [node].concat(below)
-                            } else {
-                                finalArr = null
-                            }
-
-                            if (level === 0) {
-                                if (finalArr) {
-                                    [node].concat(below).forEach(n => n.isOpened = true)
-                                }
-                                return finalArr
-                            } else {
-                                return finalArr
-                            }
+                            f(currentElement)
+                            return found
                         }
-                        if (!openTree(tree, 0)) {
-                            this.clearFilenameInPath()
-                            this.getTree()
+
+                        const fileExists = recSearch(tree, fullFileName)
+
+                        if (fileExists) {
+                            vm.$nextTick(function() {
+                                Events.$emit("TreeviewInvalidate")
+                            })
+                        } else {
+                            vm.$nextTick(function() {
+                                vm.clearFilenameInPath()
+                            vm.getTree()
+                            })
                             return
                         }
                     }
-                    Events.$emit('treeLoaded');
+                    vm.$nextTick(function() {
+                        Events.$emit("TreeviewInvalidate")
+                        Events.$emit('treeLoaded');
+                    })
 
-
-                }, () => {
+                }, function() {
                     NotifyService.error('Error', 'An error occurred while displaying content.')
                 });
             },
             getDocumentation: function () {
                 //this.working = true;
                 Events.$emit('updateStart');
-                MarkupService.getDocumentation().then((documentation) => {
+                MarkupService.getDocumentation().then(function(documentation) {
                         //  this.working = false;
                         startInterval()
                         if (documentation != undefined) {
@@ -154,7 +155,7 @@ AJS.toInit(function () {
                             Events.$emit('updateError');
                         }
                     },
-                    (err) => {
+                    function (err) {
                         console.log(err);
                         if (err.status == 404) {
                             Events.$emit('removedRepositoryError');
@@ -180,7 +181,7 @@ AJS.toInit(function () {
                 //this.working = true;
                 Events.$emit('updateStart');
 
-                MarkupService.getBranches().then((branchesResponse) => {
+                MarkupService.getBranches().then(function(branchesResponse) {
 
                     const branches = branchesResponse.allBranches
 
@@ -190,7 +191,7 @@ AJS.toInit(function () {
                         Events.$emit('branchDoesntExist');
                     } else {
                         console.log("Branch exists")
-                        MarkupService.temporary(branch).then((id) => {
+                        MarkupService.temporary(branch).then(function(id){
                                 //  this.working = false;
                                 startInterval()
                                 if (id) {
@@ -200,7 +201,7 @@ AJS.toInit(function () {
                                 }
                             },
                             //TODO: Promisify this
-                            (err) => {
+                            function(err) {
                                 console.log(err);
                                 if (err.status == 404) {
                                     Events.$emit('removedRepositoryError');
@@ -210,7 +211,7 @@ AJS.toInit(function () {
                             });
                     }
 
-                }, (err) => {
+                }, function (err) {
                     console.log(err);
                     if (err.status == 404) {
                         Events.$emit('removedRepositoryError');
@@ -219,80 +220,107 @@ AJS.toInit(function () {
                     }
                 })
             },
-            pushBranch: function (branchName, filename = true) {
+            pushBranch: function (branchName, filename) {
+                filename = typeof filename !== 'undefined' ? filename : true;
+
                 if (filename && this.$route.params.fullName) {
                     this.$router.push(encodeURIComponent(this.$route.params.fullName) + '&' + encodeURIComponent(branchName))
                 } else {
                     this.$router.push('&' + encodeURIComponent(branchName))
                 }
-            }
+            },
         },
 
         created: function () {
+            const vm = this
 
-            Events.$on('updateComplete', () => {
+            Events.$on('updateComplete', function () {
                 //NotifyService.info('Info', 'Updating content completed successfully');
-                this.getTree();
+                vm.getTree();
             });
 
-            Events.$on('branchChanged', (id) => {
+            Events.$on('branchChanged', function(id) {
                 ParamsService.setUuid(id.id);
-                this.getTree();
+                vm.getTree();
                 clearInterval(intervalId);
             });
 
-            Events.$on('updateError', () => {
+            Events.$on('updateError', function () {
                 NotifyService.error('Error', 'An error occurred while updating content.');
             });
 
-            Events.$on("branchDoesntExist", () => {
-                const loading = false;
-                Events.$emit("OverlayChange", loading)
-                NotifyService.error('Error', `Requested branch doesn't exist. Please select another one.`)
+            Events.$on("branchDoesntExist", function () {
+                Events.$emit("errorOccured", "non_existing_branch")
             })
 
             //Translate old overlay calls to new one
-            Events.$on('updateStart', () => {
+            Events.$on('updateStart', function () {
                 const loading = true;
                 Events.$emit("OverlayChange", loading)
             });
-            Events.$on('treeLoaded', () => {
+            Events.$on('treeLoaded', function () {
                 const loading = false;
                 Events.$emit("OverlayChange", loading)
             });
-            Events.$on('updateComplete', () => {
+            Events.$on('updateComplete', function () {
                 const loading = false;
                 Events.$emit("OverlayChange", loading)
             });
-            Events.$on('branchChanging', () => {
+            Events.$on('branchChanging', function () {
                 const loading = true;
                 Events.$emit("OverlayChange", loading)
             });
-            Events.$on('updateError', () => {
+            Events.$on('updateError', function () {
                 const loading = false;
                 Events.$emit("OverlayChange", loading)
             });
-            Events.$on('removedRepositoryError', () => {
+            Events.$on('removedRepositoryError', function () {
                 NotifyService.error('Error', 'Repository has been removed by Administrator.');
-                const loading = false;
-                Events.$emit("OverlayChange", loading)
+                Events.$emit("errorOccured", "repository_removed")
             });
+
+            Events.$on("Sticky", function(sticky) {
+                vm.sticky = sticky
+                vm.$nextTick(function () {
+                    Events.$emit("TreeviewInvalidate")
+                })
+            })
 
             var branch = {
                 branch: this.$route.params.branch
             }
 
 
-            MarkupService.getDefaultBranch().then((promise) => {
+            MarkupService.getDefaultBranch().then(function (promise) {
                 var defaultBranch = promise.body.currentBranch
                 if (!branch.branch || branch.branch === defaultBranch) {
-                    this.pushBranch(defaultBranch)
-                    this.getDocumentation()
+                    vm.pushBranch(defaultBranch)
+                    vm.getDocumentation()
                 } else {
-                    this.pushBranch(branch.branch)
-                    this.getTemporary(branch)
+                    vm.pushBranch(branch.branch)
+                    vm.getTemporary(branch)
                 }
             })
+
+            MarkupService.getGlobs().then(function(promise) {
+                const globs = promise.globs.map(function (glob) {
+                    return glob.prettyName
+                })
+
+                if (globs.length > 0) {
+
+                    AJS.$(vm.$refs.globtooltip)
+                        .tooltip({
+                            title: function () {
+                                return globs
+                            }
+                        })
+
+                } else {
+                    $(vm.$refs.globtooltip).hide()
+                }
+            })
+
         },
         mounted: function () {
             //AJS.$(this.$el).find(".markup-action-buttons button").tooltip();

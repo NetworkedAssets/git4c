@@ -5,6 +5,6 @@ data class MacroSettings(
         val repositoryUuid: String?,
         val branch: String,
         val defaultDocItem: String,
-        val method: String?
+        val extractorDataUuid: String?
 )
 

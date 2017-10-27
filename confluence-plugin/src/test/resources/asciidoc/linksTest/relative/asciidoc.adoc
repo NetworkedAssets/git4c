@@ -1,0 +1,2 @@
+link:subfolder/Markdown2.md[I exist]
+link:idontexist.md[I don't exist]

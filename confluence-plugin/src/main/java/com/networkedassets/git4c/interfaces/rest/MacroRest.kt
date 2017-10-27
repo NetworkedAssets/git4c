@@ -4,7 +4,6 @@ import com.atlassian.sal.api.user.UserManager
 import com.networkedassets.git4c.application.Plugin
 import com.networkedassets.git4c.boundary.*
 import com.networkedassets.git4c.boundary.inbound.*
-import com.networkedassets.git4c.core.GetExistingRepositoryBranchesUseCase
 import com.networkedassets.git4c.delivery.executor.execution.BackendDispatcher
 import com.networkedassets.git4c.delivery.executor.result.ServiceApi
 import com.networkedassets.git4c.utils.SerializationUtils.deserialize
@@ -68,6 +67,13 @@ class MacroRest(
     }
 
     @POST
+    @Path("/{uuid}/file/commits")
+    fun getFileCommitHistoryForDocumentationsMacroUuid(@PathParam("uuid") macroId: String, documentationJson: String): Response {
+        val documentation = deserialize(documentationJson, DetailsToGetFile::class.java)
+        return dispatchAndPresentHttp { GetCommitHistoryForFileByMacroIdQuery(macroId.urlDecode(), documentation) }
+    }
+
+    @POST
     @Path("/{uuid}/refresh")
     fun forceRefreshExistingDocumentationsMacro(@PathParam("uuid") macroId: String): Response {
         return dispatchAndPresentHttp { RefreshDocumentationsMacroCommand(macroId.urlDecode()) }
@@ -86,9 +92,9 @@ class MacroRest(
     }
 
     @GET
-    @Path("/{uuid}/method")
-    fun getMethodForDocumentationsMacroUuid(@PathParam("uuid") macroId: String): Response {
-        return dispatchAndPresentHttp { GetMethodByDocumentationsMacroIdQuery(macroId) }
+    @Path("/{uuid}/extractorData")
+    fun getExtractorDataForDocumentationsMacroUuid(@PathParam("uuid") macroId: String): Response {
+        return dispatchAndPresentHttp { GetExtractionDataByDocumentationsMacroIdQuery(macroId) }
     }
 
     @POST
@@ -96,6 +102,12 @@ class MacroRest(
     fun getSpecificDocumentItem(@PathParam("uuid") macroId: String, documentationJson: String): Response {
         val file = deserialize(documentationJson, RequestedFile::class.java)
         return dispatchAndPresentHttp { GetDocumentItemInDocumentationsMacroQuery(macroId.urlDecode(), file.file) }
+    }
+
+    @GET
+    @Path("/{uuid}/verify")
+    fun verifyDocumentationByDocumentationMacroUuid(@PathParam("uuid") macroId: String): Response {
+        return dispatchAndPresentHttp { VerifyDocumentationMacroByDocumentationsMacroIdQuery(macroId) }
     }
 
     @DELETE
@@ -108,6 +120,18 @@ class MacroRest(
         }
 
         return dispatchAndPresentHttp { RemoveAllDataCommand() }
+    }
+
+    @DELETE
+    @Path("/unused")
+    fun removeUnusedData(@Context req: HttpServletRequest): Response {
+        val username = userManager.getRemoteUsername(req)
+
+        if (username == null || !userManager.isAdmin(username)) {
+            return Response.status(Response.Status.FORBIDDEN).build()
+        }
+
+        return dispatchAndPresentHttp { RemoveUnusedDataCommand() }
     }
 
     @POST
@@ -127,14 +151,14 @@ class MacroRest(
     @Path("/predefine/{uuid}/files")
     fun getPredefinedRepositoryFiles(@PathParam("uuid") predefineRepositoryId: String, documentationJson: String): Response {
         val branch = deserialize(documentationJson, Branch::class.java)
-        return dispatchAndPresentHttp { GetFilesForPredefinedRepositoryQuery(predefineRepositoryId, branch) }
+        return dispatchAndPresentHttp { GetFilesListForPredefinedRepositoryQuery(predefineRepositoryId, branch) }
     }
 
     @POST
     @Path("/predefine/{uuid}/file")
     fun getPredefinedRepositoryFile(@PathParam("uuid") predefineRepositoryId: String, documentationJson: String): Response {
         val documentation = deserialize(documentationJson, DetailsToGetFile::class.java)
-        return dispatchAndPresentHttp { GetFileForPredefinedRepositoryQuery(predefineRepositoryId, documentation) }
+        return dispatchAndPresentHttp { GetFileContentForPredefinedRepositoryQuery(predefineRepositoryId, documentation) }
     }
 
     @POST
@@ -193,14 +217,14 @@ class MacroRest(
     @Path("/repository/{uuid}/files")
     fun getFilesForExistingRepository(@PathParam("uuid") repositoryId: String, documentationJson: String): Response {
         val requestedBranch = deserialize(documentationJson, Branch::class.java)
-        return dispatchAndPresentHttp { GetFilesForExistingRepositoryQuery(repositoryId, requestedBranch) }
+        return dispatchAndPresentHttp { GetFilesListForExistingRepositoryQuery(repositoryId, requestedBranch) }
     }
 
     @POST
     @Path("/repository/{uuid}/file")
     fun getFileForExistingRepository(@PathParam("uuid") repositoryId: String, documentationJson: String): Response {
         val detailsToGetFile = deserialize(documentationJson, DetailsToGetFile::class.java)
-        return dispatchAndPresentHttp { GetFileForExistingRepositoryQuery(repositoryId, detailsToGetFile) }
+        return dispatchAndPresentHttp { GetFileContentForExistingRepositoryQuery(repositoryId, detailsToGetFile) }
     }
 
     @POST
@@ -221,14 +245,14 @@ class MacroRest(
     @Path("/repository/files")
     fun getFilesForRepository(documentationJson: String): Response {
         val documentationToGetFiles = deserialize(documentationJson, RepositoryToGetFiles::class.java)
-        return dispatchAndPresentHttp { GetFilesForRepositoryQuery(documentationToGetFiles) }
+        return dispatchAndPresentHttp { GetFilesListForRepositoryQuery(documentationToGetFiles) }
     }
 
     @POST
     @Path("/repository/file")
     fun getFileForRepository(documentationJson: String): Response {
         val documentationToGetFiles = deserialize(documentationJson, RepositoryToGetFile::class.java)
-        return dispatchAndPresentHttp { GetFileForRepositoryQuery(documentationToGetFiles) }
+        return dispatchAndPresentHttp { GetFileContentForRepositoryQuery(documentationToGetFiles) }
     }
 
     @POST
@@ -273,6 +297,12 @@ class MacroRest(
     @Path("/glob/{uuid}")
     fun getGlobById(@PathParam("uuid") defaultGlobId: String): Response {
         return dispatchAndPresentHttp { GetPredefinedGlobByIdQuery(defaultGlobId) }
+    }
+
+    @GET
+    @Path("/spaces")
+    fun getAllSpacesWithGit4CMacro(): Response {
+        return dispatchAndPresentHttp { GetSpacesWithMacroQuery() }
     }
 
     private fun String.urlDecode() = URLDecoder.decode(this, "UTF-8")

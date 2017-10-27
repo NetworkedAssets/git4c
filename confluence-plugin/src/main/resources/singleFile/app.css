@@ -85,3 +85,12 @@ pre.line-numbers {
 .git4c-link-black {
     color: black !important;
 }
+
+#git4c-dialog-code {
+    white-space: pre-wrap;
+}
+
+.git4c-singlefile-content :not(pre) > code {
+    padding-left: 5px;
+    padding-right: 5px;
+}

@@ -9,7 +9,7 @@ class HandleFailure<ANSWER, ERROR>(private val presenter: BackendPresenter<ANSWE
     private val log = LoggerFactory.getLogger(HandleFailure::class.java)
 
     override fun onFailure(error: Throwable): ERROR {
-        log.info("{} << Request - error received", transactionInfo, error)
+        log.info("{} << Request - error received - {}", transactionInfo, error.javaClass.simpleName)
         return presenter.error(error)
     }
 }

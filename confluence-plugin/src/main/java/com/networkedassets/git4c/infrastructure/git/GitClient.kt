@@ -1,6 +1,7 @@
 package com.networkedassets.git4c.infrastructure.git
 
 import com.networkedassets.git4c.boundary.outbound.VerificationInfo
+import com.networkedassets.git4c.data.CommitInfo
 import com.networkedassets.git4c.core.bussiness.ImportedFiles
 import com.networkedassets.git4c.core.bussiness.Revision
 import com.networkedassets.git4c.core.exceptions.VerificationException
@@ -16,4 +17,8 @@ interface GitClient {
     fun getBranches(repository: Repository): List<String>
 
     fun pull(repository: Repository, branch: String): ImportedFiles
+
+    fun get(repository: Repository, branch: String): ImportedFiles
+
+    fun getCommits(repository: Repository, branch: String, file: String): List<CommitInfo>
 }

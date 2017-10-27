@@ -14,47 +14,131 @@ class GitSourcePluginTest {
         val git = GitSourcePlugin(DefaultGitClient())
         val repositoryUrl = "https://github.com/NetworkedAssets/git4c.git"
         val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
-        val time = System.currentTimeMillis()
+
         val verify = git.verify(repository)
-        val runtime = System.currentTimeMillis() - time
-        println("Time of verification of git repository: " + runtime)
+
         assertTrue(verify.isOk())
     }
 
     @Test
-    fun `Revision process should pass when proper Git repository`() {
+    fun `Verify process should pass when proper Git repository in avarge short time`() {
         val git = GitSourcePlugin(DefaultGitClient())
         val repositoryUrl = "https://github.com/NetworkedAssets/git4c.git"
         val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
-        val time = System.currentTimeMillis()
-        val verify = git.revision(MacroSettings("uuid", repository.uuid, "master", "", null), repository).use { it.revision }
-        val runtime = System.currentTimeMillis() - time
-        println("Time of verification of git repository: " + runtime)
+        git.verify(repository)
 
-        assertTrue(verify.isNotBlank())
-        val time2 = System.currentTimeMillis()
-        val verify2 = git.revision(MacroSettings("uuid", repository.uuid, "master", "", null), repository).use { it.revision }
-        val runtime2 = System.currentTimeMillis() - time2
-        println("Time of verification of git repository: " + runtime2)
-        assertTrue(verify2.isNotBlank())
+        val times = arrayListOf<Long>()
+
+        for (i in 1..10) {
+            val time = System.currentTimeMillis()
+            val verify = git.verify(repository)
+            val runtime = System.currentTimeMillis() - time
+            assertTrue(verify.isOk())
+            times.add(runtime)
+        }
+
+        assert(times.average() < 2000)
     }
 
     @Test
-    fun `Pull process should pass when proper Git repository`() {
+    fun `Revision process should get informations when proper Git repository`() {
         val git = GitSourcePlugin(DefaultGitClient())
         val repositoryUrl = "https://github.com/NetworkedAssets/git4c.git"
+        val branch = "master"
         val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
-        val time = System.currentTimeMillis()
-        val verify = git.revision(MacroSettings("uuid", repository.uuid, "master", "", null), repository).use { it.revision }
-        val runtime = System.currentTimeMillis() - time
-        println("Time of verification of git repository: " + runtime)
 
-        assertTrue(verify.isNotBlank())
-        val time2 = System.currentTimeMillis()
-        val verify2 = git.pull(repository, "master").use { it.imported }
-        val runtime2 = System.currentTimeMillis() - time2
-        println("Pull of git repository: " + runtime2)
-        assertTrue(verify2.isNotEmpty())
+        val revision = git.revision(MacroSettings("uuid", repository.uuid, branch, "", null), repository).use { it.revision }
+
+        assertTrue(revision.isNotBlank())
+    }
+
+    @Test
+    fun `Revision process should get informations when proper Git repository in avarge short time`() {
+        val git = GitSourcePlugin(DefaultGitClient())
+        val repositoryUrl = "https://github.com/NetworkedAssets/git4c.git"
+        val branch = "master"
+        val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
+        val macro = MacroSettings("uuid", repository.uuid, branch, "", null)
+        git.revision(macro, repository)
+
+        val times = arrayListOf<Long>()
+
+        for (i in 1..10) {
+            val time = System.currentTimeMillis()
+            val revision = git.revision(macro, repository).use { it.revision }
+            val runtime = System.currentTimeMillis() - time
+            assertTrue(revision.isNotBlank())
+            times.add(runtime)
+        }
+
+        assert(times.average() < 2000)
+    }
+
+    @Test
+    fun `Pull process should be done when proper Git repository`() {
+        val git = GitSourcePlugin(DefaultGitClient())
+        val repositoryUrl = "https://github.com/NetworkedAssets/git4c.git"
+        val branch = "master"
+        val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
+
+        val pull = git.pull(repository, branch).use { it.imported }
+        assertTrue(pull.isNotEmpty())
+    }
+
+    @Test
+    fun `Pull process should be done when proper Git repository in avarge short time`() {
+        val git = GitSourcePlugin(DefaultGitClient())
+        val repositoryUrl = "https://github.com/NetworkedAssets/git4c.git"
+        val branch = "master"
+        val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
+        git.pull(repository, branch)
+
+        val times = arrayListOf<Long>()
+
+        for (i in 1..10) {
+            val time = System.currentTimeMillis()
+            val pull = git.pull(repository, branch).use { it.imported }
+            assertTrue(pull.isNotEmpty())
+            val runtime = System.currentTimeMillis() - time
+            assertTrue(pull.isNotEmpty())
+            times.add(runtime)
+        }
+
+        assert(times.average() < 2000)
+    }
+
+    @Test
+    fun `Get Files process should be done when proper Git repository`() {
+        val git = GitSourcePlugin(DefaultGitClient())
+        val repositoryUrl = "https://github.com/NetworkedAssets/git4c.git"
+        val branch = "master"
+        val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
+        val pull = git.pull(repository, branch)
+
+        val get = git.get(repository, branch).use { it.imported }
+        assertTrue(get.isNotEmpty())
+        assertTrue(get.size == pull.imported.size)
+    }
+
+    @Test
+    fun `Get Files process should be done when proper Git repository in avarge short time`() {
+        val git = GitSourcePlugin(DefaultGitClient())
+        val repositoryUrl = "https://github.com/NetworkedAssets/git4c.git"
+        val branch = "master"
+        val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
+        val pull = git.pull(repository, branch)
+
+        val times = arrayListOf<Long>()
+
+        for (i in 1..10) {
+            val time = System.currentTimeMillis()
+            val get = git.get(repository, branch).use { it.imported }
+            assertTrue(get.size == pull.imported.size)
+            val runtime = System.currentTimeMillis() - time
+            times.add(runtime)
+        }
+
+        assert(times.average() < 300)
     }
 
 }

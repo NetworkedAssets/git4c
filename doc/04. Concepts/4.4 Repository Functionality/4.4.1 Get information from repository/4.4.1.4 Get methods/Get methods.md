@@ -61,9 +61,9 @@ Response Body:
 
 ### Existing repository
 
-You can also refer the existing repository directly by it's uuid.
+You can also refer the existing repository directly by its uuid.
 
 Endpoint for getting the file is available at:
 ```
-GET {git4c-backend-url}/repository/methods
+GET {git4c-backend-url}/repository/{uuid}/methods
 ```

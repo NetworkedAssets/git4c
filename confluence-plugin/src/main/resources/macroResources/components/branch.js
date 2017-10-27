@@ -1,6 +1,29 @@
 Vue.component("branch", {
 
-    template: "#branch",
+    template:
+    ' <span class="git4c-branch">'+
+    '     <!-- Trigger -->'+
+    '    <a v-if="branches.length == 0" aria-owns="git4c-branches" aria-haspopup="true" class="aui-button aui-style-default aui-dropdown2-trigger git4c-branches-dropdown git4c-white-aui-dropdown2" style="color: black">'+
+    '       <span class="aui-icon aui-icon-small aui-iconfont-devtools-branch">Branch</span>'+
+    '     No Branches Present'+
+    '    </a>'+
+    '    <a v-else href="" aria-controls="git4c-branches" aria-haspopup="true" class="aui-button aui-style-default aui-dropdown2-trigger git4c-branches-dropdown git4c-white-aui-dropdown2" style="color: black" ref="branchdropdown">'+
+    '        <div class="git4c-current-branch-div" ref="branchdropdown2">'+
+    '            <span class="aui-icon aui-icon-small aui-iconfont-devtools-branch">Branch</span>'+
+    '            {{currentBranch}}'+
+    '        </div>'+
+    '    </a>'+
+    ' <!-- Dropdown -->'+
+    '    <div id="git4c-branches" class="aui-style-default aui-dropdown2" style="max-height: 300px; overflow: auto">'+
+    '       <ul class="aui-list-truncate" >'+
+    '           <li v-for="branch in branches">'+
+    '               <a v-on:click="onChange(branch)"'+
+    '               v-bind:class="{checked: branch == currentBranch, \'aui-dropdown2-checked\': branch == currentBranch}"'+
+    '               class="aui-dropdown2-radio">{{branch}}</a>'+
+    '           </li>'+
+    '       </ul>'+
+    '    </div>'+
+    ' </span>',
 
     data: function () {
         return {
@@ -11,28 +34,80 @@ Vue.component("branch", {
     },
 
     mounted: function () {
-        MarkupService.getBranches().then((branches) => {
-            const allBranches = branches.allBranches
-            const currentBranch = this.$route.params.branch ? this.$route.params.branch : branches.currentBranch? branches.currentBranch : "master"
+        const vm = this
+        MarkupService.getBranches().then(function (branches) {
+            if (branches.allBranches.length == 0) {
+                Events.$emit("errorOccured", "no_branches")
+            } else {
+                const allBranches = branches.allBranches
+                const currentBranch = vm.$route.params.branch ? vm.$route.params.branch : branches.currentBranch ? branches.currentBranch : "master"
 
-            allBranches.sort()
-            this.branches = allBranches
-            this.currentBranch = currentBranch
-            this.selectedBranch = currentBranch
+                vm.$nextTick(function() {
+
+                    AJS.$(vm.$el).find(".git4c-branches-dropdown")
+                        .tooltip('destroy');
+
+                    //TODO: Replace with refs (which doesn't work for some reason) - they don't work because of v-if
+                    AJS.$(vm.$el).find(".git4c-branches-dropdown")
+                        .tooltip({
+                            title: function () {
+                                return currentBranch
+                            }
+                        })
+
+                })
+
+                allBranches.sort()
+                vm.branches = allBranches
+                vm.currentBranch = currentBranch
+                vm.selectedBranch = currentBranch
+            }
+        }, function(error) {
+            if(error.status == 404){
+                Events.$emit("errorOccured", "repository_removed")
+            }
+            else {
+                error.text().then(function () {
+                        Events.$emit("errorOccured", "no_branches")
+                })
+            }
+        })
+
+        Events.$on('branchChangeRequest', function(branch) {
+            if (vm.branches.includes(branch)) {
+                vm.onChange(branch)
+            } else{
+                vm.$nextTick(function() {
+                    Events.$emit("errorOccured", "non_existing_branch")
+                })
+            }
         })
     },
     methods: {
         onChange: function (selected) {
-            this.selectedBranch = selected
-            this.currentBranch = selected
-            this.$root.pushBranch(selected)
+            const vm =this
+            vm.selectedBranch = selected
+            vm.currentBranch = selected
+            vm.$root.pushBranch(selected)
             var newBranch = {
-                branch: this.selectedBranch
+                branch: vm.selectedBranch
             }
             Events.$emit('branchChanging')
-            MarkupService.temporary(newBranch).then((id) => {
+            MarkupService.temporary(newBranch).then(function(id)  {
                 Events.$emit('branchChanged', id, newBranch.branch)
             });
+
+            vm.$nextTick(function()  {
+                AJS.$(vm.$el).find(".git4c-branches-dropdown")
+                    .tooltip('destroy');
+
+                    AJS.$(vm.$el).find(".git4c-branches-dropdown")
+                        .tooltip({
+                            title: function () {
+                                return selected
+                            }
+                        })
+                })
         }
     }
 })

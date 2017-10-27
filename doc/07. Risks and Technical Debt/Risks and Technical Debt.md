@@ -1,7 +1,8 @@
 Risks and Technical Debts 
 =========================
 ## Technical debts
-- No frontend tests
+- Only basic UI tests
 - Lots of code duplication and redundancy in frontend
+
 
 ## Risks

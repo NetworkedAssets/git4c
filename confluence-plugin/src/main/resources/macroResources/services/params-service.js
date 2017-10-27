@@ -1,6 +1,6 @@
 var ParamsService = (function () {
 
-    let params = {
+    var params = {
         "uuid": ''
     };
 
@@ -10,8 +10,8 @@ var ParamsService = (function () {
 
     return {
         //5.8.2 fix - before AJS.toInit, AJS.params is empty
-        initialize: () => {
-            if (isConfluence()) {
+        initialize: function() {
+            if (isConfluence()){
                 params = JSON.parse(AJS.params.macroParamsJson);
             } else {
                 params = {
@@ -20,19 +20,19 @@ var ParamsService = (function () {
             }
             params.initialUuid = params.uuid
         },
-        setUuid: (id) => {
+        setUuid: function(id){
             params.uuid = id
         },
-        getParams: () => {
+        getParams: function() {
             return params;
         },
-        getInitialUuid: () => {
+        getInitialUuid: function() {
             return params.initialUuid
         },
-        getUuid: () => {
+        getUuid: function() {
             return ParamsService.getParams().uuid;
         },
-        isConfluence: function () {
+        isConfluence: function() {
             return isConfluence()
         }
     };

@@ -22,7 +22,6 @@ class MacroSettingsUpgradeTask004 : ActiveObjectsUpgradeTask {
                 .filter { it.macroSettings != null }
                 .groupBy { it.macroSettings.uuid.toString() }
                 .forEach { macroSettingsUUid, globs ->
-                    println(globs.map { it.glob })
                     globs
                             .distinctBy { it.glob.toString() }
                             .forEach { glob ->
@@ -30,7 +29,6 @@ class MacroSettingsUpgradeTask004 : ActiveObjectsUpgradeTask {
                                 glob.uuid = identifierGenerator.generateNewIdentifier()
                                 glob.save()
                             }
-
                 }
 
         ao.delete(*ao.find(GlobEntity::class.java).filter { it.uuid.isNullOrEmpty() }.toTypedArray())

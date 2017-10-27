@@ -1,7 +1,7 @@
 var NotifyService = (function () {
     return {
 
-        error: (title, message) => {
+        error: function(title, message){
             AJSC.flag({
                 type: 'error',
                 title: title,
@@ -12,7 +12,7 @@ var NotifyService = (function () {
 
         },
 
-        info(title, message) {
+        info: function(title, message){
             AJSC.flag({
                 type: 'info',
                 title: title,
@@ -23,7 +23,7 @@ var NotifyService = (function () {
 
         },
 
-        success(title, message) {
+        success: function(title, message) {
             AJSC.flag({
                 type: 'success',
                 title: title,
@@ -33,7 +33,7 @@ var NotifyService = (function () {
             });
         },
 
-        persistent(title, body) {
+        persistent: function(title, body) {
             AJSC.flag({
                 type: "info",
                 title: title,

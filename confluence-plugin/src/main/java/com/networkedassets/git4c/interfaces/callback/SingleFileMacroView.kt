@@ -7,8 +7,9 @@ import com.atlassian.confluence.renderer.radeox.macros.MacroUtils
 import com.atlassian.confluence.util.velocity.VelocityUtils
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.networkedassets.git4c.application.Plugin
+import com.networkedassets.git4c.boundary.GetDocumentationsMacroByDocumentationsMacroIdQuery
+import com.networkedassets.git4c.delivery.executor.result.BackendPresenter
 import org.slf4j.LoggerFactory
-
 
 class SingleFileMacroView(val plugin: Plugin) : Macro {
 
@@ -16,6 +17,31 @@ class SingleFileMacroView(val plugin: Plugin) : Macro {
 
     @Throws(MacroExecutionException::class)
     override fun execute(params: Map<String, String>, s: String, conversionContext: ConversionContext): String {
+
+        if (conversionContext.outputType == "pdf" || conversionContext.outputType == "word") {
+            val uuid = params["uuid"]!!
+            val query = GetDocumentationsMacroByDocumentationsMacroIdQuery(uuid)
+            val emptyPresenter = object: BackendPresenter<Any, Throwable> {
+                override fun render(result: Any) = result
+                override fun error(exception: Throwable) = exception
+            }
+
+            val unsafeMacro = plugin.components.documentsViewCache.get(uuid)
+
+            val macro = if (unsafeMacro == null) {
+                plugin.components.dispatcher.sendToExecution(query, emptyPresenter).get()
+                plugin.components.documentsViewCache.get(uuid)
+            } else {
+                unsafeMacro
+            } ?: return "<div>Couldn't find macro</div>"
+
+            val context = MacroUtils.defaultVelocityContext()
+            context.put("code", """<div xmlns:v-on="http://www.w3.org/1999/xhtml">${macro.files[0].content}</div>""")
+
+            val template = if (conversionContext.outputType == "pdf") "pdfexport" else "wordexport"
+
+            return VelocityUtils.getRenderedTemplate("/singleFile/$template.vm", context)
+        }
 
         try {
             val collapsible = params["collapsible"]?.toBoolean() ?: true

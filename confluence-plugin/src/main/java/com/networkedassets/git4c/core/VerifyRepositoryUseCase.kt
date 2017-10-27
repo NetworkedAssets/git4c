@@ -7,6 +7,7 @@ import com.networkedassets.git4c.boundary.inbound.RepositoryToVerify
 import com.networkedassets.git4c.boundary.inbound.SshKeyAuthorization
 import com.networkedassets.git4c.boundary.inbound.UsernamePasswordAuthorization
 import com.networkedassets.git4c.boundary.outbound.VerificationInfo
+import com.networkedassets.git4c.boundary.outbound.VerificationStatus
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
 import com.networkedassets.git4c.data.Repository

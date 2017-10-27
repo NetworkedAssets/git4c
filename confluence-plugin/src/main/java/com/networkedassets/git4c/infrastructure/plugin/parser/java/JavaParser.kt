@@ -22,16 +22,17 @@ class JavaParser: Parser {
                 .mapNotNull { it.classDeclaration()?.classBody()?.classBodyDeclaration() }
                 .flatten()
                 .filter { it?.memberDeclaration()?.methodDeclaration() != null }
-                .map { Phase1Method(it!!.memberDeclaration()!!.methodDeclaration().IDENTIFIER().toString(), Range(it.start.line - 1, it.stop.line - 1)) }
+                .map { Phase1Method(it!!.memberDeclaration()!!.methodDeclaration().IDENTIFIER().toString(), Range(it.start.line, it.stop.line)) }
 
         //Find javadocs
         val methods = phase1Methods.map {
-            val start = it.range.start - 1
+            //it.range.start - 1 is start method declaration (we use "human" lines in it.range)
+            val start = it.range.start - 2
             if (lines[start].trim() == "*/") {
                 //Javadoc is there
 
                 //New version
-                val diff = lines.take(start).asReversed().indexOfFirst { it.trim().startsWith("/*") } + 1
+                val diff = lines.take(start).asReversed().indexOfFirst { it.trim().startsWith("/*") }
 
                 //Old version
 //                while (!lines[start].trim().startsWith("/*")) {

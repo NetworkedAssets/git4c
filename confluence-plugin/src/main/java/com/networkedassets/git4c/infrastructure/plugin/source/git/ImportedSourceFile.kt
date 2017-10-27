@@ -22,10 +22,6 @@ class ImportedSourceFile(private val git: Git, repository: File, private val fil
         }
     }
 
-    fun getAbsolutePath(): Path {
-        return file.toPath()
-    }
-
     fun getSourcePath(): Path {
         return git.repository.directory.toPath()
     }
@@ -34,30 +30,29 @@ class ImportedSourceFile(private val git: Git, repository: File, private val fil
         return path
     }
 
-    private val lastCommit: RevCommit
-        get() {
-            try {
-                val log = git.log().addPath(FilenameUtils.separatorsToUnix(path.toString())).call()
-                return log.filterNotNull().iterator().next()
-            } catch (e: Exception) {
-                throw RuntimeException(e)
-            }
+    fun lastCommitFunction(): RevCommit {
+        try {
+            val log = git.log().addPath(FilenameUtils.separatorsToUnix(path.toString())).call()
+            return log.filterNotNull().iterator().next()
+        } catch (e: Exception) {
+            throw RuntimeException(e)
         }
+    }
+
+    val lastComit by lazy { lastCommitFunction() }
+
 
     fun isInternalGitFile(): Boolean {
         return path.toString().startsWith(".git")
     }
 
     fun convert(): ImportedFileData {
-        val commit = lastCommit
-        val name = commit.authorIdent.name
-        val email = commit.authorIdent.emailAddress
         return ImportedFileData(
                 path = FilenameUtils.separatorsToUnix(path.toString()),
                 context = getSourcePath().parent,
-                updateAuthorFullName = name,
-                updateAuthorEmail = email,
-                updateDate = Date(commit.commitTime.toLong() * 1000),
+                updateAuthorFullNameFun = { lastComit.authorIdent.name },
+                updateAuthorEmailFun = { lastComit.authorIdent.emailAddress },
+                updateDateFun = { Date(lastComit.commitTime.toLong() * 1000) },
                 contentFun = { getOriginalContent() }
         )
     }

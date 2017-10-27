@@ -63,9 +63,9 @@ Response Body:
 
 ### Existing Repository
 
-You can also refer the existing repository directly by it's uuid.
+You can also refer the existing repository directly by its uuid.
 
 Endpoint for getting the list of branches is:
 ```
-GET {git4c-backend-url}/repository/files
+GET {git4c-backend-url}/repository/{uuid}/files
 ```

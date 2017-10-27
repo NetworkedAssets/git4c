@@ -1,9 +1,10 @@
 package com.networkedassets.git4c.infrastructure.plugin.converter.prismjs
 
+import com.networkedassets.git4c.core.business.ExtractionResult
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
 import com.networkedassets.git4c.data.macro.documents.item.DocumentsItem
 import com.networkedassets.git4c.data.macro.documents.item.TableOfContents
-import com.networkedassets.git4c.infrastructure.plugin.converter.markdown.InternalConverterPlugin
+import com.networkedassets.git4c.infrastructure.plugin.converter.main.markdown.InternalConverterPlugin
 import org.apache.commons.lang3.StringEscapeUtils
 
 class PrismJSConverterPlugin : InternalConverterPlugin {
@@ -22,9 +23,9 @@ class PrismJSConverterPlugin : InternalConverterPlugin {
 
     val extensions = map.values.flatten()
 
-    override fun convert(fileData: ImportedFileData) = convert(fileData, 0)
+//    override fun convert(fileData: ImportedFileData) = convert(fileData, 0)
 
-    override fun convert(fileData: ImportedFileData, startLineNumber: Int): DocumentsItem? {
+    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult): DocumentsItem? {
 
         val content = fileData.contentString
         val extension = fileData.extension
@@ -32,8 +33,10 @@ class PrismJSConverterPlugin : InternalConverterPlugin {
 
         val pageContent = """
             <div class="git4c-prismjs-div">
-            <pre class="line-numbers language-$language" data-start="${startLineNumber + 1}">
-            <code class="git4c-prismjs-code language-$language">${StringEscapeUtils.escapeHtml4(content)}</code>
+            <pre class="line-numbers language-$language" data-start="${extractionResult.firstLine}">
+            <code class="git4c-prismjs-code language-$language">""" +
+                StringEscapeUtils.escapeHtml4(extractionResult.content) +
+                """</code>
             </pre>
             </div>
         """

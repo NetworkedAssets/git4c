@@ -5,12 +5,14 @@ import com.networkedassets.git4c.boundary.outbound.Methods
 import com.networkedassets.git4c.core.bussiness.ConverterPlugin
 import com.networkedassets.git4c.core.bussiness.ParserPlugin
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
+import com.networkedassets.git4c.core.datastore.extractors.LineNumbersExtractorData
 import com.networkedassets.git4c.data.Repository
 
 class GetMethodsProcess(
         val importer: SourcePlugin,
         val converter: ConverterPlugin,
-        val parsers: ParserPlugin
+        val parsers: ParserPlugin,
+        val extractorContentProcess: ExtractContentProcess
 ) {
 
     fun getMethods(repository: Repository, branch: String, file: String): Methods {
@@ -19,17 +21,20 @@ class GetMethodsProcess(
             val files = importedFiles.imported
 
             val gitFile = files.first { it.path == file }
-            val fileContent = gitFile.contentString
 
             val methods = parsers.getMethods(gitFile)
 
-            Methods(methods.map {
+            Methods(methods.mapNotNull {
                 val range = it.range
-                val content = fileContent.lines().slice(range.start..range.end)
-                val str = content.joinToString(separator = "\n")
-                val f = gitFile.copy(contentFun = { str.toByteArray() })
+                val extractor = LineNumbersExtractorData("", range.start, range.end)
+                val extractionResult = extractorContentProcess.extract(extractor, gitFile)
+                val fileResult = converter.convert(gitFile, extractionResult)
 
-                Method(it.name, converter.convert(f, range.start)!!.content)
+                if (fileResult != null) {
+                    Method(it.name, fileResult.content)
+                } else {
+                    null
+                }
             })
         }
 

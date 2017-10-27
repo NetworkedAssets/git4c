@@ -16,12 +16,4 @@ Plugin available to download:
 ## Development
 Before first build you must invoke `mvn validate` to install PlantUML jar in your local maven repository.
 
-# <a href="http://www.networkedassets.com/"><img src="https://www.networkedassets.net/images/NA_logo.png" height="79"></a>  
-  
-### Adding new format  
-  
-To add new format create class that implements `InternalConverterPlugin` and add this class to converterPlugins in `ConfluencePlugin`  
-  
-To add support for method extraction create class that implements `Parser` and add it to Parsers class  
-  
-
+# <a href="http://www.networkedassets.com/"><img src="https://www.networkedassets.net/images/NA_logo.png" height="79"></a>

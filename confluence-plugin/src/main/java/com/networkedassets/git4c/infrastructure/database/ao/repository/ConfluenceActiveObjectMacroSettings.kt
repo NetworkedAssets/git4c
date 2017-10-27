@@ -24,7 +24,7 @@ class ConfluenceActiveObjectMacroSettings(val ao: ActiveObjects) : MacroSettings
         settings.branch = data.branch
         settings.repository = data.repositoryUuid
         settings.defaultDocItem = data.defaultDocItem
-        settings.method = data.method
+        settings.extractor = data.extractorDataUuid
         settings.save()
     }
 
@@ -48,7 +48,7 @@ class ConfluenceActiveObjectMacroSettings(val ao: ActiveObjects) : MacroSettings
                 branch = branch,
                 repositoryUuid = repository,
                 defaultDocItem = defaultDocItem,
-                method = method
+                extractorDataUuid = extractor
         )
     }
 }

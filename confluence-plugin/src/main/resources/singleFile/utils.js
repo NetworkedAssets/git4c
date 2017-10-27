@@ -4,17 +4,18 @@ var downloadFile = function (uuid) {
 
     //Cache document
     return Vue.http.get(UrlService.getRestUrl('documentation', uuid))
-        .then((response) => {
+        .then(function (response) {
             if (response.status !== 200) {
                 return Promise.reject(response.statusText)
             }
             return Vue.http.get(UrlService.getRestUrl('documentation', uuid, 'tree'))
         })
-        .then((response) => {
+        .then(function(response) {
             if (response.status !== 200) {
                 return Promise.reject(response.statusText)
             }
-            let file = response.body
+
+            var file = response.body
 
             while (file.type !== "DOCITEM") {
                 file = file.children[0]
@@ -27,7 +28,7 @@ var downloadFile = function (uuid) {
             }
 
             return Vue.http.post(UrlService.getRestUrl('documentation', uuid, 'doc-item'), toSend)
-        }).then((response) => {
+        }).then(function(response) {
             if (response.status !== 200) {
                 return Promise.reject(response.statusText)
             }

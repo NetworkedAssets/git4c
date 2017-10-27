@@ -5,22 +5,29 @@ Vue.component("nav-collapse", {
             isExpanded: true
         };
     },
-    mounted() {
+    mounted: function() {
+        const vm = this
+        Events.$on("toggleSideBar", function() {vm.toggle()})
     },
     methods: {
         toggle: function () {
             //Fix FF bug
-            $("#git4c-nav-collapse-span").css("position", "absolute");
             this.isExpanded ? this.collapse() : this.expand();
         },
         expand: function () {
             this.isExpanded = true;
-            Events.$emit('navExpand');
+            Events.$emit("StickyToolbarToogled")
+            setTimeout(function(){
+                Events.$emit('navExpand');
+            }, 100)
 
         },
         collapse: function () {
             this.isExpanded = false;
             Events.$emit('navCollapse');
+            setTimeout(function(){
+                Events.$emit("StickyToolbarToogled")
+            }, 500)
         }
     }
 });
