@@ -13,7 +13,7 @@ class PluginUseCasesProvider(val components: PluginComponents) : UseCasesProvide
             GetDocumentationsMacroViewTemplateQuery::class.java to GetDocumentationsMacroViewTemplateUseCase(),
             GetDocumentationsMacroByDocumentationsMacroIdQuery::class.java to GetDocumentationsMacroByDocumentationsMacroIdUseCase(components.refreshProcess, components.macroSettingsCachableDatabase, components.globsForMacroDatabase, components.repositoryDatabase, components.extractorDataDatabase),
             GetDocumentationsContentTreeByDocumentationsMacroIdQuery::class.java to GetDocumentationsContentTreeByDocumentationsMacroIdUseCase(components.documentsViewCache),
-            CreateDocumentationsMacroCommand::class.java to CreateDocumentationsMacroUseCase(components.macroSettingsCachableDatabase, components.repositoryDatabase, components.globsForMacroDatabase, components.predefinedRepositoryDatabase, components.extractorDataDatabase, components.importer, components.converter, components.idGenerator),
+            CreateDocumentationsMacroCommand::class.java to CreateDocumentationsMacroUseCase(components.macroSettingsCachableDatabase, components.repositoryDatabase, components.globsForMacroDatabase, components.predefinedRepositoryDatabase, components.extractorDataDatabase, components.importer, components.converter, components.idGenerator, components.pluginSettings),
             RefreshDocumentationsMacroCommand::class.java to RefreshDocumentationsMacroUseCase(components.refreshProcess, components.macroSettingsCachableDatabase, components.globsForMacroDatabase, components.repositoryDatabase, components.extractorDataDatabase, components.documentsViewCache),
             GetDocumentItemInDocumentationsMacroQuery::class.java to GetDocumentItemInDocumentationsMacroUseCase(components.documentsViewCache),
             GetBranchesByDocumentationsMacroIdQuery::class.java to GetBranchesByDocumentationsMacroIdUseCase(components.getBranchesProcess, components.macroSettingsCachableDatabase, components.repositoryDatabase),
@@ -52,7 +52,9 @@ class PluginUseCasesProvider(val components: PluginComponents) : UseCasesProvide
             GetCommitHistoryForFileByMacroIdQuery::class.java to GetCommitHistoryForFileByMacroIdUseCase(components.importer, components.repositoryDatabase, components.macroSettingsCachableDatabase),
             VerifyDocumentationMacroByDocumentationsMacroIdQuery::class.java to VerifyDocumentationMacroByDocumentationsMacroIdUseCase(components.refreshProcess, components.macroSettingsDatabase, components.globsForMacroDatabase, components.repositoryDatabase, components.extractorDataDatabase, components.importer),
             GetCommitHistoryForFileByMacroIdQuery::class.java to GetCommitHistoryForFileByMacroIdUseCase(components.importer, components.repositoryDatabase, components.macroSettingsCachableDatabase),
-            RemoveUnusedDataCommand::class.java to RemoveUnusedDataUseCase(components.macroSettingsDatabase, components.repositoryDatabase, components.predefinedRepositoryDatabase, components.globsForMacroDatabase, components.extractorDataDatabase, components.getAllMacrosInSystemProcess)
+            RemoveUnusedDataCommand::class.java to RemoveUnusedDataUseCase(components.macroSettingsDatabase, components.repositoryDatabase, components.predefinedRepositoryDatabase, components.globsForMacroDatabase, components.extractorDataDatabase, components.getAllMacrosInSystemProcess),
+            ForceUsersToUsePredefinedRepositoriesCommand::class.java to ForceUsersToUsePredefinedRepositoriesUseCase(components.pluginSettings),
+            GetForceUsersToUsePredefinedRepositoriesSettingQuery::class.java to GetForceUsersToUsePredefinedRepositoriesSettingUseCase(components.pluginSettings)
     )
 
     override fun <T : Any, R : BackendRequest<T>> getUseCaseForRequest(request: R): UseCase<R, T> {

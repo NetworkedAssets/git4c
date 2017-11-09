@@ -92,6 +92,7 @@ AJS.toInit(function () {
                 const vm = this
                 MarkupService.getTree().then(function(tree) {
                     if(tree.children.length == 0){
+                        Events.$emit("tree", null)
                         NotifyService.error('Error', 'There are no files present on this branch.')
                     }
                     Vue.set(vm, 'tree', tree.children);
@@ -259,10 +260,6 @@ AJS.toInit(function () {
                 Events.$emit("OverlayChange", loading)
             });
             Events.$on('treeLoaded', function () {
-                const loading = false;
-                Events.$emit("OverlayChange", loading)
-            });
-            Events.$on('updateComplete', function () {
                 const loading = false;
                 Events.$emit("OverlayChange", loading)
             });

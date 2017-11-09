@@ -238,6 +238,7 @@ var Markup = {
             } else {
                 $("#git4c-breadcrumbs-div").trigger("sticky_kit:detach");
             }
+            this.resizeContent()
         },
         disableFullscreen: function(){
             Events.$emit("FullscreenModeDisable")
@@ -330,6 +331,8 @@ var Markup = {
             vm.nextAnchor = anchor
         })
 
+        $(this.$el).find("#git4c-toolbar_filetree-button").tooltip()
+        $(this.$el).find("#git4c-filetree-expand_button").tooltip()
     },
 
     updated: function() {

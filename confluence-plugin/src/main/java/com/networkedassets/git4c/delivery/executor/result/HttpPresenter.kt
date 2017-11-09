@@ -1,5 +1,6 @@
 package com.networkedassets.git4c.delivery.executor.result
 
+import com.atlassian.confluence.core.service.NotAuthorizedException
 import com.github.kittinunf.result.Result
 import com.networkedassets.git4c.boundary.outbound.exceptions.ConflictException
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
@@ -31,6 +32,7 @@ class HttpPresenter() : BackendPresenter<Response, Response> {
 
     private fun getErrorFromException(exception: Throwable) = when (exception) {
         is IllegalArgumentException -> status(400)
+        is NotAuthorizedException -> status(401)
         is NotFoundException -> status(404)
         is ConflictException -> status(409)
         else -> status(500)

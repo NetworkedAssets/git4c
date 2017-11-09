@@ -115,6 +115,10 @@
         <resource type="download" name="removeGlobWarning.js" location="adminPanel/components/removeGlobWarning.js"/>
         <resource type="download" name="customGlobDialog.js" location="adminPanel/components/customGlobDialog.js"/>
 
+        <resource type="download" name="forcePredefinedRepositoriesWarning.js" location="adminPanel/components/forcePredefinedRepositoriesWarning.js"/>
+
+        <resource type="download" name="toggleButton.css" location="adminPanel/components/toggleButton.css"/>
+
         <context>com.networkedassets.git4c.adminResources</context>
     </web-resource>
 

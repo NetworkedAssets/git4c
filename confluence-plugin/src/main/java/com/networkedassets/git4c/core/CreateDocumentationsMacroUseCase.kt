@@ -1,5 +1,7 @@
 package com.networkedassets.git4c.core
 
+import com.atlassian.confluence.core.service.NotAuthorizedException
+import com.atlassian.confluence.user.AuthenticatedUserThreadLocal
 import com.github.kittinunf.result.Result
 import com.networkedassets.git4c.boundary.CreateDocumentationsMacroCommand
 import com.networkedassets.git4c.boundary.inbound.*
@@ -8,6 +10,7 @@ import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
 import com.networkedassets.git4c.core.bussiness.ConverterPlugin
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
 import com.networkedassets.git4c.core.common.IdentifierGenerator
+import com.networkedassets.git4c.core.datastore.PluginSettingsDatabase
 import com.networkedassets.git4c.core.datastore.repositories.ExtractorDataDatabase
 import com.networkedassets.git4c.core.datastore.extractors.LineNumbersExtractorData
 import com.networkedassets.git4c.core.datastore.extractors.MethodExtractorData
@@ -31,11 +34,18 @@ class CreateDocumentationsMacroUseCase(
         val extractorDataDatabase: ExtractorDataDatabase,
         val importer: SourcePlugin,
         val converter: ConverterPlugin,
-        val idGenerator: IdentifierGenerator
+        val idGenerator: IdentifierGenerator,
+        val pluginSettings: PluginSettingsDatabase
 ) : UseCase<CreateDocumentationsMacroCommand, SavedDocumentationsMacro> {
 
     override fun execute(request: CreateDocumentationsMacroCommand): Result<SavedDocumentationsMacro, Exception> {
         val documentationMacroToCreate = request.documentMacroMacroToCreate
+
+        if(!isAllowed(documentationMacroToCreate))
+        {
+            return Result.error( NotAuthorizedException(AuthenticatedUserThreadLocal.getUsername()) )
+        }
+
         val branch = documentationMacroToCreate.branch
         val extractorData = extractorConvert(documentationMacroToCreate.extractor)
         val repository = repositoryConvert(documentationMacroToCreate)
@@ -148,6 +158,12 @@ class CreateDocumentationsMacroUseCase(
             else -> throw RuntimeException("Unknown auth type: ${repository.credentials.javaClass}")
 
         }
+    }
+
+
+    private fun isAllowed(documentationMacroToCreate: DocumentationMacro ): Boolean{
+        val isForcedPredefined = pluginSettings.getForcePredefinedRepositoriesSetting()?: false
+        return !isForcedPredefined || isPredefined(documentationMacroToCreate) || isExisting(documentationMacroToCreate)
     }
 }
 

@@ -182,7 +182,10 @@ class JSoupPostProcessor(
                         val target = path.parent.toUri().resolve(beforeHash)
                         if (File(target).exists()) {
                             try {
-                                it.attr("v-on:click", """moveToFile('${URLEncoder.encode(startDirectoryPath.toUri().relativize(target).toString())}', '$afterHash')""")
+                                //We can't just encode target - markdown requires "%20" instead of spaces which will
+                                //encode to %2520 instead of %20. To fix this we replace %2520 with %20 after encoding
+                                val encodedLocation = URLEncoder.encode(startDirectoryPath.toUri().relativize(target).toString()).replace("%2520", "%20")
+                                it.attr("v-on:click", """moveToFile('$encodedLocation', '$afterHash')""")
                                 it.attr("href", "javascript:void(0)")
                             } catch (e: UnsupportedEncodingException) {
                                 throw ConDocException(e)

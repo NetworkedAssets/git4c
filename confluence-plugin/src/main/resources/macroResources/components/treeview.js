@@ -4,7 +4,7 @@ Vue.component('treeview', {
             '<div class="treeview">'+
             '    <div class="node-data" v-for="(node,index) in model">'+
             '        <!--<div class="node" v-bind:class="{active: isSelectedFile(index)}" @click.prevent="select(index, node[valuename])">-->'+
-            '        <div class="node" v-bind:class="{active: node.fullName === selectedFile}">'+
+            '        <div v-bind:title="node.name" class="node" v-bind:class="{active: node.fullName === selectedFile}">'+
             '            <i @click.prevent="select(index)" class="aui-icon aui-icon-small" '+
             '                v-bind:class="{'+
             '                    \'aui-iconfont-expanded\': isDirectory(node) && isExpanded[index],'+
@@ -44,6 +44,7 @@ Vue.component('treeview', {
 
     mounted: function () {
         const vm = this
+
         Events.$on('navCollapse', function () {
             $("#content-nav").removeClass("expanded").addClass("collapsed");
         });

@@ -4,12 +4,25 @@ Vue.component('git4cnouislider', {
     template:
     '<div>'+
     '    <div ref="slider"></div>'+
-    '    <div style="margin-top: 20px">'+
-    '        <input ref="startinput" style="width: 47%" type="number" name="start" value="10">'+
-    '        <input ref="endinput" style="width: 47%" type="number" name="end" value="30">'+
+    '    <div style="margin-top: 20px; display: inline-flex">'+
+    '        <input ref="startinput" style="width: 50%" type="number" name="start" value="10">'+
+    '        <input ref="endinput" style="width: 50%" type="number" name="end" value="30">'+
     '    </div>'+
     '</div>',
     props: ['numberOfLines'],
+    methods: {
+        updateSlider: function(start, end){
+            const startInput = this.$refs.startinput;
+            const endInput = this.$refs.endinput;
+            const slider = this.$refs.slider;
+
+            slider.noUiSlider.set([start, end])
+            if (!isNaN(start) && !isNaN(end)) {
+                startInput.value = start
+                endInput.value = end
+            }
+        }
+    },
     mounted: function () {
 
         var vm = this
@@ -18,6 +31,7 @@ Vue.component('git4cnouislider', {
         const slider = this.$refs.slider;
 
         const startInput = this.$refs.startinput;
+
         const endInput = this.$refs.endinput;
 
         var numberOfLines = this.numberOfLines;
@@ -26,12 +40,18 @@ Vue.component('git4cnouislider', {
             numberOfLines = 2
         }
 
+        if(typeof numberOfLines === "string")
+        {
+            numberOfLines = parseInt(numberOfLines)
+        }
+
+
         const update = function () {
             vm.$emit('input', [startInput.value, endInput.value])
         }
 
         noUiSlider.create(slider, {
-            start: [(numberOfLines) / 4, (numberOfLines * 3) / 4],
+            start: [1, numberOfLines],
             connect: true,
             step: 1,
 
@@ -63,6 +83,7 @@ Vue.component('git4cnouislider', {
             update()
         })
 
+
         endInput.addEventListener('change', function () {
             slider.noUiSlider.set([null, this.value])
             update()
@@ -74,7 +95,7 @@ Vue.component('git4cnouislider', {
             const slider = this.$refs.slider;
 
             slider.noUiSlider.updateOptions({
-                start: [(numberOfLines) / 4, (numberOfLines * 3) / 4],
+                start: [1, numberOfLines],
                 range: {
                     'min': 1,
                     'max': numberOfLines

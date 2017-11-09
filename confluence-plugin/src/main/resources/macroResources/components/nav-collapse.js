@@ -7,7 +7,10 @@ Vue.component("nav-collapse", {
     },
     mounted: function() {
         const vm = this
-        Events.$on("toggleSideBar", function() {vm.toggle()})
+        Events.$on("toggleSideBar", function () {
+            vm.toggle()
+        })
+        $($(this.$el).find("button")[0]).tooltip()
     },
     methods: {
         toggle: function () {

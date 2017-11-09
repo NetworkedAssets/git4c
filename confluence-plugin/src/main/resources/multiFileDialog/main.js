@@ -66,7 +66,7 @@
         '                <select class="select" v-show="(!repositories || repositories.length==0) && !customRepository" :disabled="true"  style="max-width: 50%">'+
         '                    <option>No Repositories Available</option>'+
         '                </select>'+
-        '                <button id="git4c-multi_file_dialog-add_repository-button" @click.prevent v-on:click="openCustomRepositoryDialog" class="aui-button aui-button-primary">'+
+        '                <button  v-bind:disabled="forcedPredefined" ref="custom_repository_button"  id="git4c-multi_file_dialog-add_repository-button" @click.prevent v-on:click="openCustomRepositoryDialog" class="aui-button aui-button-primary">'+
         '                    <span class="aui-icon aui-icon-small aui-iconfont-add"/>'+
         '                </button>'+
         '            </div>'+
@@ -87,7 +87,7 @@
         '            </div>'+
         '            <div class="field-group">'+
         '              <label for="doc_macro-repo_glob">Filter</label>'+
-        '               <input style="max-width: 50%" v-model="glob" class="text" type="text" ref="doc_macro-glob" placeholder="pattern">'+
+        '               <input style="max-width: 50%" class="text" type="text" ref="doc_macro-glob" placeholder="pattern"></input>'+
         '                    <button style="position: absolute; margin-left: 1%;" v-bind:disabled="!fileTree" @click.prevent="showFileTreeDialog()" class="aui-button aui-button-primary">'+
         '                        <span class="aui-icon aui-icon-small aui-iconfont-nav-children-large">Show file tree</span>'+
         '                    </button>'+
@@ -159,6 +159,8 @@
                 globList: Array(),
                 defaultDocItem: "",
 
+                forcedPredefined: true,
+
                 currentError: undefined,
                 errors: errors,
 
@@ -183,6 +185,8 @@
                 data.globList = undefined
 
                 data.downloadingBranches = undefined
+
+                data.forcedPredefined = undefined
 
                 data.saving = undefined
                 data.isFilled = undefined
@@ -226,6 +230,7 @@
                 },
                 watch: {
                     repository: function () {
+                        this.fileTree = null
                         this.getBranches()
                         this.checkIfFilled()
                     },
@@ -491,13 +496,17 @@
                             vm.globList = response.data.globs.map(function (data) {
                                 return {id: data.glob, text: data.glob + " (" + data.name + ")"}
                             })
-                            $(vm.$refs['doc_macro-glob']).auiSelect2({
+
+                            const select2 = $(vm.$refs['doc_macro-glob'])
+
+                            select2.auiSelect2({
                                 tags: vm.globList,
                                 tokenSeparators: [",", " "]
                             }).on('change', function (e) {
-                                var val = $(this).val();
-                                vm.glob = val;
+                                vm.glob = e.val.join();
                             });
+
+                            select2.auiSelect2("val", vm.glob.split(","));
 
                         }, function(error) {
                             error.text().then(function(text) {
@@ -519,6 +528,23 @@
                     },
                     init: function(){
                         const vm = this
+
+                        Vue.http.get(restUrl + "/settings/repository/predefine/force").then(function(response) {
+                            if(response.body.forced === true) {
+                                vm.forcedPredefined = true
+                                vm.$refs.custom_repository_button.title = "Administrator blocked custom repositories"
+
+                            }
+                            else {
+                                vm.forcedPredefined = false
+                            }
+
+                        }, function(error) {
+                            error.text().then(function(text) {
+                                vm.showError(text)
+                            })
+                        })
+
                         if(data.uuid){
                             if(this.glob){
                                 if(this.glob == "undefined"){

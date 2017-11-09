@@ -1,3 +1,5 @@
+---
+---
 # Git Viewer For Confluence
 
 ## Adding macro
@@ -12,11 +14,10 @@ Choose Git Viewer For Confluence macro from the list of available macros in your
 
 Macro configuration dialog should appear.
 
-![](images/chrome_2017-09-04_14-42-23.png)
-
+![](images/multi_file_dialog.png)
 
 ### Repository Configuration
-Git4C supports two types of repositories
+Git4C supports two types of repositories.
 
 #### Predefined Repository
 
@@ -27,17 +28,19 @@ You can choose a Predefined Repository from the list of repositories in the macr
 
 If you wish to include a repository that has not been defined in the Predefined Repositories list, simply click on the **Custom Repository Button** next to the **Predefined Repositories list**.
 
+This option may be blocked by the administrator. In that case, the custom repository button will be disabled.
+
 **Custom Repository Dialog** should appear.
 
 Git Viewer For Confluence macro configuration dialog will ask you to pass necessary parameters of your repository.
 
 ![](images/chrome_2017-09-04_14-45-43.png) ![](images/chrome_2017-09-04_14-43-55.png) ![](images/chrome_2017-09-04_14-43-25.png)
 
-There are three possible authentication options
+There are three possible authentication options:
 
-- No authentication for public repositories
-- Username and password authentication for http(s) connection
-- SSH key authentication for ssh connection
+- No authentication for public repositories.
+- Username and password authentication for http(s) connection.
+- SSH key authentication for ssh connection.
 
 You can choose them in the "Connection and authentication type" dropdown.
 
@@ -54,14 +57,20 @@ After you fill out all the required fields click the **Save** button. Git Viewer
 ### Macro Parameters Configuration
 
 After you successfully choose desired repostiory, branch list will be downloaded automatically. <br />
-Select default branch to be displayed in Git Viewer For Confluence Macro
+Select default branch to be displayed in Git Viewer For Confluence Macro.
 
-![](images/chrome_2017-09-04_14-47-31.png)
+![](images/chrome_2017-11-06_10-48-28.png)
 
 The last remaining fields are Filter Pattern field and Default File field. Those fields are optional. <br />
 First one specifies a filter for your files, you can choose any pattern that satisfies your needs, and display only those files in Git Viewer For Confluence Macro you want. <br />
 Filter Patterns can be specified by the Administrator, and will be displayed after you click on Filter Pattern input field. <br />
 You can also input your own pattern. For more information about how to define Glob Patterns Check: https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob
+
+Git4C offers you the posibility to select the root folder. Simply click on the root folder selection button next to the filter input filed, and the tree of files will apprear.
+
+![](images/chrome_2017-11-06_10-48-08.png)
+
+Then select desired root folder and apply it by clicking ok. The filter will be automatically generated and visible in the filter input field.
 
 Second field specifies a path to the file, that will be displayed everytime you visit the page, i.e. "home/source/readme.md"
 
@@ -73,7 +82,7 @@ After you have successfully configured and added Git4C macro, you should notice 
 
 ![](images/1.2/multifilemacro/overview.png)
 
-Git4C consists of following elements
+Git4C consists of following elements:
 1. Branch selection
 2. Hiding sidebar and activating sticky toolbar
 3. File name
@@ -84,7 +93,7 @@ Git4C consists of following elements
 8. Files tree
 9. File content
 
-The branch selection dropdown allows you to switch between different branches of your repository in view time. Simply click on the dropdown
+The branch selection dropdown allows you to switch between different branches of your repository in view time. Simply click on the dropdown.
 
 ![](images/1.2/multifilemacro/branch_selection.png)
 
@@ -131,7 +140,7 @@ Choose Git Viewer For Confluence macro from the list of available macros in your
 
 Macro configuration dialog should appear. 
 
-![](images/chrome_2017-09-04_15-11-22.png)
+![](images/single_file_dialog.png)
 
 #### Repository Configuration
 

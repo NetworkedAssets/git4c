@@ -1,5 +1,6 @@
 package com.networkedassets.git4c.core
 
+import com.atlassian.confluence.core.service.NotAuthorizedException
 import com.networkedassets.git4c.application.PluginComponents
 import com.networkedassets.git4c.boundary.CreateDocumentationsMacroCommand
 import com.networkedassets.git4c.boundary.inbound.*
@@ -15,7 +16,7 @@ import kotlin.test.assertTrue
 class CreateDocumentationsMacroUseCaseTest : UseCaseTest<CreateDocumentationsMacroUseCase>() {
 
     override fun getUseCase(plugin: PluginComponents): CreateDocumentationsMacroUseCase {
-        return CreateDocumentationsMacroUseCase(plugin.macroSettingsDatabase, plugin.repositoryDatabase, plugin.globsForMacroDatabase, plugin.predefinedRepositoryDatabase, plugin.extractorDataDatabase, plugin.importer, plugin.converter, plugin.idGenerator)
+        return CreateDocumentationsMacroUseCase(plugin.macroSettingsDatabase, plugin.repositoryDatabase, plugin.globsForMacroDatabase, plugin.predefinedRepositoryDatabase, plugin.extractorDataDatabase, plugin.importer, plugin.converter, plugin.idGenerator, plugin.pluginSettings)
     }
 
 
@@ -103,5 +104,35 @@ class CreateDocumentationsMacroUseCaseTest : UseCaseTest<CreateDocumentationsMac
         assertNull(answer.component1())
         assertNotNull(answer.component2())
         assertTrue(answer.component2()!!.message == VerificationStatus.SOURCE_NOT_FOUND.name)
+    }
+
+    @Test
+    fun `Git4C Macro is not created with custom Repository when administrator forced users to use predefined repositories`() {
+        val repositoryToCreate = CustomRepository("", NoAuth())
+        val repository = RepositoryDetails(repositoryToCreate)
+        val macroToCreate = DocumentationMacro(repository, "master", listOf("glob"), "readme.me", null)
+        val createMacroCommand = CreateDocumentationsMacroCommand(macroToCreate);
+        components.pluginSettings.setForcePredefinedRepositories(true)
+
+        val answer = useCase.execute(createMacroCommand);
+
+        assertNull(answer.component1())
+        assertNotNull(answer.component2())
+        assertTrue(answer.component2() is NotAuthorizedException)
+    }
+
+    @Test
+    fun `Git4C Macro is created when Administrator forces users to use predefined repository and proper Predefined Repository is used`() {
+        components.repositoryDatabase.insert("1", RepositoryWithNoAuthorization("1", "src/test/resources"))
+        components.predefinedRepositoryDatabase.insert("1", PredefinedRepository("1", "1", "name_predefine"))
+        components.pluginSettings.setForcePredefinedRepositories(true)
+        val repositoryToCreate = PredefinedRepositoryToCreate("1")
+        val repository = RepositoryDetails(repositoryToCreate)
+        val macroToCreate = DocumentationMacro(repository, "master", listOf("glob"), "readme.me", null)
+        val createMacroCommand = CreateDocumentationsMacroCommand(macroToCreate);
+
+        val answer = useCase.execute(createMacroCommand);
+
+        assertNotNull(answer.component1())
     }
 }

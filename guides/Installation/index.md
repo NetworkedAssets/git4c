@@ -1,5 +1,7 @@
+---
+---
 ### Requirements
-1. Graphviz for PlantUML support - available in most linux distributions in package repository
+1. Graphviz for PlantUML support - available in package manager for most linux distributions
 
 ### Installation
 1. Go to the Atlassian Marketplace

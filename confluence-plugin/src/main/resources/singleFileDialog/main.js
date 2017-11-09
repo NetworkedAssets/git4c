@@ -69,7 +69,7 @@
         '                        <select class="select" v-show="(!repositories || repositories.length==0) && !customRepository" :disabled="true"  style="max-width: 64%">'+
         '                            <option>No Repositories Available</option>'+
         '                        </select>'+
-        '                        <button @click.prevent v-on:click="openCustomRepositoryDialog" class="aui-button aui-button-primary">'+
+        '                        <button v-bind:disabled="forcedPredefined" ref="custom_repository_button" @click.prevent v-on:click="openCustomRepositoryDialog" class="aui-button aui-button-primary">'+
         '                            <span class="aui-icon aui-icon-small aui-iconfont-add"/>'+
         '                        </button>'+
         '                    </div>'+
@@ -134,7 +134,7 @@
         '                       <select class="select" v-model="showType">'+
         '                            <option value="all">All lines</option>'+
         '                            <option value="lines" v-if="haveLineNumbers">Lines Range</option>'+
-        '                            <option value="method" v-if="hasMethods">Single Method</option>'+
+        '                            <option value="method" v-if="hasMethods">Methods</option>'+
         '                        </select> '+
         '                    </div>'+
         '                    <div class="field-group" v-if="hasMethods && showType === \'method\'">'+
@@ -147,10 +147,10 @@
         '                          <option v-for="method in methods">{{ method.name }}</option>'+
         '                       </select>      '+
         '                    </div>'+
-        '                    <div class="field-group" v-if="showType === \'lines\' && haveLineNumbers && numberOfLines !== 1">'+
+        '                    <div class="field-group" v-show="showType === \'lines\' && haveLineNumbers && numberOfLines !== 1">'+
         '                        <label>Line number selection</label>'+
         '                        <div style="max-width: 250px; margin-right: 20px; margin-left: 17px">'+
-        '                            <git4cnouislider :number-of-lines="numberOfLines" v-model="lines"></git4cnouislider>'+
+        '                            <git4cnouislider :number-of-lines="numberOfLines" ref="line_slider" v-model="lines"></git4cnouislider>'+
         '                        </div> '+
         '                    </div>'+
         '                    '+
@@ -231,6 +231,10 @@
                 singleFile: undefined,
 
                 showType: "all",
+                prevShowType: undefined,
+
+                forcedPredefined: true,
+
 
                 currentError: undefined,
                 fileTree: undefined,
@@ -276,6 +280,7 @@
             const hide = function(uuid) {
                 console.log("Closing")
 
+                data.forcedPredefined = undefined
                 data.branches = undefined
                 data.errors = undefined
                 data.currentError = undefined
@@ -300,10 +305,11 @@
                 data.customRepository = undefined
                 data.repository = undefined
                 data.downloadingFile = undefined,
-                data.showType = undefined,
                 data.lines = undefined,
                 data.fileReq = undefined
                 data.singleFile = undefined
+                data.numberOfLines = undefined
+                data.showType = undefined
 
                 tinymce.confluence.macrobrowser.macroBrowserComplete({
                     "name": "Git4C Single File",
@@ -375,6 +381,23 @@
                     showType: function () {
 
                         //Remove highlight
+                        this.removeHighlight()
+
+                        //Reset content
+                        this.fileContent = ""
+                        this.fileContent = this.originalContent
+
+
+                        if(this.showType == "method"){
+                            this.handleMethodChange()
+                        }
+                        if(this.showType == "lines"){
+                            this.handleLinesChange()
+                        }
+                    }
+                },
+                methods: {
+                    removeHighlight: function () {
                         $(this.$el).find("div.git4c-prismjs-div pre").each(function (i, block) {
                             const el = $(block)
 
@@ -383,18 +406,19 @@
                             })
 
                         })
-
-                        //Reset content
-                        this.fileContent = ""
-                        this.fileContent = this.originalContent
-                    }
-                },
-                methods: {
+                    },
                     handleLinesChange: function () {
                         this.$nextTick(function () {
 
-                            const lines = this.lines
+                            if(this.showType != "lines"){
+                                this.removeHighlight()
+                                return
+                            }
 
+                            var lines = this.lines
+                            if(!lines) {
+                                lines = [0, this.fileContent.split("\n").length - 6]
+                            }
                             $(this.$el).find("div.git4c-prismjs-div pre").each(function (i, block) {
                                 const el = $(block)
 
@@ -417,7 +441,7 @@
                                 const vm = this
                                 vm.singleFile = false
 
-                                this.numberOfLines = this.fileContent.split("\n").length - 7
+                                this.numberOfLines = this.fileContent.split("\n").length - 6
 
                                 $(this.$el).find("pre code.git4c-highlightjs-code").each(function (i, block) {
                                     hljs.highlightBlock(block);
@@ -450,7 +474,6 @@
                         // console.log("Width", trueWidth)
                         if (trueWidth) {
                             $(this.$el).find("#git4c-single-dialog-code-holder").css({width: trueWidth + 40})
-                            $(this.$el).find("pre.line-numbers").css({'margin-right': 20})
                         }
                     },
                     handleMethodChange: function () {
@@ -656,8 +679,8 @@
                         if (!this.file) {
                             return
                         }
-
                         this.showType = "all"
+
                         this.downloadingFile = true
 
                         this.$nextTick(function() {
@@ -724,6 +747,15 @@
                                 this.originalContent = content
                                 if (content) {
                                     vm.fileContent = content
+                                    vm.numberOfLines = content.split("\n").length - 6
+                                    vm.$nextTick(function () {
+                                        if(vm.startLine && vm.endLine){
+                                            vm.$refs.line_slider.updateSlider(vm.startLine, vm.endLine)
+
+                                            vm.startLine = undefined
+                                            vm.endLine = undefined
+                                    }
+                                    })
                                 } else {
                                     vm.fileContent = "<div>Cannot open file</div>"
                                 }
@@ -743,6 +775,11 @@
                     },
                     getMethods: function () {
                         const vm = this
+
+                        if(this.prevShowType){
+                            this.showType = this.prevShowType
+                            this.prevShowType = undefined
+                        }
 
                         if (!this.file) {
                             return
@@ -829,6 +866,9 @@
                         var extractor
 
                         if (this.showType === "lines" ) {
+                            this.startLine = this.lines[0]
+                            this.endLine = this.lines[1]
+                            this.prevShowType = "lines"
                             extractor = this.haveLineNumbers ? {
                                 type: "LINENUMBERS",
                                 start: Math.round(this.lines[0]),
@@ -836,6 +876,7 @@
                             } : undefined
 
                         } else if(this.showType === "method") {
+                            this.prevShowType = "method"
                             extractor = this.hasMethods ? {
                                 type: "METHOD",
                                 method: method
@@ -1017,7 +1058,26 @@
                     },
                     init: function(){
                         const vm = this
+
+                        Vue.http.get(restUrl + "/settings/repository/predefine/force").then(function(response) {
+                            if(response.body.forced === true) {
+                                vm.forcedPredefined = true
+                                vm.$refs.custom_repository_button.title = "Administrator blocked custom repositories"
+
+                            }
+                            else {
+                                vm.forcedPredefined = false
+                            }
+
+                        }, function(error) {
+                            error.text().then(function(text) {
+                                vm.showError(text)
+                            })
+                        })
                         if(data.uuid){
+                            if(vm.prevShowType){
+                                vm.showType = vm.prevShowType
+                            }
                             Vue.http.get(restUrl + "/" + data.uuid).then(function(response) {
                                 vm.existingRepositoryUuid = response.body.repositoryUuid
                                 if(vm.customRepositoryName) {
@@ -1068,14 +1128,14 @@
 '                  <span class="aui-icon aui-icon-small aui-iconfont-close-dialog">Close</span>'+
 '                  </a>'+
 '               </header>'+
-'               <div class="aui-dialog2-content" style="margin: 0; padding: 0; display: flex;"> '+
+'               <div class="aui-dialog2-content" style="height: 80%; margin: 0; padding: 0; display: flex;"> '+
 '                   <div id="git4c-single-dialog-tree-div" style="width: 200px; padding: 20px; overflow: auto;" ref="fileTree">'+
 '                       <git4c-filetree :data="fileTree"></git4c-filetree>'+
 '                   </div>'+
 '                   <div style="width: 400px; border-left: 1px solid #ccc; overflow: auto; display: flex; flex-direction: column">'+
 '                       <div style="margin-left: 20px; margin-top: 8px; margin-bottom: 8px">File preview</div>'+
-'                       <hr style="margin: 0" />'+
-'                       <div v-if="fileContent" v-bind:class="{ \'git4c-single-dialog-tree-code-holder-markdown \': !singleFile }" id="git4c-single-dialog-tree-code-holder" v-html="fileContent"></div>'+
+'                       <hr ref="previewbar" style="margin: 0" />'+
+'                       <div v-if="fileContent" style="height: 100%;" v-bind:class="{ \'git4c-single-dialog-tree-code-holder-markdown \': !singleFile }" id="git4c-single-dialog-tree-code-holder" v-html="fileContent"></div>'+
 '                       <overlay v-else></overlay>'+
 '                    </div>'+
 '               </div>'+
@@ -1109,13 +1169,6 @@
 
         const Bus = new Vue({});
 
-        var maxCodeHeight = 20
-
-        const resizeFun = function() {
-            maxCodeHeight = Math.max($("#singlefiledoc_filetree_macroDialog").height(), 231) - 75
-            Bus.$emit("WindowResized")
-        }
-
         vue = new Vue({
             el: '#singlefiledoc_filetree_macroDialog',
             data: function () {
@@ -1141,7 +1194,22 @@
                     } else {
                         hide(undefined)
                     }
-                }
+                },
+                resizeCodeDiv: function () {
+                    $(this.$el).find("#git4c-single-dialog-tree-code-holder").css({width: ''})
+
+                    var trueWidth = 0
+                    try {
+                        trueWidth = $(this.$el).find("pre.line-numbers").get()[0].scrollWidth
+                    } catch (err) {
+                        trueWidth = 0
+                    }
+
+                    if (trueWidth) {
+                        $(this.$el).find("#git4c-single-dialog-tree-code-holder").css({width: trueWidth + 40})
+                        $(this.$refs.previewbar).css({width: trueWidth + 40})
+                    }
+                },
             },
             mounted: function () {
 
@@ -1149,13 +1217,16 @@
 
                 Bus.$on('selectedFile', function(file) {
 
+                    $(vm.$refs.previewbar).css({width: "100%"})
+                    $(vm.$el).find("#git4c-single-dialog-tree-code-holder").css({width: "100%"})
+
                     vm.currentFile = file
                     vm.singleFile = false
                     vm.fileContent = ""
 
                     const before = {
                         before: function(req) {
-                            if (this.request) {
+                            if (vm.request) {
                                 vm.request.abort()
                             }
                             vm.request = req
@@ -1202,52 +1273,25 @@
                     promise.then(function(response) {
 
                         vm.fileContent = response.body.content
-                        this.$nextTick(function() {
+                        vm.$nextTick(function() {
 
-                            this.singleFile = false
-                            $(this.$el).find("pre code.git4c-highlightjs-code").each(function (i, block) {
+                            vm.singleFile = false
+                            $(vm.$el).find("pre code.git4c-highlightjs-code").each(function (i, block) {
                                 hljs.highlightBlock(block);
                             });
-                            $(this.$el).find("code.git4c-prismjs-code").each(function (i, block) {
+
+                            $(vm.$el).find("code.git4c-prismjs-code").each(function (i, block) {
                                 vm.singleFile = true
+                                $(vm.$el).find("#git4c-single-dialog-tree-code-holder").css("height","100%")
+                                $(vm.$el).find("#git4c-single-dialog-tree-code-holder").css("background-color","#f5f2f0")
                                 Prism.highlightElement(block)
                             });
-                            this.$nextTick(function () {
 
-                                $(this.$root.$el).find("pre.line-numbers").css({"max-height": maxCodeHeight})
-
-                                const tree = this.$refs.fileTree
-                                const pre = $(this.$root.$el).find("pre.line-numbers")[0]
-
-                                console.log("Pre", pre)
-
-                                if (pre) {
-                                    const preHeight = $(pre).height()
-                                    const destHeight = tree.clientHeight - 36
-
-                                    console.log("Pre height", preHeight)
-                                    console.log("Dest height", destHeight)
-
-                                    if (preHeight < destHeight) {
-                                        $(pre).height(destHeight)
-                                    }
-                                }
-                            })
+                            vm.resizeCodeDiv()
                         })
                     })
                 })
 
-                Bus.$on("WindowResized", function() {
-                    $(vm.$root.$el).find("pre.line-numbers").css({"max-height": maxCodeHeight})
-                })
-
-                resizeFun()
-
-                window.addEventListener('resize', resizeFun)
-
-            },
-            destroyed: function () {
-                window.removeEventListener("resize", resizeFun)
             }
         })
     }

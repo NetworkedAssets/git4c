@@ -10,6 +10,7 @@ import com.networkedassets.git4c.core.bussiness.SourcePlugin
 import com.networkedassets.git4c.core.common.IdentifierGenerator
 import com.networkedassets.git4c.core.common.UnifiedDataStore
 import com.networkedassets.git4c.core.datastore.MacroSettingsProvider
+import com.networkedassets.git4c.core.datastore.PluginSettingsDatabase
 import com.networkedassets.git4c.core.datastore.cache.DocumentsViewCache
 import com.networkedassets.git4c.core.datastore.cache.MacroSettingsCache
 import com.networkedassets.git4c.core.datastore.cache.TemporaryIdCache
@@ -40,7 +41,8 @@ class PluginComponents(
         val pageBuilder: ErrorPageBuilder,
         val spaceManager: SpaceManager,
         val pageManager: PageManager,
-        val pageMacroExtractor: PageMacroExtractor
+        val pageMacroExtractor: PageMacroExtractor,
+        val pluginSettings: PluginSettingsDatabase
 ) {
     val macroSettingsCachableDatabase = MacroSettingsProvider(
             UnifiedDataStore(

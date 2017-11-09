@@ -1,7 +1,7 @@
 Vue.component("branch", {
 
     template:
-    ' <span class="git4c-branch">'+
+    ' <div class="git4c-branch" style="display: flex; justify-content: center">'+
     '     <!-- Trigger -->'+
     '    <a v-if="branches.length == 0" aria-owns="git4c-branches" aria-haspopup="true" class="aui-button aui-style-default aui-dropdown2-trigger git4c-branches-dropdown git4c-white-aui-dropdown2" style="color: black">'+
     '       <span class="aui-icon aui-icon-small aui-iconfont-devtools-branch">Branch</span>'+
@@ -23,7 +23,7 @@ Vue.component("branch", {
     '           </li>'+
     '       </ul>'+
     '    </div>'+
-    ' </span>',
+    ' </div>',
 
     data: function () {
         return {

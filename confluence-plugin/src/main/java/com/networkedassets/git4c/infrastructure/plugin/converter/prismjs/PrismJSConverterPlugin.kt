@@ -12,6 +12,7 @@ class PrismJSConverterPlugin : InternalConverterPlugin {
     val map = mapOf(
             "c" to listOf("c", "h"),
             "cpp" to listOf("cpp", "c++", "hpp"),
+            "csharp" to listOf("cs"),
             "css" to listOf("css"),
             "gherkin" to listOf("feature"),
             "groovy" to listOf("groovy", "gradle"),

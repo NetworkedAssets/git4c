@@ -8,8 +8,10 @@ import com.networkedassets.git4c.core.business.ErrorPageBuilder
 import com.networkedassets.git4c.core.business.PageMacroExtractor
 import com.networkedassets.git4c.core.business.PageManager
 import com.networkedassets.git4c.core.business.SpaceManager
+import com.networkedassets.git4c.core.datastore.PluginSettings
 import com.networkedassets.git4c.core.datastore.repositories.PredefinedGlobsDatabase
 import com.networkedassets.git4c.delivery.executor.execution.UseCase
+import com.networkedassets.git4c.infrastructure.ConfluencePluginSettingsDatabase
 import com.networkedassets.git4c.infrastructure.RepositoryDesEncryptor
 import com.networkedassets.git4c.infrastructure.UuidIdentifierGenerator
 import com.networkedassets.git4c.infrastructure.cache.AtlassianDocumentsViewCache
@@ -105,6 +107,21 @@ abstract class UseCaseTest<USECASE : UseCase<*, *>> {
 
         val parser = Parsers()
 
+        val pluginSettingsDatabase = ConfluencePluginSettingsDatabase(object: PluginSettings {
+            val hashmap = HashMap<String, String>()
+            override fun put(key: String, setting: String) {
+                hashmap.put(key, setting)
+            }
+
+            override fun get(key: String): String? {
+                return hashmap.get(key)
+            }
+
+            override fun remove(key: String) {
+                hashmap.remove(key)
+            }
+        })
+
         return PluginComponents(
                 importer,
                 converter,
@@ -123,11 +140,14 @@ abstract class UseCaseTest<USECASE : UseCase<*, *>> {
                 mock(ErrorPageBuilder::class.java),
                 mock(SpaceManager::class.java),
                 mock(PageManager::class.java),
-                mock(PageMacroExtractor::class.java)
+                mock(PageMacroExtractor::class.java),
+                pluginSettingsDatabase
         )
 
     }
 
     abstract fun getUseCase(plugin: PluginComponents): USECASE
 
+
 }
+

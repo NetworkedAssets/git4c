@@ -25,7 +25,7 @@ var Git4CAdminPanel = {
                 '     @removeGlobRequest="openRemoveGlobWarning($event)"'+
                 '     ></predefinedGlobList>'+
                 '     <pagesWithMacroList></pagesWithMacroList>'+
-                '    <otherOptions ref="other_options" id="other_options" @refreshRequest="refresh" @cleanDataRequest="openCleanDataWarning" @restoreDefaultGlobsRequest="openRestoreDefaultGlobsWarning" @cleanUnusedDataRequest="openCleanUnusedDataWarning"></otherOptions>'+
+                '    <otherOptions ref="other_options" id="other_options" @refreshRequest="refresh" @cleanDataRequest="openCleanDataWarning" @restoreDefaultGlobsRequest="openRestoreDefaultGlobsWarning" @forcePredefinedRepositoriesRequest="openForcePredefinedRepositoriesWarning" @cleanUnusedDataRequest="openCleanUnusedDataWarning"></otherOptions>'+
                 '    <div id="custom_repository-dialog-div">'+
                 '        <customRepositoryDialog id="custom_repository-dialog" ref="custom_repository_dialog" @closeCustomRepositoryDialog="closeCustomRepositoryDialog()" @repositoryDefined="forwardNewRepository($event)"></customRepositoryDialog>'+
                 '    </div>'+
@@ -38,6 +38,7 @@ var Git4CAdminPanel = {
                 '         <cleanDataWarning id="clean_data-warning" ref="clean_data_warning" @closeCleanDataWarning="closeCleanDataWarning" @cleanDataConfirmed="forwardCleanDataConfirmation"></cleanDataWarning>'+
                 '         <restoreDefaultGlobsWarning id="restore_default_globs-warning" ref="restore_default_globs" @closeRestoreDefaultGlobsWarning="closeRestoreDefaultGlobsWarning" @restoreDefaultGlobsWarningConfirmed="forwardRestoreDefaultGlobsConfirmation"></restoreDefaultGlobsWarning>'+
                 '         <cleanUnusedDataWarning id="clean_unused-data-warning" ref="clean-unused-data" @closeCleanUnusedDataWarning="closeCleanUnusedDataWarning" @cleanUnusedDataConfirmed="forwardCleanUnusedDataConfirmation"></cleanUnusedDataWarning>'+
+                '         <forcePredefinedRepositoriesWarning id="force_predefined_repositories-warning" ref="force_predefined_repositories" @cancelForcePredefinedRepositoriesWarning="cancelForcePredefinedRepositoriesWarning" @closeForcePredefinedRepositoriesWarning="closeForcePredefinedRepositoriesWarning" @confirmForcePredefinedRepositoriesWarning="forwardForcePredefinedRepositoriesConfirmation"></forcePredefinedRepositoriesWarning>'+
                 '    </div>'+
                 '</div>'
                 ,
@@ -56,7 +57,9 @@ var Git4CAdminPanel = {
                 removeGlobWarning: Git4CRemoveGlobWarning.getComponent(Events),
                 cleanDataWarning: Git4CCleanDataWarning.getComponent(Events),
                 restoreDefaultGlobsWarning: Git4CRestoreDefaultGlobsWarning.getComponent(Events),
-                cleanUnusedDataWarning: Git4CUnusedDataWarning.getComponent(Events)
+                cleanUnusedDataWarning: Git4CUnusedDataWarning.getComponent(Events),
+
+                forcePredefinedRepositoriesWarning: Git4CForcePredefinedRepositoriesWarning.getComponent(Events)
             },
             methods: {
 
@@ -176,6 +179,22 @@ var Git4CAdminPanel = {
 
                 forwardCleanUnusedDataConfirmation: function() {
                     this.$refs.other_options.cleanUnusedData()
+                },
+
+                // Force Predefined Repositories
+                openForcePredefinedRepositoriesWarning: function() {
+                    AJS.dialog2("#force_predefined_repositories-warning").show()
+                },
+                closeForcePredefinedRepositoriesWarning: function() {
+                    AJS.dialog2("#force_predefined_repositories-warning").hide()
+                },
+
+                cancelForcePredefinedRepositoriesWarning: function () {
+                    this.closeForcePredefinedRepositoriesWarning()
+                    this.$refs.other_options.toggleForcePredefinedRepositoriesCanceled()
+                },
+                forwardForcePredefinedRepositoriesConfirmation: function() {
+                    this.$refs.other_options.toggleForcePredefinedRepositories()
                 }
 
 

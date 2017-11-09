@@ -188,9 +188,11 @@
 }
 
 .git4c-branches-dropdown {
-    min-width: 210px;
+    /* Fixes IE dots problem */
+    /*min-width: 210px;*/
+    /*width: 210px !important;*/
+
     max-width: 210px;
-    width: 210px !important;
     margin-left: 20px;
     margin-bottom: 10px !important;
 }

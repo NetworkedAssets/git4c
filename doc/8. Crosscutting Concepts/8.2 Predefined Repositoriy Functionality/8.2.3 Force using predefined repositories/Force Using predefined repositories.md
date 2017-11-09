@@ -1,0 +1,86 @@
+
+### Force using predefined repositories
+
+An administrator can force users to use only predefined repositories.
+The endpoint for setting such an option is available at:
+
+```
+POST {git4c-backend-url}/settings/repository/predefine/force
+```
+
+
+The payload of the request should be a JSON with the boolean.
+
+```
+data class ForcePredefinedRepositoriesInfo(
+        val toForce: Boolean
+)
+```
+
+
+#### Example request and response
+```
+Request URL:
+    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/settings/repository/predefine/force
+
+Request Method:
+    POST
+
+Request Headers:
+
+POST /confluence/rest/doc/1.0/documentation/settings/repository/predefine/force HTTP/1.1
+Host: pc-kurban:1990
+Connection: keep-alive
+Content-Length: 16
+Accept: application/json, text/plain, */*
+Origin: http://pc-kurban:1990
+X-Requested-With: XMLHttpRequest
+User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36
+Content-Type: application/json;charset=UTF-8
+Referer: http://pc-kurban:1990/confluence/plugins/servlet/git4c/admin
+Accept-Encoding: gzip, deflate
+Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
+Cookie: JSESSIONID=70C7DB1D70B4710FF3926DBFC940077E; confluence.browse.space.cookie=space-templates
+
+Request Payload:
+{
+    "toForce": true
+}
+
+
+Response Status Code:
+    200 OK
+
+Response Body:
+    {
+        "forced": true
+    }
+```
+
+
+### Checking the current settings
+
+You can check the current settings for forcing predefined repositories at
+```
+GET {git4c-backend-url}/settings/repository/predefine/force
+
+Request Headers
+    GET /confluence/rest/doc/1.0/documentation/settings/repository/predefine/force HTTP/1.1
+    Host: pc-kurban:1990
+    Connection: keep-alive
+    Accept: application/json, text/plain, */*
+    X-Requested-With: XMLHttpRequest
+    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36
+    Referer: http://pc-kurban:1990/confluence/pages/createpage.action?spaceKey=ds
+    Accept-Encoding: gzip, deflate
+    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
+    Cookie: JSESSIONID=A714C053D1A1EDA8E587937B28330A64; confluence.browse.space.cookie=space-templates
+
+Response Status Code:
+    200 OK
+
+Response Body:
+    {
+        "forced": false
+    }
+```

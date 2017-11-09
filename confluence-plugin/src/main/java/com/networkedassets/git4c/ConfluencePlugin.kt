@@ -3,9 +3,11 @@ package com.networkedassets.git4c
 import com.atlassian.cache.CacheManager
 import com.atlassian.confluence.pages.PageManager
 import com.atlassian.confluence.spaces.SpaceManager
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory
 import com.atlassian.sal.api.transaction.TransactionTemplate
 import com.networkedassets.git4c.application.Plugin
 import com.networkedassets.git4c.application.PluginComponents
+import com.networkedassets.git4c.core.datastore.PluginSettingsDatabase
 import com.networkedassets.git4c.core.datastore.repositories.*
 import com.networkedassets.git4c.infrastructure.*
 import com.networkedassets.git4c.infrastructure.cache.AtlassianDocumentsViewCache
@@ -36,7 +38,8 @@ class ConfluencePlugin(
         val cacheManager: CacheManager,
         val spaceManager: SpaceManager,
         val pageManager: PageManager,
-        val transationTemplate: TransactionTemplate
+        val transationTemplate: TransactionTemplate,
+        val pluginSettingsFactory: PluginSettingsFactory
 ) : Plugin() {
 
     private val log = LoggerFactory.getLogger(ConfluencePlugin::class.java)
@@ -72,6 +75,8 @@ class ConfluencePlugin(
 
         val pageMacroExtractor = AtlassianPageMacroExtractor()
 
+        val pluginSettingsDatabase = ConfluencePluginSettingsDatabase(ConfluencePluginSettings(pluginSettingsFactory))
+
         log.info { "Initialization of Git4C Confluence Plugin components has been finished." }
 
         PluginComponents(
@@ -92,7 +97,8 @@ class ConfluencePlugin(
                 pageBuilder,
                 spaceManager,
                 pageManager,
-                pageMacroExtractor
+                pageMacroExtractor,
+                pluginSettingsDatabase
         )
     }
 }

@@ -27,10 +27,12 @@ var Git4COverlay = {
                 '    </div>' +
                 '    <div v-if="error == true" class="git4c-component-overlay">' +
                 '        <img v-bind:src="dragonLocation" style="max-width: 100%; max-height:90%" id="dragon_image">' +
-                '        <p v-if="repositoryRemoved == true"> Repository has been removed by the administrator.</p>' +
-                '        <p v-if="noBranches == true">There are no banches available on this repository.</p>' +
-                 '       <p v-if="nonExistingBranch == true"> The branch you requested doesn\'t exist. You can return to default branch by clicking <a href="javascript:void(0)" v-on:click="returnToDefaultBranch" >here</a>.</p>' +
-                '        <p v-if="defaultError == true">Ooops... Something went wrong. Try refreshing your Git4C macro or ask your administrator for help.</p>' +
+                '        <div style="margin:0">'+
+                '           <p v-if="repositoryRemoved == true"> Repository has been removed by the administrator.</p>' +
+                '           <p v-if="noBranches == true">There are no banches available on this repository.</p>' +
+                '           <p v-if="nonExistingBranch == true"> The branch you requested doesn\'t exist. You can return to default branch by clicking <a href="javascript:void(0)" v-on:click="returnToDefaultBranch" >here</a>.</p>' +
+                '           <p v-if="defaultError == true">Ooops... Something went wrong. Try refreshing your Git4C macro or ask your administrator for help.</p>' +
+                '        </div>' +
                 '    </div>' +
                 '    <div ref="dragoncage" class="dragonCage"></div>' +
                 '</div>',

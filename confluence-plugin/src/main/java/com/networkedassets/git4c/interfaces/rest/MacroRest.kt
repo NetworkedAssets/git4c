@@ -305,6 +305,19 @@ class MacroRest(
         return dispatchAndPresentHttp { GetSpacesWithMacroQuery() }
     }
 
+    @POST
+    @Path("/settings/repository/predefine/force")
+    fun forceUsersToUsePredefinedRepositiores(documentationJson: String): Response {
+        val toForce = deserialize(documentationJson, ForcePredefinedRepositoriesInfo::class.java)
+        return dispatchAndPresentHttp { ForceUsersToUsePredefinedRepositoriesCommand(toForce) }
+    }
+
+    @GET
+    @Path("/settings/repository/predefine/force")
+    fun forceUsersToUsePredefinedRepositiores(): Response {
+        return dispatchAndPresentHttp { GetForceUsersToUsePredefinedRepositoriesSettingQuery() }
+    }
+
     private fun String.urlDecode() = URLDecoder.decode(this, "UTF-8")
 
 }

@@ -39,7 +39,9 @@
                                                 <nav-collapse></nav-collapse>
                                             </span>
                                         </div>
-                                        <branch class="blur"></branch>
+                                        <div class="git4c-branch-holder">
+                                            <branch class="blur"></branch>
+                                        </div>
                                         <div class="markup-action-buttons">
                                             <update-now style="display: none"></update-now>
                                         </div>
@@ -72,12 +74,16 @@
                 </div>
             </div>
 
-
             <template id="markup">
                 <div>
                     <div class="markup">
                         <div class="aui-message aui-message-hint" v-if="locationPath===''">
-                            <p>Choose a file on the sidebar to display its content.</p>
+                            <div v-if="!tree">
+                                <p style="text-align:center;">There are no files available. Choose a different branch or revalidate your filters.</p>
+                            </div>
+                            <div v-else>
+                                <p style="text-align:center;">Please wait, file is loading</p>
+                            </div>
                         </div>
                         <div v-show="locationPath!==''">
                             <div>
@@ -93,12 +99,12 @@
                                                         Disable fullscreen mode
                                                     </span>
                                                 </button>
-                                                <button id="git4c-filetree-expand_button" class="aui-button" v-on:click="toggleSidebar()">
+                                                <button id="git4c-filetree-expand_button" title="Show file tree" class="aui-button" v-on:click="toggleSidebar()">
                                                     <span  class="aui-icon aui-icon-small aui-iconfont-arrows-right" style="margin-right: 1px">
-                                                        Disable sticky toolbar
+                                                        Show file tree
                                                     </span>
                                                 </button>
-                                                <button id="git4c-toolbar_filetree-button" data-aui-trigger aria-controls="git4c-tree-dialog" class="aui-button" v-on:click="openTree()">
+                                                <button id="git4c-toolbar_filetree-button" title="Open tree" data-aui-trigger aria-controls="git4c-tree-dialog" class="aui-button" v-on:click="openTree()">
                                                     <span class="aui-icon aui-icon-small aui-iconfont-nav-children-large" style="margin-right: 1px">
                                                         Open tree
                                                     </span>
@@ -179,9 +185,11 @@
             </template>
 
             <template id="nav-collapse">
-                <button class="nav-collapse aui-button" title="Collapse/Expand sidebar" @click="toggle()" style="border: 0; background: transparent">
-                    <i id="git4c-filetree-collapse_button" class="aui-icon aui-icon-small aui-iconfont-arrows-left"></i>
-                </button>
+                <div>
+                    <button class="nav-collapse aui-button" title="Hide file tree" @click="toggle()" style="border: 0; background: transparent">
+                        <i id="git4c-filetree-collapse_button" class="aui-icon aui-icon-small aui-iconfont-arrows-left"></i>
+                    </button>
+                </div>
             </template>
 
             <template id="fullscreen-trigger">

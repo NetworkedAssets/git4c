@@ -28,6 +28,7 @@ class LinksTest extends Specification {
         def a0 = xml.span.p.a[0]
         def a1 = xml.span.p.a[1]
         def a2 = xml.span.p.a[2]
+        def a3 = xml.span.p.a[3]
 
         then:
         a0.@href == "javascript:void(0)"
@@ -37,6 +38,8 @@ class LinksTest extends Specification {
         a1.@class.toString().split(' ').contains("git4c-unclickable-link")
         a2.@href == "javascript:void(0)"
         a2.@"v-on:click" == "moveToFile('subfolder%2Ffile2.txt', 'secondparagraph')"
+        a3.@href == "javascript:void(0)"
+        a3.@"v-on:click" == "moveToFile('subfolder%2Ffile%20with%20spaces.txt', '')"
     }
 
 }

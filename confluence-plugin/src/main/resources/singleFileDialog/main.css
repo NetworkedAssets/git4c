@@ -42,7 +42,6 @@ pre.line-numbers {
 
 #git4c-single-dialog-tree-code-holder pre.line-numbers {
     margin: 0;
-    max-height: 800px;
 }
 
 #git4c-single-dialog-tree-code-holder .git4c-highlightjs-code {
@@ -67,4 +66,8 @@ pre.line-numbers {
 #git4c-single-dialog-tree-code-holder :not(pre) > code {
     padding-left: 5px;
     padding-right: 5px;
+}
+
+#git4c-single-dialog-code-holder .line-numbers {
+    margin-bottom: 0;
 }

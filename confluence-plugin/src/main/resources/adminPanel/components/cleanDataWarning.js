@@ -19,17 +19,39 @@ var Git4CCleanDataWarning = {
                    '<footer class="aui-dialog2-footer">'+
                    '    <!-- Actions to render on the right of the footer -->'+
                    '    <div class="aui-dialog2-footer-actions">'+
-                   '        <button v-on:click="confirmCleanData" id="clean_data_warning-clean_button" class="aui-button aui-button-primary">Clean</button>'+
+                   '        <button v-if="!confirmed"  v-on:click="cleanData" id="clean_data_warning-clean_button" class="aui-button aui-button-primary">Clean</button>'+
+                   '        <button v-if="confirmed && timer>0" id="clean_data_warning-timer" disabled="true" class="aui-button aui-button-primary">{{timer}}</button>'+
+                   '        <button v-if="timer == 0" v-on:click="confirmCleanData" id="clean_data_warning-clean_button" class="aui-button aui-button-primary">Confirm</button>'+
                    '        <button v-on:click="closeDialog" id="clean_data_warning-cancel_button" class="aui-button aui-button-link">Cancel</button>'+
                    '    </div>'+
                    '    <!-- Hint text is rendered on the left of the footer -->'+
                    '</footer>'+
                    '</section>',
+            data: function() {
+              return{
+                  confirmed: false,
+                  timer: 5
+              }
+            },
             methods:{
                 closeDialog: function(){
                     this.$emit("closeCleanDataWarning")
                 },
+                cleanData: function(){
+                    const vm = this
+                    this.confirmed = true
+                    setTimeout(function f() {
+                        vm.timer--
+                        if(vm.timer>0)
+                        {
+                            setTimeout(f, 1000)
+                        }
+                    },1000)
+
+                },
                 confirmCleanData: function(){
+                    this.timer = 5
+                    this.confirmed = false
                     this.$emit("closeCleanDataWarning")
                     this.$emit("cleanDataConfirmed")
                 }
