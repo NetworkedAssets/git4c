@@ -1,0 +1,16 @@
+@startuml
+
+class Client
+
+Package GitServer {
+    Object Repository
+}
+
+Package Confluence {
+    Object GIT4CBackend
+    GIT4CBackend --> Repository
+    Object GIT4CFrontend
+    GIT4CFrontend <--> Client
+    GIT4CFrontend -> GIT4CBackend
+}
+@enduml
