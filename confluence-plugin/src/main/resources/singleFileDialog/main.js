@@ -69,7 +69,7 @@
         '                        <select class="select" v-show="(!repositories || repositories.length==0) && !customRepository" :disabled="true"  style="max-width: 64%">'+
         '                            <option>No Repositories Available</option>'+
         '                        </select>'+
-        '                        <button v-bind:disabled="forcedPredefined" ref="custom_repository_button" @click.prevent v-on:click="openCustomRepositoryDialog" class="aui-button aui-button-primary">'+
+        '                        <button v-bind:disabled="forcedPredefined" ref="custom_repository_button" @click.prevent id="git4c-single_file_dialog-add_repository-button" v-on:click="openCustomRepositoryDialog" class="aui-button aui-button-primary">'+
         '                            <span class="aui-icon aui-icon-small aui-iconfont-add"/>'+
         '                        </button>'+
         '                    </div>'+

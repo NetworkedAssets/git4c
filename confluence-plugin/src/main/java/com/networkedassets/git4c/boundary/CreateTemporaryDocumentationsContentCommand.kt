@@ -5,5 +5,6 @@ import com.networkedassets.git4c.delivery.executor.result.BackendRequest
 
 class CreateTemporaryDocumentationsContentCommand(
         val macroId: String,
-        val branch: String
+        val branch: String,
+        val user: String?
 ) : BackendRequest<Id>()

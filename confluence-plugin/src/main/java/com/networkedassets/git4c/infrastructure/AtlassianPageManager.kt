@@ -20,7 +20,7 @@ class AtlassianPageManager(
             transactionTemplate.execute {
                 pageManager.getPages(spaceManager.getSpace(it), true)
                         .map {
-                            Page(it.nameForComparison, it.urlPath, it.bodyAsString)
+                            Page(it.idAsString, it.nameForComparison, it.urlPath, it.bodyAsString)
                         }
             }
         }
@@ -35,7 +35,7 @@ class AtlassianPageManager(
         return transactionTemplate.execute {
             pageManager.getPages(spaceManager.getSpace(space), true)
                     .map {
-                        Page(it.nameForComparison, it.urlPath, it.bodyAsString)
+                        Page(it.idAsString, it.nameForComparison, it.urlPath, it.bodyAsString)
                     }
         }
 

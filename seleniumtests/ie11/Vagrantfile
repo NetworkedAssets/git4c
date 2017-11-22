@@ -1,0 +1,26 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+    config.vm.box = "IE11_Win7"
+    config.vm.box_url = "http://aka.ms/vagrant-win7-ie11"
+
+    config.vm.network "forwarded_port", guest: 4444, host: 4002
+
+    config.vm.provider "virtualbox" do |v|
+      v.memory = 8000
+      v.cpus = 4
+      v.gui = true
+    end
+
+  config.vm.communicator = "winrm"
+  config.winrm.username = "IEUser"
+  config.winrm.password = "Passw0rd!"
+  config.windows.set_work_network = true
+
+    config.vm.provision :shell, :path => "provision.ps1"
+
+    config.vm.synced_folder "scripts/", "/scripts"
+
+end

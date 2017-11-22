@@ -11,7 +11,6 @@ Feature: Include file from git in a page
     When the user has chose the macro from the list of macros
     Then a form has been shown
 
-
   Scenario: user can choose from defined git-repositories
   To make the process of defining the source for the files easier, there is a set
   of repositories the administrator can define upfront. The user can select one of them
@@ -56,3 +55,9 @@ Feature: Include file from git in a page
     Given user has selected a particular scenario from the gherkin file
     When page has been rendered
     Then only the selected scenario is part of the page
+
+  Scenario: User can rebase a branch, push conflicting change with force or by any way cause a conflict between current repository state and repository state in Git4C cache
+    Given User creates a macro with repository that is cached
+    When current repository state causes a conflicted state on Git4C cache
+    Then Repository folder in cache will be removed
+    And File fetch will be retried 3 times

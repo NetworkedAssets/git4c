@@ -319,6 +319,9 @@
     <component-import key="transactionTemplate" interface="com.atlassian.sal.api.transaction.TransactionTemplate"
                       filter=""/>
 
+    <component-import key="permissionManager" interface="com.atlassian.confluence.security.PermissionManager"
+                      filter="" />
+
     <component key="tx-annotation-processor"
                class="com.atlassian.activeobjects.external.TransactionalAnnotationProcessor"/>
 

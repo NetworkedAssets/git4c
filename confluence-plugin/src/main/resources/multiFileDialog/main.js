@@ -88,7 +88,7 @@
         '            <div class="field-group">'+
         '              <label for="doc_macro-repo_glob">Filter</label>'+
         '               <input style="max-width: 50%" class="text" type="text" ref="doc_macro-glob" placeholder="pattern"></input>'+
-        '                    <button style="position: absolute; margin-left: 1%;" v-bind:disabled="!fileTree" @click.prevent="showFileTreeDialog()" class="aui-button aui-button-primary">'+
+        '                    <button id="git4c-multi_file_dialog-select_root_dir_button" style="position: absolute; margin-left: 1%;" v-bind:disabled="!fileTree" @click.prevent="showFileTreeDialog()" class="aui-button aui-button-primary">'+
         '                        <span class="aui-icon aui-icon-small aui-iconfont-nav-children-large">Show file tree</span>'+
         '                    </button>'+
         '               <div class="description">Please type your <a ref="pattern_tooltip" href="https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob">pattern</a> (Optional)</div>'+
@@ -503,7 +503,12 @@
                                 tags: vm.globList,
                                 tokenSeparators: [",", " "]
                             }).on('change', function (e) {
+                                if(e.val)
                                 vm.glob = e.val.join();
+                                else{
+                                    var value = $(this).val();
+                                    vm.glob = value;
+                                }
                             });
 
                             select2.auiSelect2("val", vm.glob.split(","));

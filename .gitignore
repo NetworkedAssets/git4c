@@ -1,5 +1,7 @@
 # Created by https://www.gitignore.io
 
+confluence-plugin/.vagrant
+
 ### Java ###
 *.class
 
@@ -126,3 +128,5 @@ nb-configuration.xml
 .nb-gradle/
 
 *.log
+
+.vagrant

@@ -1,0 +1,29 @@
+version: '2'
+services:
+#  confluence:
+#    image: "atlassian/confluence-server:6.1"
+#    hostname: "localconfluence"
+#    ports:
+#      - "8090:8090"
+#      - "8091:8091"
+
+  firefox:
+    image: "selenium/standalone-firefox:3.5.3-boron"
+    ports:
+      - "3000:5900"
+      - "4000:4444"
+#    links:
+#      - confluence:localconfluence
+    volumes:
+#https://github.com/SeleniumHQ/docker-selenium/issues/397#issuecomment-300908704
+      - "/dev/shm:/dev/shm"
+
+#  chrome:
+#    image: "selenium/standalone-chrome:3.5.3-boron"
+#    ports:
+#      - "3001:5900"
+#      - "4001:4444"
+##    links:
+##      - confluence:localconfluence
+#    volumes:
+#      - "/dev/shm:/dev/shm"

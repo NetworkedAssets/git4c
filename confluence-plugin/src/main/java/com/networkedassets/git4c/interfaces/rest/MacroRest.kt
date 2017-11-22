@@ -1,5 +1,6 @@
 package com.networkedassets.git4c.interfaces.rest
 
+import com.atlassian.plugins.rest.common.security.AnonymousAllowed
 import com.atlassian.sal.api.user.UserManager
 import com.networkedassets.git4c.application.Plugin
 import com.networkedassets.git4c.boundary.*
@@ -16,7 +17,6 @@ import javax.ws.rs.*
 import javax.ws.rs.core.Context
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
-
 
 @Path("/documentation/")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -36,6 +36,7 @@ class MacroRest(
     }
 
     @GET
+    @AnonymousAllowed
     @Path("/")
     fun healthcheck(): Response {
         return dispatchAndPresentHttp { HealthCheckCommand() }
@@ -49,59 +50,77 @@ class MacroRest(
     }
 
     @GET
+    @AnonymousAllowed
     @Path("/{uuid}")
-    fun getMacro(@PathParam("uuid") macroId: String): Response {
-        return dispatchAndPresentHttp { GetDocumentationsMacroByDocumentationsMacroIdQuery(macroId.urlDecode()) }
+    fun getMacro(@PathParam("uuid") macroId: String, @Context req: HttpServletRequest): Response {
+        val user = userManager.getRemoteUsername(req)
+        return dispatchAndPresentHttp { GetDocumentationsMacroByDocumentationsMacroIdQuery(macroId.urlDecode(), user) }
     }
 
     @GET
+    @AnonymousAllowed
     @Path("/{uuid}/tree")
-    fun getDocumentationsContentTree(@PathParam("uuid") macroId: String): Response {
-        return dispatchAndPresentHttp { GetDocumentationsContentTreeByDocumentationsMacroIdQuery(macroId.urlDecode()) }
+    fun getDocumentationsContentTree(@PathParam("uuid") macroId: String, @Context req: HttpServletRequest): Response {
+        val user = userManager.getRemoteUsername(req)
+        return dispatchAndPresentHttp { GetDocumentationsContentTreeByDocumentationsMacroIdQuery(macroId.urlDecode(), user) }
     }
 
     @GET
+    @AnonymousAllowed
     @Path("/{uuid}/defaultBranch")
-    fun getDocumentationsDefaultBranch(@PathParam("uuid") macroId: String): Response {
-        return dispatchAndPresentHttp { GetDocumentationsDefaultBranchByDocumentationsMacroIdQuery(macroId.urlDecode()) }
+    fun getDocumentationsDefaultBranch(@PathParam("uuid") macroId: String, @Context req: HttpServletRequest): Response {
+        val user = userManager.getRemoteUsername(req)
+        return dispatchAndPresentHttp { GetDocumentationsDefaultBranchByDocumentationsMacroIdQuery(macroId.urlDecode(), user) }
     }
 
     @POST
+    @AnonymousAllowed
     @Path("/{uuid}/file/commits")
-    fun getFileCommitHistoryForDocumentationsMacroUuid(@PathParam("uuid") macroId: String, documentationJson: String): Response {
+    fun getFileCommitHistoryForDocumentationsMacroUuid(@PathParam("uuid") macroId: String, documentationJson: String, @Context req: HttpServletRequest): Response {
+        val user = userManager.getRemoteUsername(req)
         val documentation = deserialize(documentationJson, DetailsToGetFile::class.java)
-        return dispatchAndPresentHttp { GetCommitHistoryForFileByMacroIdQuery(macroId.urlDecode(), documentation) }
+        return dispatchAndPresentHttp { GetCommitHistoryForFileByMacroIdQuery(macroId.urlDecode(), documentation, user) }
     }
 
     @POST
+    @AnonymousAllowed
     @Path("/{uuid}/refresh")
-    fun forceRefreshExistingDocumentationsMacro(@PathParam("uuid") macroId: String): Response {
-        return dispatchAndPresentHttp { RefreshDocumentationsMacroCommand(macroId.urlDecode()) }
+    fun forceRefreshExistingDocumentationsMacro(@PathParam("uuid") macroId: String, @Context req: HttpServletRequest): Response {
+        val user = userManager.getRemoteUsername(req)
+        return dispatchAndPresentHttp { RefreshDocumentationsMacroCommand(macroId.urlDecode(), user) }
     }
 
     @GET
+    @AnonymousAllowed
     @Path("/{uuid}/branches")
-    fun getBranchesForDocumentationsMacroUuid(@PathParam("uuid") macroId: String): Response {
-        return dispatchAndPresentHttp { GetBranchesByDocumentationsMacroIdQuery(macroId) }
+    fun getBranchesForDocumentationsMacroUuid(@PathParam("uuid") macroId: String, @Context req: HttpServletRequest): Response {
+        val user = userManager.getRemoteUsername(req)
+        return dispatchAndPresentHttp { GetBranchesByDocumentationsMacroIdQuery(macroId, user) }
     }
 
     @GET
+    @AnonymousAllowed
     @Path("/{uuid}/globs")
-    fun getGlobsForDocumentationsMacroUuid(@PathParam("uuid") macroId: String): Response {
-        return dispatchAndPresentHttp { GetGlobsByDocumentationsMacroIdQuery(macroId) }
+    fun getGlobsForDocumentationsMacroUuid(@PathParam("uuid") macroId: String, @Context req: HttpServletRequest): Response {
+        val user = userManager.getRemoteUsername(req)
+        return dispatchAndPresentHttp { GetGlobsByDocumentationsMacroIdQuery(macroId, user) }
     }
 
     @GET
+    @AnonymousAllowed
     @Path("/{uuid}/extractorData")
-    fun getExtractorDataForDocumentationsMacroUuid(@PathParam("uuid") macroId: String): Response {
-        return dispatchAndPresentHttp { GetExtractionDataByDocumentationsMacroIdQuery(macroId) }
+    fun getExtractorDataForDocumentationsMacroUuid(@PathParam("uuid") macroId: String, @Context req: HttpServletRequest): Response {
+        val user = userManager.getRemoteUsername(req)
+        return dispatchAndPresentHttp { GetExtractionDataByDocumentationsMacroIdQuery(macroId, user) }
     }
 
     @POST
+    @AnonymousAllowed
     @Path("/{uuid}/doc-item")
-    fun getSpecificDocumentItem(@PathParam("uuid") macroId: String, documentationJson: String): Response {
+    fun getSpecificDocumentItem(@PathParam("uuid") macroId: String, documentationJson: String, @Context req: HttpServletRequest): Response {
+        val user = userManager.getRemoteUsername(req)
         val file = deserialize(documentationJson, RequestedFile::class.java)
-        return dispatchAndPresentHttp { GetDocumentItemInDocumentationsMacroQuery(macroId.urlDecode(), file.file) }
+        return dispatchAndPresentHttp { GetDocumentItemInDocumentationsMacroQuery(macroId.urlDecode(), file.file, user) }
     }
 
     @GET
@@ -135,10 +154,12 @@ class MacroRest(
     }
 
     @POST
+    @AnonymousAllowed
     @Path("/{uuid}/temporary")
-    fun createTemporaryDocumentationsContent(@PathParam("uuid") macroId: String, documentationJson: String): Response {
+    fun createTemporaryDocumentationsContent(@PathParam("uuid") macroId: String, documentationJson: String, @Context req: HttpServletRequest): Response {
+        val user = userManager.getRemoteUsername(req)
         val documentation = deserialize(documentationJson, Branch::class.java)
-        return dispatchAndPresentHttp { CreateTemporaryDocumentationsContentCommand(macroId, documentation.branch) }
+        return dispatchAndPresentHttp { CreateTemporaryDocumentationsContentCommand(macroId, documentation.branch, user) }
     }
 
     @GET

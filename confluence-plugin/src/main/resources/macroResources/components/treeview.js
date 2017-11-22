@@ -70,6 +70,11 @@ Vue.component('treeview', {
             vm.invalidate()
         })
     },
+    watch: {
+        '$route.params.fullName': function(){
+            this.invalidate()
+        }
+    },
 
     methods: {
 

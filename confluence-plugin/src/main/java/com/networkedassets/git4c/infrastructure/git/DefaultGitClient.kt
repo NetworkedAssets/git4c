@@ -174,14 +174,19 @@ class DefaultGitClient : GitClient {
     }
 
     override fun pull(repository: Repository, branch: String): ImportedFiles {
+       return  pull(repository, branch, 0)
+    }
+
+    private fun pull(repository: Repository, branch: String, retry : Int): ImportedFiles {
         val git = cache.lock(repository, branch)
         try {
             git.pull().addAuthData(repository).call()
         } catch (e: NoHeadException) {
             //Everything's fine - we're just trying to pull a tag which is not possible
         } catch (e: Exception) {
+            cache.removeCache(repository)
             cache.unlock(repository)
-            throw e
+            if (retry<3) return pull(repository, branch, retry+1) else throw e
         }
         val answers = getFilesFromDir(git.repository.workTree)
         val answer = answers

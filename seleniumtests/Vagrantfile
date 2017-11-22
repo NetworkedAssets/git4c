@@ -1,0 +1,36 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "ubuntu/xenial64"
+
+  # Enable provisioning with a shell script. Additional provisioners such as
+  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
+  # documentation for more information about their specific syntax and use.
+   config.vm.provision "shell", inline: <<-SHELL
+     apt-get update
+     apt-get install -y docker.io
+     sudo curl -s -L https://github.com/docker/compose/releases/download/1.16.1/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+     sudo chmod +x /usr/local/bin/docker-compose
+   SHELL
+
+   config.vm.hostname = "localconfluence"
+
+   config.vm.network "forwarded_port", guest: 8090, host: 8090
+   config.vm.network "forwarded_port", guest: 8091, host: 8091
+
+   config.vm.network "forwarded_port", guest: 3000, host: 3000
+   config.vm.network "forwarded_port", guest: 4000, host: 4000
+
+   config.vm.network "forwarded_port", guest: 3001, host: 3001
+   config.vm.network "forwarded_port", guest: 4001, host: 4001
+
+    config.vm.provider "virtualbox" do |v|
+      v.memory = 8000
+      v.cpus = 4
+    end
+
+    config.vm.provision "file", source: "docker-compose-dev.yml", destination: "docker-compose.yml"
+
+end

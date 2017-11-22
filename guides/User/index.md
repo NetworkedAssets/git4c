@@ -93,6 +93,9 @@ Git4C consists of following elements:
 8. Files tree
 9. File content
 
+Use the files tree to quickly navigate through the documents. Click on the file presented in the tree to display its content.
+Git4C also supports history navigation, so pressing a browser navigation buttons will cause the files to change.
+
 The branch selection dropdown allows you to switch between different branches of your repository in view time. Simply click on the dropdown.
 
 ![](images/1.2/multifilemacro/branch_selection.png)

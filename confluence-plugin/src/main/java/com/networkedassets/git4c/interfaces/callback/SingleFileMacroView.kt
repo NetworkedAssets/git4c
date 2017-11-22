@@ -20,7 +20,8 @@ class SingleFileMacroView(val plugin: Plugin) : Macro {
 
         if (conversionContext.outputType == "pdf" || conversionContext.outputType == "word") {
             val uuid = params["uuid"]!!
-            val query = GetDocumentationsMacroByDocumentationsMacroIdQuery(uuid)
+            //FIXME
+            val query = GetDocumentationsMacroByDocumentationsMacroIdQuery(uuid, null)
             val emptyPresenter = object: BackendPresenter<Any, Throwable> {
                 override fun render(result: Any) = result
                 override fun error(exception: Throwable) = exception

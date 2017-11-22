@@ -3,6 +3,7 @@ package com.networkedassets.git4c.infrastructure.git
 import com.networkedassets.git4c.core.exceptions.ConDocException
 import com.networkedassets.git4c.data.Repository
 import org.eclipse.jgit.api.Git
+import uy.klutter.core.common.deleteRecursively
 import uy.klutter.core.common.exists
 import java.io.IOException
 import java.nio.file.Files
@@ -69,6 +70,11 @@ class GitDiskCache(val gitClient: DefaultGitClient) {
 
     fun unlock(repository: Repository) {
         lockMap[repository.repositoryPath]?.unlock()
+    }
+
+    fun removeCache(repository: Repository) {
+        fileCache[repository.repositoryPath]?.deleteRecursively()
+        fileCache.remove(repository.repositoryPath)
     }
 
 }

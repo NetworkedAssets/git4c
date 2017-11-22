@@ -30,6 +30,7 @@ import com.networkedassets.git4c.infrastructure.plugin.converter.plantuml.PUMLCo
 import com.networkedassets.git4c.infrastructure.plugin.converter.prismjs.PrismJSConverterPlugin
 import com.networkedassets.git4c.infrastructure.plugin.parser.Parsers
 import com.networkedassets.git4c.infrastructure.plugin.source.directory.DirectorySourcePlugin
+import com.nhaarman.mockito_kotlin.mock
 import net.java.ao.EntityManager
 import net.java.ao.test.jdbc.H2Memory
 import net.java.ao.test.jdbc.Jdbc
@@ -141,7 +142,9 @@ abstract class UseCaseTest<USECASE : UseCase<*, *>> {
                 mock(SpaceManager::class.java),
                 mock(PageManager::class.java),
                 mock(PageMacroExtractor::class.java),
-                pluginSettingsDatabase
+                pluginSettingsDatabase,
+                mock(),
+                mock()
         )
 
     }

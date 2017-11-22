@@ -8,7 +8,9 @@ import com.networkedassets.git4c.core.bussiness.ConverterPlugin
 import com.networkedassets.git4c.core.bussiness.ParserPlugin
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
 import com.networkedassets.git4c.core.common.IdentifierGenerator
+import com.networkedassets.git4c.core.common.PermissionChecker
 import com.networkedassets.git4c.core.common.UnifiedDataStore
+import com.networkedassets.git4c.core.datastore.MacroIdToSpaceAndPageDatabase
 import com.networkedassets.git4c.core.datastore.MacroSettingsProvider
 import com.networkedassets.git4c.core.datastore.PluginSettingsDatabase
 import com.networkedassets.git4c.core.datastore.cache.DocumentsViewCache
@@ -42,7 +44,9 @@ class PluginComponents(
         val spaceManager: SpaceManager,
         val pageManager: PageManager,
         val pageMacroExtractor: PageMacroExtractor,
-        val pluginSettings: PluginSettingsDatabase
+        val pluginSettings: PluginSettingsDatabase,
+        val permissionChecker: PermissionChecker,
+        val macroIdToSpaceAndPageDatabase: MacroIdToSpaceAndPageDatabase
 ) {
     val macroSettingsCachableDatabase = MacroSettingsProvider(
             UnifiedDataStore(
@@ -58,6 +62,7 @@ class PluginComponents(
     val getMethodsProcess = GetMethodsProcess(importer, converter, parser, extractContentProcess)
     val getFilesProcess = GetFilesProcess(importer)
     val getFileProcess = GetFileProcess(importer, converter, extractContentProcess)
+    val checkUserPermissionProcess = CheckUserPermissionProcess(spaceManager, pageManager, pageMacroExtractor, macroIdToSpaceAndPageDatabase, permissionChecker)
     val getAllMacrosInSystemProcess = GetAllMacrosInSystem(pageManager, pageMacroExtractor)
     val executor: UseCasesExecutor = UseCasesExecutor(PluginUseCasesProvider(this))
     val dispatcherHttp: BackendDispatcher<Response, Response> = LocalGateway<Response, Response>(executor)
