@@ -1,0 +1,263 @@
+@startuml
+
+skinparam handwritten false
+
+skinparam rectangle {
+    roundCorner<<Concept>> 25
+}
+
+ProductOwner as "Product Owner"
+FinalUser as "Final User"
+ProjectManager as "Project Manager"
+Architect as "Architect"
+TeamLeader as "Team Leader"
+Tester as "Tester"
+TestDeveloper as "Tests Developer"
+Developer as "Developer"
+ScenarioDeveloper as "Scenarios Developer"
+
+usecase BUG as "
+
+Bug Report
+
+..
+Short description of a bug
+with a list of steps to reproduce problem.
+It have to contain also information about
+versiom, environement, severity.
+"
+
+usecase IDEA as "
+
+Idea
+
+..
+Short description of idea
+with business need goal and possible accepted criteria of usage
+
+"
+
+usecase REQUIREMENT as "
+
+Requirement for Improvement
+
+..
+Short description of requirements
+from business and technical point of view.
+"
+
+
+usecase SOLUTION as "
+
+Solution Design
+
+..
+Method to achieve business goals.
+Described what technologies and how should be used.
+Fully listed technical constraints.
+
+"
+
+usecase IPAX as "
+
+..
+<b>Improvement Ticket</b>
+..
+
+==
+
+Short Description of Requirements
+
+..
+
+Solution Design
+
+..
+
+Already is accepted by Product Owner.
+Has been fully reviewed by Architect.
+It's known for Project Manager and Team Leader.
+
+"
+
+
+usecase CALL_INTRODUCE as "
+
+Meeting for Ticket introduction
+
+..
+During call or meeting with
+most interested in business point of view
+persons in project there is introduction of ticket.
+
+There shoud be known after call all details like
+affects, deadline, priority
+
+Persons that should be present on a meeting:
+Product Owner and Architect
+
+"
+
+
+usecase BDD as "
+
+..
+<b>BDD: Feature and Scenarios</b>
+..
+
+==
+
+Scenarios in Gherkin
+
+..
+
+Report with not implemented features
+
+..
+
+Already is accepted by Product Owner.
+Has been fully reviewed by Architect.
+It's known for Project Manager and Team Leader.
+
+"
+usecase CREATE_BDD as "
+
+Create feature and scenarios in Gherkin
+
+..
+
+Scenarios Developer should write feature and scenarios for a feature.
+
+"
+usecase CALL_BDD as "
+
+Meeting to show and accept scenarios
+
+..
+
+During a meeting or a call with PO, PM, TL
+and a Team there is agreed a scope and functionality
+of a feature that should be implemented.
+
+"
+usecase ACCEPT_BDD as "
+
+Acceptance of Scenarios
+
+..
+
+Accepted list of Scenarios for Feature should
+be agreed during call and document in the proper section
+of documentation as a reference for future development.
+
+"
+usecase NOT_IMPLEMENTED_REPORT as "
+
+Report with not implemented
+Feature and Scenarios
+
+..
+
+Documented report is now a part of a process
+and is available to view in future releases
+of product as a not yet implemented feature.
+
+"
+usecase ESTIMATION as "
+
+Estimation
+
+..
+
+Planning
+
+..
+
+Tasks Creation
+
+"
+
+usecase READY_FOR_DEVELOPMENT as "
+
+Ready for Development
+
+..
+
+IPAX with a list of Tasks and estimation is ready.
+After planning and accept for development may be in a scope
+of selected release.
+
+"
+usecase TASK_CODE_DEVELOPMENT as "
+
+<b>Development</b>
+
+..
+
+During development of an IPAX (Feature) the Tasks based on Scenarios
+and technical constraints may be distributed to Developers.
+
+Agreed scope of scenarios for a Feature may be selected for a Release.
+
+..
+
+To assure best development practices ready Scenario should have
+tests already written for it before go to deployment stage.
+
+
+"
+
+
+FinalUser ..> IDEA
+FinalUser ..> BUG
+Tester ..> BUG
+BUG --> IPAX
+
+IDEA -->  REQUIREMENT
+
+ProductOwner .> REQUIREMENT
+Architect .> SOLUTION
+
+REQUIREMENT --> SOLUTION
+SOLUTION .> REQUIREMENT
+
+SOLUTION -> IPAX
+
+IPAX ---> CALL_INTRODUCE
+
+ProjectManager ..> CALL_INTRODUCE
+TeamLeader ..> CALL_INTRODUCE
+
+
+
+CALL_INTRODUCE --> BDD
+
+
+
+BDD --> CREATE_BDD
+CREATE_BDD --> CALL_BDD
+
+ScenarioDeveloper ..> CREATE_BDD
+
+CALL_BDD --> ACCEPT_BDD
+ACCEPT_BDD ..> BDD
+
+
+ACCEPT_BDD -> NOT_IMPLEMENTED_REPORT
+
+
+
+
+ACCEPT_BDD --> ESTIMATION
+
+
+
+ESTIMATION --> READY_FOR_DEVELOPMENT
+
+READY_FOR_DEVELOPMENT --> TASK_CODE_DEVELOPMENT
+
+
+
+
+
+@enduml
