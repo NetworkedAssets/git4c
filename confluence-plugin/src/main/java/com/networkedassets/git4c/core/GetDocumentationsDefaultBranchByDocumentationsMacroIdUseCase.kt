@@ -6,14 +6,21 @@ import com.networkedassets.git4c.boundary.GetDocumentationsDefaultBranchByDocume
 import com.networkedassets.git4c.boundary.outbound.Branches
 import com.networkedassets.git4c.boundary.outbound.VerificationStatus
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
-import com.networkedassets.git4c.core.datastore.repositories.MacroSettingsDatabase
+import com.networkedassets.git4c.core.bussiness.SourcePlugin
+import com.networkedassets.git4c.core.datastore.cache.DocumentsViewCache
+import com.networkedassets.git4c.core.datastore.repositories.*
 import com.networkedassets.git4c.core.process.ICheckUserPermissionProcess
 import com.networkedassets.git4c.delivery.executor.execution.UseCase
 
 
 class GetDocumentationsDefaultBranchByDocumentationsMacroIdUseCase(
+        val importer: SourcePlugin,
+        val cache: DocumentsViewCache,
+        val repositoryDatabase: RepositoryDatabase,
         val macroSettingsDatabase: MacroSettingsDatabase,
-        val checkUserPermissionProcess: ICheckUserPermissionProcess
+        val checkUserPermissionProcess: ICheckUserPermissionProcess,
+        val macroLocationDatabase: MacroLocationDatabase,
+        val temporaryEditBranchesDatabase: TemporaryEditBranchesDatabase
 ) : UseCase<GetDocumentationsDefaultBranchByDocumentationsMacroIdQuery, Branches> {
     override fun execute(request: GetDocumentationsDefaultBranchByDocumentationsMacroIdQuery): Result<Branches, Exception> {
 
@@ -24,8 +31,15 @@ class GetDocumentationsDefaultBranchByDocumentationsMacroIdUseCase(
             return Result.error(NotAuthorizedException("User doesn't have permission to this space"))
         }
 
-        return macroSettingsDatabase.get(macroId)
-                ?.let { Result.of { Branches(it.branch, listOf()) } }
-                ?: Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+        val macro = macroSettingsDatabase.get(macroId) ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+
+        val macroLocation = macroLocationDatabase.get(macroId) ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+        val repositoryId = macro.repositoryUuid ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+        val pageId = macroLocation.pageId
+
+        val defaultBranch = temporaryEditBranchesDatabase.get(repositoryId, pageId)?.name ?: macroSettingsDatabase.get(macroId)?.branch ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+
+        return Result.of { Branches(defaultBranch, listOf()) }
+
     }
 }

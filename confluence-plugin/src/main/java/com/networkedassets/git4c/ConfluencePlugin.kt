@@ -9,11 +9,13 @@ import com.atlassian.sal.api.transaction.TransactionTemplate
 import com.atlassian.user.UserManager
 import com.networkedassets.git4c.application.Plugin
 import com.networkedassets.git4c.application.PluginComponents
+import com.networkedassets.git4c.core.business.ConfluenceQueryBaseExecutorHolder
+import com.networkedassets.git4c.core.business.ConverterBaseExecutorHolder
+import com.networkedassets.git4c.core.business.RepositoryPullBaseExecutorHolder
+import com.networkedassets.git4c.core.business.RevisionCheckBaseExecutorHolder
 import com.networkedassets.git4c.core.datastore.repositories.*
 import com.networkedassets.git4c.infrastructure.*
-import com.networkedassets.git4c.infrastructure.cache.AtlassianDocumentsViewCache
-import com.networkedassets.git4c.infrastructure.cache.AtlassianMacroSettingsCache
-import com.networkedassets.git4c.infrastructure.cache.AtlassianTemporaryIdCache
+import com.networkedassets.git4c.infrastructure.cache.*
 import com.networkedassets.git4c.infrastructure.git.DefaultGitClient
 import com.networkedassets.git4c.infrastructure.plugin.converter.ConverterPluginList
 import com.networkedassets.git4c.infrastructure.plugin.converter.images.ImageConverterPlugin
@@ -26,8 +28,9 @@ import com.networkedassets.git4c.infrastructure.plugin.converter.plantuml.PUMLCo
 import com.networkedassets.git4c.infrastructure.plugin.converter.prismjs.PrismJSConverterPlugin
 import com.networkedassets.git4c.infrastructure.plugin.parser.Parsers
 import com.networkedassets.git4c.infrastructure.plugin.source.git.GitSourcePlugin
+import com.networkedassets.git4c.utils.getLogger
 import com.networkedassets.git4c.utils.info
-import org.slf4j.LoggerFactory
+import java.util.concurrent.Executors
 
 class ConfluencePlugin(
         val macroSettingsDatabase: MacroSettingsDatabase,
@@ -36,6 +39,9 @@ class ConfluencePlugin(
         val globsForMacroDatabase: GlobForMacroDatabase,
         val predefinedGlobsDatabase: PredefinedGlobsDatabase,
         val extractorDataDatabase: ExtractorDataDatabase,
+        val macroLocationDatabase: MacroLocationDatabase,
+        val repositoryUsageDatabase: RepositoryUsageDatabase,
+        val temporaryEditBranchesDatabase: TemporaryEditBranchesDatabase,
         val cacheManager: CacheManager,
         val spaceManager: SpaceManager,
         val pageManager: PageManager,
@@ -45,7 +51,7 @@ class ConfluencePlugin(
         val userManager: UserManager
 ) : Plugin() {
 
-    private val log = LoggerFactory.getLogger(ConfluencePlugin::class.java)
+    private val log = getLogger()
 
     override val components: PluginComponents = run {
 
@@ -53,7 +59,14 @@ class ConfluencePlugin(
 
         val temporaryIdCache = AtlassianTemporaryIdCache(cacheManager)
         val documentsViewCache = AtlassianDocumentsViewCache(cacheManager)
+        val documentItemCache = AtlassianDocumentItemCache(cacheManager)
         val macroSettingsCache = AtlassianMacroSettingsCache(cacheManager)
+        val macroViewCache = AtlassianMacroViewCache(cacheManager)
+        val revisionCache = AtlassianRepositoryRevisionCache(cacheManager)
+        val documentsConvertionLockCache = AtlassianDocumentConvertionCache(cacheManager)
+        val publishFileComputationCache = AtlassianComputationCache(cacheManager)
+        val refreshLocationUseCaseCache = AtlassianRefreshLocationUseCaseCache(cacheManager)
+        val pageAndSpacePermissionsForUserCache = AtlassianPageAndSpacePermissionsForUserCache(cacheManager)
 
         val gitClient = DefaultGitClient()
         val importer = GitSourcePlugin(gitClient)
@@ -78,11 +91,25 @@ class ConfluencePlugin(
 
         val pageMacroExtractor = AtlassianPageMacroExtractor()
 
-        val pluginSettingsDatabase = ConfluencePluginSettingsDatabase(ConfluencePluginSettings(pluginSettingsFactory))
+        val pluginSettings = ConfluencePluginSettings(pluginSettingsFactory)
+
+        val pluginSettingsDatabase = ConfluencePluginSettingsDatabase(pluginSettings)
 
         val permissionChecker = AtlassianPermissionChecker(permissionManager, pageManager, userManager, spaceManager, transationTemplate)
 
-        val macroIdToSpaceAndPageDatabase = HashmapMacroIdToSpaceAndPageDatabase()
+        val git4cUserManager = AtlassianUserManager(userManager, transationTemplate)
+
+        val threadSettingsDatabase = ConfluenceThreadSettingsDatabase(pluginSettings)
+
+        val spacesWithMacroComputationCache = ConfluenceSpacesWithMacroResultCache(cacheManager)
+        val temporaryEditBranchComputationCache = ConfluenceTemporaryEditBranchResultCache(cacheManager)
+
+        val revisionCheckExecutor = RevisionCheckBaseExecutorHolder(threadSettingsDatabase.getRevisionCheckThreadNumber()) { Executors.newScheduledThreadPool(it) }
+        val repositoryExecutor = RepositoryPullBaseExecutorHolder(threadSettingsDatabase.getRepositoryExecutorThreadNumber()) { Executors.newScheduledThreadPool(it) }
+        val converterExecutor = ConverterBaseExecutorHolder(threadSettingsDatabase.getConverterExecutorThreadNumber()) { Executors.newScheduledThreadPool(it) }
+        val confluenceQueryExecutor = ConfluenceQueryBaseExecutorHolder(threadSettingsDatabase.getConfluenceQueryExecutorThreadNumber()) { Executors.newScheduledThreadPool(it) }
+
+        val globForMacroCache = AtlassianGlobForMacroCache(cacheManager)
 
         log.info { "Initialization of Git4C Confluence Plugin components has been finished." }
 
@@ -90,8 +117,14 @@ class ConfluencePlugin(
                 importer,
                 converter,
                 documentsViewCache,
+                documentItemCache,
                 macroSettingsCache,
                 temporaryIdCache,
+                macroViewCache,
+                revisionCache,
+                pageAndSpacePermissionsForUserCache,
+                documentsConvertionLockCache,
+                refreshLocationUseCaseCache,
                 macroSettingsDatabase,
                 globsForMacroDatabase,
                 predefinedRepositoryDatabase,
@@ -105,9 +138,21 @@ class ConfluencePlugin(
                 atlassianSpaceManager,
                 atlassianPageManager,
                 pageMacroExtractor,
-                pluginSettingsDatabase,
                 permissionChecker,
-                macroIdToSpaceAndPageDatabase
+                macroLocationDatabase,
+                git4cUserManager,
+                pluginSettingsDatabase,
+                repositoryUsageDatabase,
+                revisionCheckExecutor,
+                repositoryExecutor,
+                converterExecutor,
+                confluenceQueryExecutor,
+                publishFileComputationCache,
+                threadSettingsDatabase,
+                spacesWithMacroComputationCache,
+                temporaryEditBranchesDatabase,
+                globForMacroCache,
+                temporaryEditBranchComputationCache
         )
     }
 }

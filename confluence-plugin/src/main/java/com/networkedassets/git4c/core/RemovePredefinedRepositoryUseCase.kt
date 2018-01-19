@@ -22,8 +22,8 @@ class RemovePredefinedRepositoryUseCase(
         val macros = macroSettingsRepository.getByRepository(existingRepository.uuid)
 
         macros.forEach {
-            val updated = MacroSettings(it.uuid, null, it.branch, it.defaultDocItem, it.extractorDataUuid)
-            macroSettingsRepository.update(updated.uuid, updated)
+            val updated = MacroSettings(it.uuid, null, it.branch, it.defaultDocItem, it.extractorDataUuid, it.rootDirectory)
+            macroSettingsRepository.put(updated.uuid, updated)
         }
 
         repositoryDatabase.remove(existingRepository.uuid)

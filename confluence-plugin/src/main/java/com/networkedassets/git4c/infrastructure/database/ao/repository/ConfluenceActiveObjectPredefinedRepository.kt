@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.external.ActiveObjects
 import com.networkedassets.git4c.core.datastore.repositories.PredefinedRepositoryDatabase
 import com.networkedassets.git4c.data.PredefinedRepository
 import com.networkedassets.git4c.infrastructure.database.ao.PredefinedRepositoryEntity
+import com.networkedassets.git4c.utils.ActiveObjectsUtils.findByUuid
 import net.java.ao.Query
 
 class ConfluenceActiveObjectPredefinedRepository(val ao: ActiveObjects) : PredefinedRepositoryDatabase {
@@ -15,8 +16,8 @@ class ConfluenceActiveObjectPredefinedRepository(val ao: ActiveObjects) : Predef
 
     private fun getFromDatabase(uuid: String) = ao.find(PredefinedRepositoryEntity::class.java, Query.select().where("UUID = ?", uuid))
 
-    override fun insert(uuid: String, data: PredefinedRepository) {
-        val entity = ao.create(PredefinedRepositoryEntity::class.java)
+    override fun put(uuid: String, data: PredefinedRepository) {
+        val entity = ao.findByUuid(uuid) ?: ao.create(PredefinedRepositoryEntity::class.java)
         entity.uuid = uuid
         entity.repository = data.repositoryUuid
         entity.name = data.name
@@ -24,11 +25,6 @@ class ConfluenceActiveObjectPredefinedRepository(val ao: ActiveObjects) : Predef
     }
 
     override fun getAll(): List<PredefinedRepository> = ao.find(PredefinedRepositoryEntity::class.java).map { it.convert() }
-
-    override fun update(uuid: String, data: PredefinedRepository) {
-        remove(uuid)
-        insert(uuid, data)
-    }
 
     override fun remove(uuid: String) {
         getFromDatabase(uuid).firstOrNull()?.let { ao.delete(it) }

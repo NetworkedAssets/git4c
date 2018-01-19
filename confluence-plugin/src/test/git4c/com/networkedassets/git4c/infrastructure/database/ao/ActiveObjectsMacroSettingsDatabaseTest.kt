@@ -13,6 +13,7 @@ import net.java.ao.test.jdbc.DatabaseUpdater
 import net.java.ao.test.jdbc.H2Memory
 import net.java.ao.test.jdbc.Jdbc
 import net.java.ao.test.junit.ActiveObjectsJUnitRunner
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
@@ -42,15 +43,27 @@ class ActiveObjectsMacroSettingsDatabaseTest {
     @Test
     fun testAdd() {
         assertNull(macroSettingsDatabase.get("1"))
-        val settings = MacroSettings("1", "repository", "branch", "item", "")
-        macroSettingsDatabase.insert(settings.uuid, settings)
+        val settings = MacroSettings("1", "repository", "branch", "item", "", null)
+        macroSettingsDatabase.put(settings.uuid, settings)
         assertNotNull(macroSettingsDatabase.get("1"))
     }
 
     @Test
+    fun testUpdate() {
+        assertNull(macroSettingsDatabase.get("1"))
+        val settings = MacroSettings("1", "repository", "branch", "item", "", null)
+        macroSettingsDatabase.put(settings.uuid, settings)
+        val settingsUpdate = MacroSettings("1", "repositoryUpdate", "branchUpdate", "itemUpdate", "", null)
+        macroSettingsDatabase.put(settings.uuid, settingsUpdate)
+        assertNotNull(macroSettingsDatabase.get("1"))
+        assertThat(macroSettingsDatabase.getAll()).hasSize(1)
+        assertThat(macroSettingsDatabase.get("1")!!.repositoryUuid).isEqualTo("repositoryUpdate")
+    }
+
+    @Test
     fun removeTest() {
-        val settings = MacroSettings("1", "repository", "branch", "item", "")
-        macroSettingsDatabase.insert(settings.uuid, settings)
+        val settings = MacroSettings("1", "repository", "branch", "item", "", null)
+        macroSettingsDatabase.put(settings.uuid, settings)
         assertEquals(1, ao.count(MacroSettingsEntity::class.java))
         macroSettingsDatabase.remove("1")
         assertEquals(0, ao.count(MacroSettingsEntity::class.java))

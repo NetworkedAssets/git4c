@@ -6,20 +6,15 @@ import com.networkedassets.git4c.core.bussiness.Database
 
 class UnifiedDataStore<T>(val repository: Database<T>, val cache: Cache<T>) : Database<T> {
 
-    override fun update(uuid: String, data: T) {
-        repository.update(uuid, data)
-        cache.update(uuid, data)
-    }
-
     override fun isAvailable(uuid: String) = cache.isAvailable(uuid) || repository.isAvailable(uuid)
 
-    override fun get(uuid: String): T? = cache.get(uuid) ?: repository.get(uuid)?.apply { cache.update(uuid, this) }
+    override fun get(uuid: String): T? = cache.get(uuid) ?: repository.get(uuid)?.apply { cache.put(uuid, this) }
 
     override fun getAll(): List<T> = cache.getAll()
 
-    override fun insert(uuid: String, data: T) {
-        repository.insert(uuid, data)
-        cache.insert(uuid, data)
+    override fun put(uuid: String, data: T) {
+        repository.put(uuid, data)
+        cache.put(uuid, data)
     }
 
     override fun remove(uuid: String) {

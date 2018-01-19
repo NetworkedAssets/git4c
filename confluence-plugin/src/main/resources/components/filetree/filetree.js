@@ -53,6 +53,21 @@ var Git4CFileTree = {
                         Bus.$emit("selectedFile", selectedFile)
                         this.selected = true
                     }
+                },
+                openTree: function () {
+                    this.open = true
+                    this.$children.forEach(function (it) {
+                        it.openTree()
+                    })
+                },
+                closeTree: function () {
+                    if(this.level !== 0) {
+                        this.open = false
+                    }
+                    this.$children.forEach(function (it) {
+                        it.closeTree()
+                    })
+
                 }
             },
             mounted: function () {

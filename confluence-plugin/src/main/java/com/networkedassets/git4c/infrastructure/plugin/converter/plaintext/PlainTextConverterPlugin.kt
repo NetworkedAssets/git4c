@@ -3,13 +3,13 @@ package com.networkedassets.git4c.infrastructure.plugin.converter.plaintext
 import com.networkedassets.git4c.core.business.ExtractionResult
 import com.networkedassets.git4c.core.bussiness.ConverterPlugin
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
-import com.networkedassets.git4c.data.macro.documents.item.DocumentsItem
+import com.networkedassets.git4c.data.macro.documents.item.ConvertedDocumentsItem
 import com.networkedassets.git4c.data.macro.documents.item.TableOfContents
 import org.apache.commons.lang3.StringEscapeUtils
 
 class PlainTextConverterPlugin : ConverterPlugin {
 
-    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult): DocumentsItem? {
+    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult): ConvertedDocumentsItem? {
 
         val content = extractionResult.content
 
@@ -21,7 +21,7 @@ class PlainTextConverterPlugin : ConverterPlugin {
             </div>
         """
 
-        return DocumentsItem(fileData.path, fileData.updateAuthorFullName, fileData.updateAuthorEmail, fileData.updateDate, content, pageContent, TableOfContents("", "", listOf()))
+        return ConvertedDocumentsItem(fileData.path, fileData.updateAuthorFullName, fileData.updateAuthorEmail, fileData.updateDate, content, pageContent, TableOfContents("", "", listOf()))
     }
 
     override val identifier = "PlainText"

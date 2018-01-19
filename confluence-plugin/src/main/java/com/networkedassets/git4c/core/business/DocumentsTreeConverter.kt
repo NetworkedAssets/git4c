@@ -1,14 +1,14 @@
 package com.networkedassets.git4c.core.bussiness
 
 import com.networkedassets.git4c.boundary.outbound.DocumentationsContentTree
-import com.networkedassets.git4c.data.macro.documents.item.DocumentsItem
+import com.networkedassets.git4c.data.macro.documents.item.DocumentsFileIndex
 import org.apache.commons.io.FilenameUtils
 
 
 object DocumentsTreeConverter {
 
     @JvmStatic
-    fun treeify(docItems: Collection<DocumentsItem>): DocumentationsContentTree {
+    fun treeify(docItems: List<DocumentsFileIndex>): DocumentationsContentTree {
         val root = DocumentationsContentTree("", "", DocumentationsContentTree.NodeType.DIR)
 
         for (docItem in docItems) {

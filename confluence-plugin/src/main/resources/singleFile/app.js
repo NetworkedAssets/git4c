@@ -1,5 +1,5 @@
 var Git4CSingleFileMacro = {
-    start: function (uuid, randomNumber, lineNumbers, collapsible, showTopBar, collapseByDefault) {
+    start: function (uuid, randomNumber, lineNumbers, collapsible, showTopBar, collapseByDefault, toc, fileEditEnabled) {
 
         const Events = new Vue({});
 
@@ -15,35 +15,40 @@ var Git4CSingleFileMacro = {
                 markdown: false,
                 lines: lineNumbers,
                 showTopBar: showTopBar,
-                showsError: false
+                showsError: false,
+                locationPath: undefined,
+                rawContent: undefined,
+                toc: undefined,
+                showToc: toc,
+                editBranch: false
             },
             components: {
+                toc: Git4CToc.getComponent(),
+                git4csourcefiledialog: Git4CEditDialog.getComponent(),
                 overlay: Git4COverlay.getComponent(Events),
-                topbar: TopBar.getComponent(Events, uuid, lineNumbers, collapsible, collapseByDefault)
+                topbar: TopBar.getComponent(Events, uuid, lineNumbers, collapsible, collapseByDefault, fileEditEnabled),
+                filecontent: Git4CFileContent.getComponent()
             },
             mounted: function () {
                 const vm = this
                 downloadFile(uuid)
-                    .then(function (docItem) {
+                    .then(function (pair) {
+                        const newUuid = pair[0]
+                        vm.editBranch = uuid !== newUuid
+                        vm.uuid = newUuid
+                        const docItem = pair[1]
                         vm.document = docItem.document
                         vm.content = docItem.content
-                        vm.markdown = docItem.name.endsWith(".md")
+                        vm.markdown = docItem.name.endsWith(".md") || docItem.name.endsWith(".adoc")
+                        vm.locationPath = docItem.locationPath.join("/")
+                        vm.rawContent = docItem.rawContent
+                        vm.toc = docItem.tableOfContents
                         if (!Git4CUtils.hasLines(docItem.name)) {
                             vm.lines = false
                         }
                         Events.$emit("DocumentDownloaded", docItem)
                         Events.$emit("OverlayChange", false)
-                        vm.$nextTick(function () {
-                            $(root + " pre code.git4c-highlightjs-code").each(function (i, block) {
-                                hljs.highlightBlock(block);
-                            });
-                            $(root + " code.git4c-prismjs-code").each(function (i, block) {
-                                Prism.highlightElement(block)
-                                if (vm.lines) {
-                                    $(this).css('margin-left', '-30px')
-                                }
-                            });
-                        })
+
                     })
                     .catch(function (error) {
                         console.log("Error during downloading file, ", error)
@@ -80,11 +85,14 @@ var Git4CSingleFileMacro = {
                     }
 
                 })
+                Events.$on("editFile", function () {
+                    vm.$refs.editdialog.show(vm.uuid, vm.locationPath, vm.rawContent)
+                })
             }
         })
 
         // TopBar.initTopBar(v)
 
-        v.$mount(root);
+        // v.$mount(root);
     }
 };

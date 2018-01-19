@@ -5,6 +5,7 @@ import com.github.kittinunf.result.failure
 import com.github.kittinunf.result.flatMap
 import com.networkedassets.git4c.ConfluencePlugin
 import com.networkedassets.git4c.delivery.executor.execution.BackendDispatcher
+import com.networkedassets.git4c.delivery.executor.execution.HandleFailure
 import com.networkedassets.git4c.delivery.executor.monitoring.BackendTimer
 import com.networkedassets.git4c.delivery.executor.monitoring.TransactionInfo
 import com.networkedassets.git4c.delivery.executor.result.BackendRequest
@@ -17,8 +18,11 @@ import uy.klutter.core.common.mustStartWith
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.jar.Manifest
 import javax.ws.rs.core.Response
+
 
 fun <T> CompletableFuture<T>.onException(handler: (Throwable) -> Unit) = whenCompleteAsync { _, throwable ->
     throwable?.let(handler)
@@ -72,9 +76,13 @@ val Int.hours: Duration get() = Duration.ofHours(this.toLong())
 /**
  * Hacky little thing that returns true if the application is running from within IntelliJ IDEA
  */
-fun isRunningFromIntelliJ(): Boolean {
-    val classPath = System.getProperty("java.class.path")
-    return classPath.contains("IntelliJ IDEA") || classPath.contains("idea_rt")
+object Intelij {
+    val isRunningFromIntelij by lazy { isRunningFromIntelliJ() }
+
+    fun isRunningFromIntelliJ(): Boolean {
+        val classPath = System.getProperty("java.class.path")
+        return classPath.contains("IntelliJ IDEA") || classPath.contains("idea_rt")
+    }
 }
 
 fun genTransactionId() = UUID.randomUUID().toString()
@@ -104,7 +112,14 @@ fun <ANSWER : Any> sendToExecutionAsync(dispatcher: BackendDispatcher<Any, Throw
 
 data class DispatchAndPresentHttpRunContext(var transactionInfo: TransactionInfo, var timer: BackendTimer)
 
-inline fun <reified T : BackendRequest<Any>> ServiceApi.dispatchAndPresentHttp(requestProducer: DispatchAndPresentHttpRunContext.() -> T
+inline fun <reified T : BackendRequest<Any>> ServiceApi.dispatchAndPresentHttp(
+        requestProducer: DispatchAndPresentHttpRunContext.() -> T
+) = dispatchAndPresentHttp(requestProducer, 45, TimeUnit.SECONDS)
+
+
+inline fun <reified T : BackendRequest<Any>> ServiceApi.dispatchAndPresentHttp(
+        requestProducer: DispatchAndPresentHttpRunContext.() -> T,
+        timeout: Long, unit: TimeUnit
 ): Response {
     val transactionInfo = TransactionInfo(T::class.java)
     val timer = BackendTimer()
@@ -113,7 +128,14 @@ inline fun <reified T : BackendRequest<Any>> ServiceApi.dispatchAndPresentHttp(r
     val command = rContext.requestProducer()
 
     val presenter = HttpPresenter().startStopwatch(rContext.timer, rContext.transactionInfo)
-    return dispatcher.sendToExecution(command, presenter).get() as Response
+
+    try {
+        return dispatcher.sendToExecution(command, presenter).get(timeout, unit) as Response
+    } catch (e: TimeoutException) {
+        LoggerFactory.getLogger(ServiceApi::class.java).trace("{} >> Request timeout", command.transactionInfo)
+        return HandleFailure(presenter, command.transactionInfo).onFailure(e)
+//        throw e
+    }
 }
 
 
@@ -142,29 +164,39 @@ fun getThisJarVersion(): String? = versionGetter.javaClass.classLoader.getResour
 }
 
 fun Logger.debug(log: () -> String) {
-    debug(log.invoke())
+    if (Intelij.isRunningFromIntelij) println("DEBUG - "+Thread.currentThread().name+" - "+log.invoke())
+    if (this.isDebugEnabled) debug(log.invoke())
 }
 
 fun Logger.info(log: () -> String) {
-    info(log.invoke())
+    if (Intelij.isRunningFromIntelij) println("INFO  - "+Thread.currentThread().name+" - "+log.invoke())
+    if (this.isInfoEnabled) info(log.invoke())
 }
 
 fun Logger.warn(log: () -> String) {
-    warn(log.invoke())
+    if (Intelij.isRunningFromIntelij) println("WARN  - "+Thread.currentThread().name+" - "+log.invoke())
+    if (this.isWarnEnabled) warn(log.invoke())
 }
 
 fun Logger.error(log: () -> String) {
-    error(log.invoke())
+    if (Intelij.isRunningFromIntelij) println("ERROR - "+Thread.currentThread().name+" - "+log.invoke())
+    if (this.isErrorEnabled) error(log.invoke())
 }
 
 fun Logger.error(log: () -> String, exception: Throwable) {
-    error(log.invoke(), exception)
+    if (Intelij.isRunningFromIntelij) println("ERROR - "+Thread.currentThread().name+" - "+log.invoke() + "${exception.javaClass.simpleName}: ${exception.message} at ${exception.stackTrace[0].className}:${exception.stackTrace[0].lineNumber}")
+    if (this.isErrorEnabled) error(log.invoke() + "${exception.javaClass.simpleName}: ${exception.message} at ${exception.stackTrace[0].className}:${exception.stackTrace[0].lineNumber}")
 }
 
 fun Logger.error(exception: Throwable, log: () -> String) {
-    error(log.invoke(), exception)
+    if (Intelij.isRunningFromIntelij) println("ERROR - "+Thread.currentThread().name+" - "+log.invoke() + "${exception.javaClass.simpleName}: ${exception.message} at ${exception.stackTrace[0].className}:${exception.stackTrace[0].lineNumber}")
+    if (this.isErrorEnabled) error(log.invoke() + "${exception.javaClass.simpleName}: ${exception.message} at ${exception.stackTrace[0].className}:${exception.stackTrace[0].lineNumber}")
 }
 
 inline infix fun <reified E> List<E>.contentEquals(map: List<E>): Boolean {
     return Arrays.equals(this.toTypedArray(), map.toTypedArray())
 }
+
+
+@Suppress("unused")
+inline fun <reified T> T.getLogger(): Logger = LoggerFactory.getLogger(T::class.java)

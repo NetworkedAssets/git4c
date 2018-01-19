@@ -35,7 +35,7 @@
         '<section role="dialog" id="singlefiledoc_macroDialog" class="aui-layer aui-dialog2 aui-dialog2-xlarge" aria-hidden="true">'+
         '   <header class="aui-dialog2-header">'+
         '      <h2 class="aui-dialog2-header-main">Git4C macro parameters</h2>'+
-        '      <a class="aui-dialog2-header-close" v-on:click="closeDialog()">'+
+        '      <a class="aui-dialog2-header-close" id="git4c_single_file_dialog_header_close" v-on:click="closeDialog()">'+
         '      <span class="aui-icon aui-icon-small aui-iconfont-close-dialog">Close</span>'+
         '      </a>'+
         '   </header>'+
@@ -58,15 +58,24 @@
         '                 <div class="aui-item">'+
         '                    <div class="field-group">'+
         '                        <label for="doc_macro-predefined_repository">Repository</label>'+
-        '                        <select class="select" v-show="(repositories && repositories.length!=0) || customRepository" v-model="repository"  style="max-width: 81%">'+
-        '                            <option v-if="customRepository" v-bind:value="customRepository">'+
+        '                        <select class="select" v-show="(repositories && repositories.length!=0) || customRepository ||(recentlyUsedRepositories && recentlyUsedRepositories.length!=0)" v-model="repository"  style="max-width: 81%">'+
+        '                           <optgroup v-if="customRepository" label="Choosen repository">'+
+        '                              <option v-bind:value="customRepository">'+
         '                                 {{ customRepository.repositoryName }}'+
-        '                            </option>'+
-        '                            <option v-for="repo in repositories" v-bind:value="repo">'+
+        '                              </option>'+
+        '                           </optgroup>'+
+        '                           <optgroup label="Recently used repositories">'+
+        '                               <option  v-for="repo in recentlyUsedRepositories" v-bind:value="repo">'+
+        '                                 {{ repo.repositoryName }}'+
+        '                               </option>'+
+        '                           </optgroup>'+
+        '                           <optgroup label="Predefined repositories">'+
+        '                               <option  v-for="repo in repositories" v-bind:value="repo">'+
         '                                 {{ repo.name }}'+
-        '                            </option>'+
+        '                               </option>'+
+        '                           </optgroup>'+
         '                        </select>'+
-        '                        <select class="select" v-show="(!repositories || repositories.length==0) && !customRepository" :disabled="true"  style="max-width: 64%">'+
+        '                        <select class="select" v-show="(!repositories || repositories.length==0) && !customRepository&& !(recentlyUsedRepositories && recentlyUsedRepositories.length!=0)" :disabled="true"  style="max-width: 64%">'+
         '                            <option>No Repositories Available</option>'+
         '                        </select>'+
         '                        <button v-bind:disabled="forcedPredefined" ref="custom_repository_button" @click.prevent id="git4c-single_file_dialog-add_repository-button" v-on:click="openCustomRepositoryDialog" class="aui-button aui-button-primary">'+
@@ -89,26 +98,25 @@
         '                    </div>'+
         '                    <div class="field-group git4c-file-select-container">'+
         '                       <label for="doc_macro-repo_file">File</label>'+
-        '                       <select class="select" v-show="downloadingFiles == true" :disabled="true" style="max-width: 208px">'+
-        '                          <option>Downloading files</option>'+
-        '                       </select>'+
-        '                       <span v-show="downloadingFiles === false">'+
-        '                           <git4cselect2single class="select" v-model="file">'+
-        '                              <option v-for="file in files">{{ file }}</option>'+
-        '                           </git4cselect2single>'+
+        '                       <span>'+
+        '                           <input v-show="downloadingFiles" placeholder="Downloading files" style="max-width: 81%" class="text" type="text" disabled></input>'+
+        '                           <input v-show="!downloadingFiles" style="max-width: 81%" v-model="file" class="text" type="text" disabled id="git4c_singlefiledialog_select_file"></input>'+
         '                       </span>'+
         '                       '+
-        '                       <span v-show="files">'+
-        '                           <button v-on:click="showFileTree()" @click.prevent href="javascript:void(0)" class="aui-button aui-button-primary"><span class="aui-icon aui-icon-small aui-iconfont-nav-children-large">Show file tree</span></button>'+
-        '                       </span>'+
-        '                       <span v-show="!files">'+
-        '                           <button @click.prevent href="javascript:void(0)" class="aui-button aui-button-primary" aria-disabled="true"><span class="aui-icon aui-icon-small aui-iconfont-nav-children-large">Show file tree</span></button>'+
+        '                       <span>'+
+        '                           <button v-on:click="showFileTree()" @click.prevent href="javascript:void(0)" v-bind:disabled="downloadingFiles || !fileTree" class="aui-button aui-button-primary"><span class="aui-icon aui-icon-small aui-iconfont-nav-children-large">Show file tree</span></button>'+
         '                       </span>'+
         '                    </div>'+
         '                    <div class="field-group" >'+
         '                       <label>Show top bar</label>'+
         '                       <div class="checkbox">'+
         '                          <input class="checkbox" type="checkbox" v-model="showTopBar">'+
+        '                       </div>      '+
+        '                    </div>'+
+        '                    <div class="field-group" v-show="hasToc">'+
+        '                       <label>Table of contents</label>'+
+        '                       <div class="checkbox">'+
+        '                          <input id="git4c_singlefiledialog_checkbox_toc" class="checkbox" type="checkbox" v-model="toc">'+
         '                       </div>      '+
         '                    </div>'+
         '                    <div class="field-group" v-if="showTopBar">'+
@@ -129,7 +137,7 @@
         '                          <input :disabled="downloadingFile" class="checkbox" type="checkbox" v-model="showLineNumbers">'+
         '                       </div>      '+
         '                    </div>'+
-        '                    <div class="field-group" v-if="fileContent && (hasMethods ||haveLineNumbers)">'+
+        '                    <div id="show_type_group" class="field-group" v-if="fileContent && (hasMethods || haveLineNumbers)">'+
         '                       <label>Show</label>'+
         '                       <select class="select" v-model="showType">'+
         '                            <option value="all">All lines</option>'+
@@ -161,7 +169,9 @@
         '          <div class="aui-item" id="dialog-code-content" style="display: flex; flex-direction: column; overflow: auto; width: 560px; border-left: 1px solid #ccc;">'+
         '                     <div style="color: gray; margin: 10px">File preview (will show after macro is loaded)</div>'+
         '                     <hr style="margin: 0px;" />'+
-        '                     <div v-if="fileContent" id="git4c-single-dialog-code-holder"  v-html="fileContent" v-bind:class="{\'git4c-single-dialog-no-line-numbers\': haveLineNumbers && !showLineNumbers, \'git4c-single-dialog-code-holder-markdown\': !singleFile}"></div>'+
+        '                     <div id="git4c_singlefiledialog_markup_toc" class="git4c-singlefile-toc" v-show="hasToc && toc && tocObject">' +
+        '                         <toc container="#dialog-code-content" :data="tocObject"></toc></div>' +
+        '                     <div v-if="fileContent" class="git4c-any-content" id="git4c-single-dialog-code-holder"  v-html="fileContent" v-bind:class="{\'git4c-single-dialog-no-line-numbers\': haveLineNumbers && !showLineNumbers, \'git4c-single-dialog-code-holder-markdown\': !singleFile}"></div>'+
         '                     <div v-else style="position: relative; top: 50%; ">'+
         '                        <overlay v-if="file && files"></overlay>'+
         '                     </div>'+
@@ -170,7 +180,7 @@
         '   </div>'+
         '   <footer class="aui-dialog2-footer">'+
         '      <div class="aui-dialog2-footer-actions">'+
-        '         <button id="dialog-close-button" v-on:click="save()" class="aui-button aui-button-primary" v-bind:disabled="!isFilled" v-show="saving == false">Save</button>'+
+        '         <button id="dialog-save-button" v-on:click="save()" class="aui-button aui-button-primary" v-bind:disabled="!isFilled" v-show="saving == false">Save</button>'+
         '         <button id="dialog-close-button" class="aui-button aui-button-primary" disabled=true v-show="saving == true">Saving...</button>'+
         '      </div>'+
         '   </footer>'+
@@ -205,8 +215,7 @@
 
                 repository: undefined,
 
-                existingRepositoryUuid: undefined,
-
+                recentlyUsedRepositories: undefined,
                 predefinedRepositoryUuid: undefined,
 
                 branch: undefined,
@@ -235,6 +244,9 @@
 
                 forcedPredefined: true,
 
+                hasToc: false,
+                toc: true,
+                tocObject: undefined,
 
                 currentError: undefined,
                 fileTree: undefined,
@@ -242,7 +254,6 @@
                 // currentError: "SOURCE_NOT_FOUND",
                 errors: errors,
                 repositories: undefined,
-                isPredefined: true,
                 saving: false,
                 isFilled: false,
                 showLineNumbers: true,
@@ -291,7 +302,6 @@
                 data.files = undefined
                 data.fileTree = undefined
                 data.fileContent = undefined
-                data.isPredefined = undefined
                 data.repositories = undefined
                 data.filesReq = undefined
                 data.branchesReq = undefined
@@ -310,6 +320,10 @@
                 data.singleFile = undefined
                 data.numberOfLines = undefined
                 data.showType = undefined
+                data.hasToc = undefined
+                data.tocObject = undefined
+                data.recentlyUsedRepositories = undefined
+
 
                 tinymce.confluence.macrobrowser.macroBrowserComplete({
                     "name": "Git4C Single File",
@@ -337,18 +351,25 @@
                     return data
                 },
                 components: {
+                    toc: Git4CToc.getComponent(),
                     customRepositoryDialog: Git4CCustomRepositoryDialog.getComponent(Bus),
                     git4cselect2single: Git4CSelect2Single.getComponent(),
                     overlay: Git4COverlay.getLoaderAlone(Bus)
                 },
                 watch: {
                     repository: function () {
-                        this.checkIfPredefined()
+                        if(this.isRecentlyUsed(this.repository)) {
+                            this.customRepository = {
+                                uuid: this.repository.uuid,
+                                repositoryName: this.repository.repositoryName
+                            }
+                        }
                         this.$nextTick(function () {
                             this.getBranches()
                         })
                     },
                     branch: function () {
+                        this.fileTree = undefined
                         if(this.branch) {
                             this.prevBranch = this.branch
                         }
@@ -397,6 +418,19 @@
                     }
                 },
                 methods: {
+                    isRecentlyUsed: function (repo) {
+                        var includes = false
+                        if(this.recentlyUsedRepositories) {
+                            this.recentlyUsedRepositories.forEach(function (it) {
+                                if(it.repositoryName === repo.repositoryName && it.uuid === repo.uuid)
+                                {
+                                    includes = true
+                                }
+                            })
+                        }
+
+                        return includes
+                    },
                     removeHighlight: function () {
                         $(this.$el).find("div.git4c-prismjs-div pre").each(function (i, block) {
                             const el = $(block)
@@ -519,11 +553,11 @@
                                 }
                             }
 
-                            if (this.existingRepositoryUuid && !this.isPredefined) {
-                                const uuid = this.existingRepositoryUuid
+                            if (this.customRepository && this.customRepository.uuid && !this.isPredefined()) {
+                                const uuid = this.customRepository.uuid
                                 promise = vm.$http.get(restUrl + "/repository/" + uuid + "/branches")
                             } else {
-                                if (vm.isPredefined) {
+                                if (vm.isPredefined()) {
                                     const uuid = this.repository.uuid
                                     promise = vm.$http.get(restUrl + "/predefine/" + uuid + "/branches", before)
                                 } else {
@@ -607,8 +641,8 @@
                                     vm.filesReq = request
                                 }
                             }
-                            if (this.existingRepositoryUuid && !this.isPredefined) {
-                                const uuid = this.existingRepositoryUuid
+                            if (this.customRepository && this.customRepository.uuid && !this.isPredefined()) {
+                                const uuid = this.customRepository.uuid
 
                                 const toSend = {
                                     branch: vm.branch
@@ -616,7 +650,7 @@
 
                                 promise = vm.$http.post(restUrl + "/repository/" + uuid + "/files", toSend, before)
                             } else {
-                                if (this.isPredefined) {
+                                if (this.isPredefined()) {
 
                                     const uuid = this.repository.uuid
 
@@ -648,13 +682,8 @@
 
                                     if(prevFileId !== -1){
                                         vm.file = response.body.files[prevFileId]
-                                        vm.getFile()
                                     }else {
                                         vm.file = response.body.files[0]
-                                    }
-
-                                    if (vm.file === response.body.files[0]) {
-                                        vm.getFile()
                                     }
 
                                     vm.downloadingFiles = false
@@ -679,7 +708,14 @@
                         if (!this.file) {
                             return
                         }
+
                         this.showType = "all"
+
+                        if(this.prevShowType){
+                            this.showType = this.prevShowType
+                            this.prevShowType = undefined
+                        }
+
 
                         this.downloadingFile = true
 
@@ -687,6 +723,7 @@
                             this.haveLineNumbers = Git4CUtils.hasLines(this.file)
                         })
 
+                        this.hasToc = false
                         this.hasMethods = false
                         this.haveLineNumbers = false
 
@@ -702,8 +739,8 @@
                         }
 
                         var promise;
-                        if (this.existingRepositoryUuid && !this.isPredefined) {
-                            const uuid = this.existingRepositoryUuid
+                        if (this.customRepository && this.customRepository.uuid && !this.isPredefined()) {
+                            const uuid = this.customRepository.uuid
 
                             const toSend = {
                                 branch: this.branch,
@@ -712,7 +749,7 @@
 
                             promise = this.$http.post(restUrl + "/repository/" + uuid + "/file", toSend, before)
                         } else {
-                            if (this.isPredefined) {
+                            if (this.isPredefined()) {
 
                                 const uuid = this.repository.uuid
 
@@ -747,6 +784,7 @@
                                 this.originalContent = content
                                 if (content) {
                                     vm.fileContent = content
+                                    vm.tocObject = response.body.tableOfContents
                                     vm.numberOfLines = content.split("\n").length - 6
                                     vm.$nextTick(function () {
                                         if(vm.startLine && vm.endLine){
@@ -763,6 +801,11 @@
                                     vm.hasMethods = true
                                     this.getMethods()
                                 }
+                                if (vm.file.endsWith("md") || vm.file.endsWith("adoc")) {
+                                    vm.hasToc = true
+                                } else {
+                                    vm.hasToc = false
+                                }
                             }, function(error) {
                                 if (error.status === 0) {
                                     return
@@ -776,11 +819,6 @@
                     getMethods: function () {
                         const vm = this
 
-                        if(this.prevShowType){
-                            this.showType = this.prevShowType
-                            this.prevShowType = undefined
-                        }
-
                         if (!this.file) {
                             return
                         }
@@ -788,15 +826,15 @@
                         this.downloadingMethods = true
 
                         var promise
-                        if (this.existingRepositoryUuid && !this.isPredefined) {
-                            const uuid = this.existingRepositoryUuid
+                        if (this.customRepository && this.customRepository.uuid && !this.isPredefined()) {
+                            const uuid = this.customRepository.uuid
                             const toSend = {
                                 branch: this.branch,
                                 file: this.file
                             };
                             promise = this.$http.post(restUrl + "/repository/" + uuid + "/methods", toSend, {})
                         } else {
-                            if (this.isPredefined) {
+                            if (this.isPredefined()) {
 
                                 const uuid = this.repository.uuid
 
@@ -883,26 +921,28 @@
                             } : undefined
                         }
 
-                        if(this.isPredefined){
-                            this.existingRepositoryUuid = undefined
+                        if(this.isPredefined()){
+                            this.customRepository = undefined
                             this.customRepositoryUrl = undefined
                             this.customRepositoryAuthType = undefined
                             this.customRepositoryName = undefined
-
                             this.predefinedRepositoryUuid = this.repository.uuid;
                         } else {
                             this.predefinedRepositoryUuid = undefined
                         }
 
                         var toSend = undefined
-                        if (this.existingRepositoryUuid && !this.isPredefined) {
+
+                        if(this.customRepository && this.customRepository.uuid){
+                            vm.customRepositoryName = this.repository.repositoryName
                             toSend = {
                                 repositoryDetails: {
                                     repository: {
                                         type: "EXISTING",
-                                        uuid: this.existingRepositoryUuid
+                                        uuid: this.customRepository.uuid
                                     }
                                 },
+                                repositoryName: this.repository.repositoryName,
                                 branch: this.branch,
                                 // file: this.file
                                 glob: [this.file],
@@ -910,7 +950,7 @@
                                 extractor: extractor
                             };
                         } else {
-                            if (!this.isPredefined) {
+                            if (!this.isPredefined()) {
                                 toSend = {
                                     repositoryDetails: {
                                         repository: {
@@ -919,6 +959,7 @@
                                             credentials: credentials
                                         }
                                     },
+                                    repositoryName: this.repository.repositoryName,
                                     branch: this.branch,
                                     // file: this.file
                                     glob: [this.file],
@@ -935,6 +976,7 @@
                                             uuid: uuid
                                         }
                                     },
+                                    repositoryName: this.repositories.filter( function(it) { return (it.uuid === vm.repository.uuid) } )[0].name,
                                     branch: this.branch,
                                     // file: this.file
                                     glob: [this.file],
@@ -978,7 +1020,7 @@
 
                         // const f = this.setChoosenFile()
                         //
-                        createFileTreeDialog(this.fileTree, this.setChoosenFile, this)
+                        createFileTreeDialog(this.fileTree, this.setChoosenFile, this.toc, this)
 
                         // alert("SHOW DIALOG")
                     },
@@ -1014,13 +1056,20 @@
                         this.closeCustomRepositoryDialog()
                         this.customRepository = repository
                         this.repository = this.customRepository
-                        this.existingRepositoryUuid = undefined
                         this.customRepositoryAuthType = this.repository.credentials.sshKey ? "SSHKEY" : this.repository.credentials.username ? "USERNAMEPASSWORD" : "NOAUTH"
                         this.customRepositoryName = this.repository.repositoryName
                         this.customRepositoryUrl = this.repository.sourceRepositoryUrl
                     },
-                    getPredefinedList: function () {
+                    getRepositoryList: function () {
                         const vm = this;
+
+                        vm.$http.get(restUrl + "/repository/usages", {}).then(function(response) {
+                            vm.recentlyUsedRepositories = response.body.usages.reverse()
+                        }, function(error) {
+                            error.text().then(function(text) {
+                                vm.showError(text)
+                            })
+                        })
 
                         vm.$http.get(restUrl + "/predefine", {}).then(function(response) {
                             const repos = response.data
@@ -1028,9 +1077,14 @@
                             vm.$nextTick(function() {
                                 if(this.predefinedRepositoryUuid)
                                 {
-                                    vm.repository = vm.repositories.filter( function(it) { return (it.uuid == vm.predefinedRepositoryUuid) }  )[0]
+                                    var list = vm.repositories.filter( function(it) { return (it.uuid === vm.predefinedRepositoryUuid) } )
+                                    if(list.length !== 0){
+                                        vm.repository = list[0]
+                                    }else{
+                                        vm.predefinedRepositoryUuid = null
+                                    }
                                 }
-                                if(!vm.repository) {
+                                if(!vm.repository && !vm.customRepositoryName) {
                                     vm.repository = repos[0]
                                 }
                             })
@@ -1047,17 +1101,24 @@
 
                         return false
                     },
-                    checkIfPredefined: function () {
-                      this.isPredefined = !this.customRepository ? true : this.repository != this.customRepository
+                    isPredefined: function () {
+                        return !this.customRepository ? true : (this.repository.uuid !== this.customRepository.uuid) &&  (this.repository.repositoryName !== this.customRepository.repositoryName)
                     },
                     clearCustomFields: function () {
-                        this.existingRepositoryUuid = undefined
                         this.customRepositoryUrl = undefined
                         this.customRepositoryAuthType = undefined
                         this.customRepositoryName = undefined
                     },
                     init: function(){
                         const vm = this
+
+                        if(vm.customRepositoryName) {
+                            vm.customRepository = {
+                                repositoryName: vm.customRepositoryName
+                            }
+                            vm.repository = vm.customRepository
+                        }
+
 
                         Vue.http.get(restUrl + "/settings/repository/predefine/force").then(function(response) {
                             if(response.body.forced === true) {
@@ -1074,13 +1135,19 @@
                                 vm.showError(text)
                             })
                         })
+
                         if(data.uuid){
                             if(vm.prevShowType){
                                 vm.showType = vm.prevShowType
                             }
+
                             Vue.http.get(restUrl + "/" + data.uuid).then(function(response) {
-                                vm.existingRepositoryUuid = response.body.repositoryUuid
                                 if(vm.customRepositoryName) {
+                                    vm.customRepository = {
+                                        uuid: response.body.repositoryUuid,
+                                        repositoryName: vm.customRepositoryName
+                                    }
+                                    vm.repository = vm.customRepository
                                     vm.getBranches()
                                 }
                             }, function(error) {
@@ -1094,9 +1161,6 @@
                                 }
                             })
                             if(this.customRepositoryName) {
-                                this.customRepository = {repositoryName: this.customRepositoryName}
-
-                                this.repository = this.customRepository
                                 const repoInfo = {
                                     name: this.customRepositoryName,
                                     sourceRepositoryUrl: this.customRepositoryUrl,
@@ -1106,13 +1170,11 @@
                             }
                         }
                     }
-
-
                 },
                 mounted: function () {
                     const vm = this
                     this.init()
-                    this.getPredefinedList()
+                    this.getRepositoryList()
                     Bus.$on("closeCustomRepositoryDialog", function() {vm.closeCustomRepositoryDialog()})
                     Bus.$on("repositoryDefined", function(repository) {vm.processRepository(repository)})
                 }
@@ -1129,13 +1191,17 @@
 '                  </a>'+
 '               </header>'+
 '               <div class="aui-dialog2-content" style="height: 80%; margin: 0; padding: 0; display: flex;"> '+
-'                   <div id="git4c-single-dialog-tree-div" style="width: 200px; padding: 20px; overflow: auto;" ref="fileTree">'+
-'                       <git4c-filetree :data="fileTree"></git4c-filetree>'+
+'                   <input style="height: 20px; width: 33%; position: absolute; margin: 10px;"  placeholder="search..." class="text" v-model="query" type="text" title="search">'+
+'                   <div id="git4c-single-dialog-tree-div" style="width: 200px; padding: 20px; margin-top: 30px; overflow: auto;" ref="fileTree">'+
+'                       <git4c-filetree ref="fileTreeRef" :data="fileTree"></git4c-filetree>'+
 '                   </div>'+
-'                   <div style="width: 400px; border-left: 1px solid #ccc; overflow: auto; display: flex; flex-direction: column">'+
+'                   <div id="git4c-single-dialog-right-column" style="width: 400px; border-left: 1px solid #ccc; overflow: auto; display: flex; flex-direction: column">'+
 '                       <div style="margin-left: 20px; margin-top: 8px; margin-bottom: 8px">File preview</div>'+
 '                       <hr ref="previewbar" style="margin: 0" />'+
-'                       <div v-if="fileContent" style="height: 100%;" v-bind:class="{ \'git4c-single-dialog-tree-code-holder-markdown \': !singleFile }" id="git4c-single-dialog-tree-code-holder" v-html="fileContent"></div>'+
+'                       <div v-if="fileContent" style="height: 100%;" v-bind:class="{ \'git4c-single-dialog-tree-code-holder-markdown \': !singleFile }">' +
+'                           <toc id="git4c-single-dialog-tree-toc" v-show="toc && tocObject" container="#git4c-single-dialog-right-column" :data="tocObject" />' +
+'                           <div class="git4c-any-content" id="git4c-single-dialog-tree-code-holder" v-html="fileContent" />' +
+'                       </div>'+
 '                       <overlay v-else></overlay>'+
 '                    </div>'+
 '               </div>'+
@@ -1148,7 +1214,7 @@
 '               </footer>'+
 '           </section>'
 
-    const createFileTreeDialog = function (tree, callback, originalData) {
+    const createFileTreeDialog = function (tree, callback, toc, originalData) {
         const dialogInstance = $(fileTreeDialog).appendTo("body");
 
         var vue
@@ -1174,13 +1240,33 @@
             data: function () {
                 return {
                     fileTree: tree,
+                    originalTree: tree,
                     fileContent: "<div>Please select file from tree</div>",
                     singleFile: false,
                     currentFile: undefined,
-                    request: undefined
+                    request: undefined,
+                    tocObject: undefined,
+                    toc: toc,
+                    query: undefined
+                }
+            },
+            watch: {
+                query: function () {
+                    const vm = this
+                    const filteredTree = this.filterTree(this.originalTree, this.query)
+                    this.fileTree = filteredTree === false ? undefined : filteredTree
+                    if(this.fileTree) {
+                        this.$nextTick(function () {
+                            vm.$refs.fileTreeRef.closeTree()
+                            if (vm.countElements(vm.fileTree) < 20) {
+                                vm.$refs.fileTreeRef.openTree()
+                            }
+                        })
+                    }
                 }
             },
             components: {
+                "toc": Git4CToc.getComponent(),
                 "git4c-filetree": Git4CFileTree.getComponent(Bus),
                 "overlay": Git4COverlay.getLoaderAlone(Bus)
             },
@@ -1204,13 +1290,42 @@
                     } catch (err) {
                         trueWidth = 0
                     }
-
                     if (trueWidth) {
                         $(this.$el).find("#git4c-single-dialog-tree-code-holder").css({width: trueWidth + 40})
                         $(this.$refs.previewbar).css({width: trueWidth + 40})
                     }
                 },
+                filterTree: function (tree, needle) {
+                    const vm = this
+                    if (tree.fullName.includes(needle)){
+                        //deep copy of item
+                        return JSON.parse(JSON.stringify(tree))
+                    }else {
+                        var t = {fullName: tree.fullName, name: tree.name, type: tree.type, children: []}
+                        tree.children.forEach(function (child) {
+                            var c = vm.filterTree(child, needle)
+                            if (c) t.children.push(c)
+                        })
+                        if (t.children.length !== 0) return t
+                        return false
+                    }
+                },
+                countElements: function (tree) {
+                    const vm = this
+                    if (tree.children.size > 0){
+                        return 1
+                    }
+                    else{
+                        var i = 0
+                        tree.children.forEach(function (it) {
+                            i += vm.countElements(it)
+                        })
+                        return i+1;
+                    }
+                }
             },
+
+
             mounted: function () {
 
                 const vm = this
@@ -1235,16 +1350,16 @@
 
                     var promise
 
-                    if (originalData.existingRepositoryUuid && !originalData.isPredefined) {
-                        const uuid = originalData.existingRepositoryUuid
+                    if (originalData.customRepository && originalData.customRepository.uuid && !originalData.isPredefined()) {
+                        const uuid = originalData.customRepository.uuid
 
                         const toSend = {
                             branch: originalData.branch,
-                            file: originalData.file
+                            file: file
                         };
 
                         promise = this.$http.post(restUrl + "/repository/" + uuid + "/file", toSend, before)
-                    } else if (originalData.isPredefined) {
+                    } else if (originalData.isPredefined()) {
 
                         const uuid = originalData.repository.uuid
 
@@ -1273,6 +1388,7 @@
                     promise.then(function(response) {
 
                         vm.fileContent = response.body.content
+                        vm.tocObject = response.body.tableOfContents
                         vm.$nextTick(function() {
 
                             vm.singleFile = false

@@ -2,14 +2,13 @@ package com.networkedassets.git4c.core.business
 
 import com.networkedassets.git4c.boundary.outbound.DocumentationsContentTree
 import com.networkedassets.git4c.core.bussiness.DocumentsTreeConverter
-import com.networkedassets.git4c.data.macro.documents.item.DocumentsItem
-import com.networkedassets.git4c.data.macro.documents.item.TableOfContents
+import com.networkedassets.git4c.data.macro.documents.item.DocumentsFileIndex
 import spock.lang.Specification
 
 class DocumentsTreeConverterTest extends Specification {
 
     def createDocumentsItem(String path) {
-        return new DocumentsItem(path, "", "", new Date(), "", "", new TableOfContents("", "", []))
+        return new DocumentsFileIndex(path)
     }
 
     def static DIR = DocumentationsContentTree.NodeType.DIR

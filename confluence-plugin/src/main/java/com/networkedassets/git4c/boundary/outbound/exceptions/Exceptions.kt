@@ -8,3 +8,5 @@ class NotFoundException(transactionInfo: TransactionInfo, msg: String) : Excepti
 }
 
 class ConflictException(transactionInfo: TransactionInfo, msg: String) : Exception("$transactionInfo $msg")
+
+class NotReadyException() : Exception("Data is not yet ready!")

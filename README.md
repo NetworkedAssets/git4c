@@ -24,7 +24,7 @@ See documentations in Markdown:
  - [User Guide](guides/User/index.md)  
  - [Administration Guide](guides/Administration/index.md)  
  - [Installation Guide](guides/Installation/index.md)  
- - [Architecture Documentation](documentation/Architecture%20Documentation%20of%20Git4C.md)  
+ - [Architecture Documentation](documentation/Architecture%20Documentation.md)  
   
   
 See demo at: [Confluence Demo](http://git4c-demo.networkedassets.net)

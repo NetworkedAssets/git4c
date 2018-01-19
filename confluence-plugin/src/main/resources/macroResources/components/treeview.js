@@ -102,7 +102,7 @@ Vue.component('treeview', {
         select: function (index) {
             this.toggle(index)
             if (this.model[index].type === "DOCITEM") {
-                this.$router.push('/' + encodeURIComponent(this.model[index].fullName) + "&" + encodeURIComponent(this.$route.params.branch));
+                this.$router.push({path: encodeURIComponent(this.model[index].fullName), query: {branch: this.$route.query.branch}});
             }
         },
 
@@ -110,7 +110,7 @@ Vue.component('treeview', {
             this.toggle(index)
             const item = this.model[index]
             if (item.type === "DOCITEM") {
-                this.$router.push('/' + encodeURIComponent(this.model[index].fullName) + "&" + encodeURIComponent(this.$route.params.branch));
+                this.$router.push({path: encodeURIComponent(this.model[index].fullName), query: {branch: this.$route.query.branch}});
             }
             if(item.type === "DIR" && this.isExpanded[index]){
                 if(item.children.length != 0){
@@ -118,7 +118,7 @@ Vue.component('treeview', {
                     if(child) {
                         if (child.type === "DOCITEM") {
                             Events.$emit("fileSelected", child.fullName)
-                            this.$router.push('/' + encodeURIComponent(child.fullName) + "&" + encodeURIComponent(this.$route.params.branch));
+                            this.$router.push({path: encodeURIComponent(child.fullName), query: {branch: this.$route.query.branch}});
                         }
                     }
                 }

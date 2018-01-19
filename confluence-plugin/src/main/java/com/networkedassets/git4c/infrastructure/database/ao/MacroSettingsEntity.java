@@ -29,4 +29,11 @@ public interface MacroSettingsEntity extends Entity {
 
     void setExtractor(String extractor);
 
+    String getRootDirectory();
+
+    void setRootDirectory(String rootDirectory);
+
+    String getType();
+
+    void setType(String type);
 }

@@ -15,7 +15,7 @@ class CreatePredefinedGlobUseCase(
 
     override fun execute(request: CreatePredefinedGlobCommand): Result<PredefinedGlobData, Exception> {
         val globToCreate = PredefinedGlob(idGenerator.generateNewIdentifier(), request.globToCreate.glob, request.globToCreate.name)
-        predefinedGlobsDatabase.insert(globToCreate.uuid, globToCreate)
+        predefinedGlobsDatabase.put(globToCreate.uuid, globToCreate)
         return Result.of {
             PredefinedGlobData(
                     uuid = globToCreate.uuid,

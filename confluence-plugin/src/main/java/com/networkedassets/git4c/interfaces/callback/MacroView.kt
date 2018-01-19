@@ -8,6 +8,12 @@ import com.atlassian.confluence.util.velocity.VelocityUtils
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.networkedassets.git4c.application.Plugin
 import com.networkedassets.git4c.boundary.GetDocumentationsMacroViewTemplateQuery
+import com.networkedassets.git4c.boundary.ViewMacroCommand
+import com.networkedassets.git4c.boundary.inbound.MacroToView
+import com.networkedassets.git4c.boundary.inbound.MacroType
+import com.networkedassets.git4c.boundary.inbound.PageToView
+import com.networkedassets.git4c.boundary.inbound.SpaceToView
+import com.networkedassets.git4c.utils.error
 import com.networkedassets.git4c.utils.sendToExecution
 import org.slf4j.LoggerFactory
 
@@ -24,9 +30,23 @@ class MacroView(val plugin: Plugin) : Macro {
             return ""
         }
 
+        //Yes, it can be null in some cases
+        val macroUuid = params["uuid"] ?: return ""
+
         try {
 
-            val content = sendToExecution(plugin.components.dispatcher, GetDocumentationsMacroViewTemplateQuery("macroResources"))
+            val page = PageToView(conversionContext.pageContext.entity.id.toString())
+            val space = SpaceToView(conversionContext.spaceKey)
+            val macro = MacroToView(macroUuid, MacroType.MULTIFILE)
+
+            sendToExecution(plugin.components.dispatcher,
+                    ViewMacroCommand(macro, page, space)
+            )
+
+            val content = sendToExecution(plugin.components.dispatcher,
+                    GetDocumentationsMacroViewTemplateQuery("macroResources")
+            )
+
 
             val resourcesPath = "download/resources/com.networkedassets.git4c.confluence-plugin:macro-resources/macroResources/"
             val context = MacroUtils.defaultVelocityContext()
@@ -36,6 +56,7 @@ class MacroView(val plugin: Plugin) : Macro {
 
             return VelocityUtils.getRenderedTemplate("/macroResources/macro.vm", context)
         } catch (e: Exception) {
+            log.error({ "Error during multi file macro rendering" }, e)
             throw MacroExecutionException(e);
         }
     }

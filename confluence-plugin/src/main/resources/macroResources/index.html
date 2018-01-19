@@ -63,7 +63,7 @@
                                         <!--</div>-->
                                     </div>
                                     <section class="aui-page-panel-content git4c-no-padding">
-                                        <div class="git4c-markup-content">
+                                        <div class="git4c-markup-content" id="git4c-markup-content">
                                             <router-view></router-view>
                                         </div>
                                     </section>
@@ -77,12 +77,28 @@
             <template id="markup">
                 <div>
                     <div class="markup">
-                        <div class="aui-message aui-message-hint" v-if="locationPath===''">
-                            <div v-if="!tree">
+                        <div class="aui-message aui-message-hint" v-if="locationPath==='' && !tree">
+                            <div>
                                 <p style="text-align:center;">There are no files available. Choose a different branch or revalidate your filters.</p>
                             </div>
-                            <div v-else>
-                                <p style="text-align:center;">Please wait, file is loading</p>
+                        </div>
+                        <div  v-if="locationPath==='' && tree">
+                            <div style="top:50%; left: 50%; width: 100%; padding-top:50px;">
+                                <div id="spinner1" class="spinner6" style="width:60px; margin: 0 auto;">
+                                    <div class="rect1" style="background-color: rgb(204, 214, 7);"></div>
+                                    <div class="rect2" style="background-color: rgb(204, 214, 7);"></div>
+                                    <div class="rect3" style="background-color: rgb(204, 214, 7);"></div>
+                                    <div class="rect4" style="background-color: rgb(204, 214, 7);"></div>
+                                    <div class="rect5" style="background-color: rgb(204, 214, 7);"></div>
+                                </div>
+                                <div>
+                                    <p style="font-family: Arial; color: rgb(204, 214, 7); font-weight: bold; font-size: 20pt; text-align: center;">
+                                        Loading file content</p>
+                                </div>
+                                <div>
+                                    <p style="font-family: Arial; color: rgb(112, 112, 112); font-weight: normal; font-size: 14pt; text-align: center;">
+                                        It shouldn't take more than few seconds</p>
+                                </div>
                             </div>
                         </div>
                         <div v-show="locationPath!==''">
@@ -128,26 +144,22 @@
                                             </span>
                                         </span>
                                     </div>
-                                    <div>
-                                        <div style="padding-right: 5px">
-                                            <button ref="raw_file_button" class="aui-button" v-on:click="openDialog()" v-show="hasSource">
-                                                <span class="aui-icon aui-icon-small aui-iconfont-devtools-file" style="margin-right: 1px">
-                                                    Show raw markdown
-                                                </span>
-                                            </button>
-                                        </div>
-                                    </div>
+                                    <button ref="raw_file_button" class="aui-button" v-on:click="openDialog()" v-show="hasSource" style="margin-right: 5px">
+                                        <span class="aui-icon aui-icon-small aui-iconfont-devtools-file" style="margin-right: 1px">
+                                            Show raw markdown
+                                        </span>
+                                    </button>
                                     <div ref="commit_history_div" style="margin-right: 20px; display: flex; flex-direction: column; justify-content: center">
                                         <commit-history ref="commit_history"></commit-history>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div id="git4c-content" v-bind:class="{ 'git4c-no-padding': singleFile }">
-                            <div class="git4c-toc" v-show="toc && toc.children.length > 0">
+                        <div id="git4c-content" class="git4c-any-content" v-bind:class="{ 'git4c-no-padding': singleFile }">
+                            <div class="git4c-toc" v-show="toc && toc.children.length > 0 && locationPath!==''">
                                 <toc :data="toc"></toc>
                             </div>
-                            <div v-show="!overlayVisible">
+                            <div v-show="!overlayVisible && locationPath!==''">
                                 <dynamiccontent :template="template"></dynamiccontent>
                             </div>
                         </div>
@@ -180,13 +192,16 @@
                             </div>
                         </footer>
                     </section>
+
+                    <git4csourcefiledialog ref="editdialog"></git4csourcefiledialog>
+
                 </div>
 
             </template>
 
             <template id="nav-collapse">
                 <div>
-                    <button class="nav-collapse aui-button" title="Hide file tree" @click="toggle()" style="border: 0; background: transparent">
+                    <button class="nav-collapse aui-button" title="Hide file tree" v-on:click="expandedtoggle()" style="border: 0; background: transparent">
                         <i id="git4c-filetree-collapse_button" class="aui-icon aui-icon-small aui-iconfont-arrows-left"></i>
                     </button>
                 </div>

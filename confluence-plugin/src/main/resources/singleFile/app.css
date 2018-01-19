@@ -22,7 +22,7 @@
 }
 
 .git4c-singlefile-content-markdown {
-    padding: 20px;
+    padding: 20px 0 20px 20px;
 }
 
 .git4c-singlefile-topbar-inner {
@@ -32,9 +32,6 @@
     position: relative;
     flex-wrap: wrap;
     justify-content: space-between;
-}
-
-.git4c-singlefile-content {
 }
 
 pre[class*="language-"] {
@@ -93,4 +90,8 @@ pre.line-numbers {
 .git4c-singlefile-content :not(pre) > code {
     padding-left: 5px;
     padding-right: 5px;
+}
+
+.git4c-singlefile-toc {
+    padding: 20px 20px 0;
 }

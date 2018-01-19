@@ -52,6 +52,31 @@ class SingleFileUsageTest : BaseSeleniumTest() {
 
 
     @Test
+    fun `Single file line range test`() {
+
+        driver.with {
+            wait.with {
+
+                createPageInside {
+                    createSingleFileMacro(
+                            repoType = NoAuth("https://github.com/jaagr/polybar"),
+                            file = ".travis.yml",
+                            fileRange = Pair(2,10)
+
+                    )
+                }
+
+                until { findElementByClassName("git4c-singlefile-app") }
+
+            }
+        }
+
+        val range = wait.until { driver.findElement(By.className("git4c-file")).findElement(By.xpath("..")).findElement(By.className("aui-lozenge")) }
+        assertEquals("LINES: 2 - 10", range.text)
+
+    }
+
+    @Test
     fun collapseTest() {
 
         driver.with {
@@ -155,6 +180,69 @@ Nothing interesting to see here
 
             }
         }
+    }
+
+    @Test
+    fun `Table of contents is present when it's selected during macro creation`() {
+
+        driver.with {
+            wait.with {
+
+                val longwait = FluentWait<WebDriver>(driver)
+                        .withTimeout(1, TimeUnit.MINUTES)
+                        .pollingEvery(1, TimeUnit.SECONDS)
+                        .ignoring(org.openqa.selenium.NoSuchElementException::class.java, StaleElementReferenceException::class.java)
+
+
+                createPageInside {
+                    createSingleFileMacro(
+                            repoType = SSHKey("git@github.com:jereksel/EmptyNARepo.git", Paths.get("src", "test", "resources", "keys", "seleniumtest").toFile().readText()),
+                            file = "README.md",
+                            toc = true)
+                }
+
+                until { findElementByClassName("git4c-singlefile-app") }
+
+                until { findElementByClassName("git4c-singlefile-content-markdown").isDisplayed }
+
+                until { findElementByClassName("git4c-singlefile-toc").isDisplayed }
+
+            }
+        }
+
+    }
+
+
+    @Test
+    fun `Table of contents is not present when it's not selected during macro creation`() {
+
+        driver.with {
+            wait.with {
+
+                val longwait = FluentWait<WebDriver>(driver)
+                        .withTimeout(1, TimeUnit.MINUTES)
+                        .pollingEvery(1, TimeUnit.SECONDS)
+                        .ignoring(org.openqa.selenium.NoSuchElementException::class.java, StaleElementReferenceException::class.java)
+
+
+                createPageInside {
+                    createSingleFileMacro(
+                            repoType = SSHKey("git@github.com:jereksel/EmptyNARepo.git", Paths.get("src", "test", "resources", "keys", "seleniumtest").toFile().readText()),
+                            file = "README.md",
+                            toc = false)
+                }
+
+                until { findElementByClassName("git4c-singlefile-app") }
+
+//                until { findElementByClassName("git4c-singlefile-content").text.trim() == "EmptyNARepo Nothing interesting to see here" }
+
+                until { findElementByClassName("git4c-singlefile-content-markdown").isDisplayed }
+
+                assertFalse { findElementByClassName("git4c-singlefile-toc").isDisplayed }
+
+            }
+        }
+
     }
 
 }

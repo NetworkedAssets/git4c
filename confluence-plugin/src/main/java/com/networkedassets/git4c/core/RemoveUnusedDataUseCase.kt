@@ -16,6 +16,9 @@ class RemoveUnusedDataUseCase(
 ) : UseCase<RemoveUnusedDataCommand, Unit> {
     override fun execute(request: RemoveUnusedDataCommand): Result<Unit, Exception> {
 
+        // TODO: Async! This operation is killer for confluence!
+        // TODO: Add new objects
+
         //Step 1. Remove macrosettings that are no longer in Confluence
 
         val macrosInSystem = getAllMacrosInSystemProcess.extract().toHashSet()

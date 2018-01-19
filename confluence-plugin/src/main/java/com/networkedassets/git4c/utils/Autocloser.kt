@@ -50,7 +50,7 @@ object Autocloser {
             try {
                 proc()
             } catch (e: Exception) {
-                log.error(e) { "Problem during shutdown: " }
+                log.info { "Problem during shutdown: ${e.message}" }
             }
 
             shutdownProcedures -= proc

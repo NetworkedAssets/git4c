@@ -18,6 +18,8 @@ class RemoveAllDataUseCase(
 ) : UseCase<RemoveAllDataCommand, String> {
 
     override fun execute(request: RemoveAllDataCommand): Result<String, Exception> {
+        // TODO: Async! This operation is killer for confluence!
+        // TODO: Add new objects
         documentsViewCache.removeAll()
         macroSettingsRepository.removeAll()
         globForMacroDatabase.removeAll()

@@ -43,7 +43,10 @@ var Git4CCustomRepositoryDialog = {
             '<p>-----END RSA PRIVATE KEY-----</p>'),
             Error("captcha_required", ["CAPTCHA_REQUIRED"],
                '<p>Your Git repository account has been locked. To unlock it and log in again you must solve a CAPTCHA. This is typically caused by too many attempts to login with an incorrect password. The account lock prevents your SCM client from accessing repository and its mirrors until it is solved, even if you enter your password correctly</p>' +
-               '<p>If you are currently logged in to Git repository via a browser you may need to logout and then log back in in order to solve the CAPTCHA.</p>')
+               '<p>If you are currently logged in to Git repository via a browser you may need to logout and then log back in in order to solve the CAPTCHA.</p>'),
+            Error("access_denied", ["ACCESS_DENIED"], "<p>Could not find repository, or permission has been denied.</p>"),
+            Error("unknown_host", ["UNKNOWN_HOST"], "<p>Could not find host.</p>")
+
         ]
 
 

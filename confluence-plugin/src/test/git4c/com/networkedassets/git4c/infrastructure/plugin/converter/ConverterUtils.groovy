@@ -2,6 +2,7 @@ package com.networkedassets.git4c.infrastructure.plugin.converter
 
 import com.networkedassets.git4c.core.business.ExtractionResult
 import com.networkedassets.git4c.core.common.IdentifierGenerator
+import com.networkedassets.git4c.data.macro.documents.item.ConvertedDocumentsItem
 import com.networkedassets.git4c.data.macro.documents.item.DocumentsItem
 import com.networkedassets.git4c.infrastructure.plugin.converter.main.JSoupPostProcessor
 import com.networkedassets.git4c.infrastructure.plugin.converter.main.MainConverterPluginList
@@ -16,7 +17,7 @@ class ConverterUtils {
 
     private static def EXTRACTION_RESULT = new ExtractionResult("", 0)
 
-    public static DocumentsItem getAsciidoc(String name) {
+    public static ConvertedDocumentsItem getAsciidoc(String name) {
 
         def resourceDirectory = Paths.get("src/test/resources", "asciidoc/$name");
         def source = getDataFromDirectory(resourceDirectory)
@@ -28,7 +29,7 @@ class ConverterUtils {
     }
 
 
-    public static DocumentsItem getMarkdown(String name) {
+    public static ConvertedDocumentsItem getMarkdown(String name) {
 
         def resourceDirectory = Paths.get("src/test/resources", "markdown/$name");
         def source = getDataFromDirectory(resourceDirectory)

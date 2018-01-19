@@ -10,6 +10,7 @@ import com.networkedassets.git4c.infrastructure.database.ao.RepositoryEntity
 import com.networkedassets.git4c.infrastructure.database.ao.RepositoryWithNoAuthorizationEntity
 import com.networkedassets.git4c.infrastructure.database.ao.RepositoryWithSshKeyEntity
 import com.networkedassets.git4c.infrastructure.database.ao.RepositoryWithUsernameAndPasswordEntity
+import com.networkedassets.git4c.utils.ActiveObjectsUtils.findByUuid
 import net.java.ao.Query
 
 class ConfluenceActiveObjectRepository(val ao: ActiveObjects) : EncryptedRepositoryDatabase {
@@ -18,30 +19,30 @@ class ConfluenceActiveObjectRepository(val ao: ActiveObjects) : EncryptedReposit
 
     override fun get(uuid: String) = getFromDatabase(uuid)?.run { convert() }
 
-
     private fun getFromDatabase(uuid: String): RepositoryEntity? {
         val noAuthorizationEntity = ao.find(RepositoryWithNoAuthorizationEntity::class.java, Query.select().where("UUID = ?", uuid)).firstOrNull()
         val withUsernameAndPasswordEntity = ao.find(RepositoryWithUsernameAndPasswordEntity::class.java, Query.select().where("UUID = ?", uuid)).firstOrNull()
         val withSshKeyEntity = ao.find(RepositoryWithSshKeyEntity::class.java, Query.select().where("UUID = ?", uuid)).firstOrNull()
-        return noAuthorizationEntity ?: withUsernameAndPasswordEntity ?: withSshKeyEntity
+        val result = noAuthorizationEntity ?: withUsernameAndPasswordEntity ?: withSshKeyEntity
+        return result
     }
 
-    override fun insert(uuid: String, data: EncryptedRepository) {
+    override fun put(uuid: String, data: EncryptedRepository) {
         val entity = when (data.repository) {
             is RepositoryWithNoAuthorization -> {
-                val no = ao.create(RepositoryWithNoAuthorizationEntity::class.java)
+                val no = ao.findByUuid(uuid) ?: ao.create(RepositoryWithNoAuthorizationEntity::class.java)
                 no.path = data.repository.repositoryPath
                 no
             }
             is RepositoryWithUsernameAndPassword -> {
-                val uap = ao.create(RepositoryWithUsernameAndPasswordEntity::class.java)
+                val uap = ao.findByUuid(uuid) ?: ao.create(RepositoryWithUsernameAndPasswordEntity::class.java)
                 uap.username = data.repository.username
                 uap.password = data.repository.password
                 uap.path = data.repository.repositoryPath
                 uap
             }
             is RepositoryWithSshKey -> {
-                val skc = ao.create(RepositoryWithSshKeyEntity::class.java)
+                val skc = ao.findByUuid(uuid) ?: ao.create(RepositoryWithSshKeyEntity::class.java)
                 skc.key = data.repository.sshKey
                 skc.path = data.repository.repositoryPath
                 skc
@@ -59,11 +60,6 @@ class ConfluenceActiveObjectRepository(val ao: ActiveObjects) : EncryptedReposit
         list.addAll(ao.find(RepositoryWithUsernameAndPasswordEntity::class.java).map { it.convert() })
         list.addAll(ao.find(RepositoryWithSshKeyEntity::class.java).map { it.convert() })
         return list
-    }
-
-    override fun update(uuid: String, data: EncryptedRepository) {
-        remove(uuid)
-        insert(uuid, data)
     }
 
     override fun remove(uuid: String) {

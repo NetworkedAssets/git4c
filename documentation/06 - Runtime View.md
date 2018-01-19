@@ -17,22 +17,10 @@ GET {git4c-backend-url}/{uuid}
 ##### Example request and response
 ```
 Request URL:
-http://naatlas-confluence.openstack.local:8090/rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090
+    http://confluence.local/rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090
 
 Request Method:
     GET
-
-Request Headers:
-    GET /rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090 HTTP/1.1
-    Host: naatlas-confluence.openstack.local:8090
-    Connection: keep-alive
-    Accept: application/json, text/plain, */*
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Referer: http://naatlas-confluence.openstack.local:8090/display/TS/Markup-test
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=13F1F830FE60CA13C502A0A3A326293B
 
 Response Status Code:
     200 OK
@@ -62,22 +50,10 @@ GET {git4c-backend-url}/{uuid}/branches
 ##### Example request and response
 ```
 Request URL:
-http://naatlas-confluence.openstack.local:8090/rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090/branches
+http://confluence.local/rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090/branches
 
 Request Method:
     GET
-
-Request Headers:
-    GET /rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090/branches HTTP/1.1
-    Host: naatlas-confluence.openstack.local:8090
-    Connection: keep-alive
-    Accept: application/json, text/plain, */*
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Referer: http://naatlas-confluence.openstack.local:8090/display/TS/Markup-test?src=contextnavpagetreemode
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=13F1F830FE60CA13C502A0A3A326293B
 
 Response Status Code:
     200 OK
@@ -105,22 +81,10 @@ GET {git4c-backend-url}/{uuid}/defaultBranch
 ##### Example request and response
 ```
 Request URL:
-http://naatlas-confluence.openstack.local:8090/rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090/defaultBranch
+http://confluence.local/rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090/defaultBranch
 
 Request Method:
     GET
-
-Request Headers:
-    GET /rest/doc/1.0/documentation/1ec5fda1aa3a4985bd710a77f2886e08/defaultBranch HTTP/1.1
-    Host: naatlas-confluence.openstack.local:8090
-    Connection: keep-alive
-    Accept: application/json, text/plain, */*
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Referer: http://naatlas-confluence.openstack.local:8090/display/TS/Repo?src=contextnavpagetreemode
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=13F1F830FE60CA13C502A0A3A326293B
 
 Response Status Code:
     200 OK
@@ -144,22 +108,10 @@ GET {git4c-backend-url}/{uuid}/tree
 
 ```
 Request URL:
-http://naatlas-confluence.openstack.local:8090/rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090
+http://confluence.local/rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090
 
 Request Method:
     GET
-
-Request Headers:
-    GET /rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090/tree HTTP/1.1
-    Host: naatlas-confluence.openstack.local:8090
-    Connection: keep-alive
-    Accept: application/json, text/plain, */*
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Referer: http://naatlas-confluence.openstack.local:8090/display/TS/Markup-test
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=13F1F830FE60CA13C502A0A3A326293B
 
 Response Status Code:
     200 OK
@@ -191,26 +143,10 @@ POST {git4c-backend-url}/{uuid}/doc-item
 ##### Example request and response
 ```
 Request URL:
-    http://naatlas-confluence.openstack.local:8090/rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090/doc-item
-
+    http://confluence.local/rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090/doc-item
 
 Request Method:
     POST
-
-Request Headers:
-    POST /rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090/doc-item HTTP/1.1
-    Host: naatlas-confluence.openstack.local:8090
-    Connection: keep-alive
-    Content-Length: 59
-    Accept: application/json, text/plain, */*
-    Origin: http://naatlas-confluence.openstack.local:8090
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://naatlas-confluence.openstack.local:8090/display/TS/Markup-test
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=13F1F830FE60CA13C502A0A3A326293B
 
 Request Payload:
 {
@@ -262,21 +198,10 @@ GET {git4c-backend-url}/{uuid}/globs
 ##### Example request and response
 ```
 Request URL:
-    http://naatlas-confluence.openstack.local:8090/rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090/globs
+    http://confluence.local/rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090/globs
 
 Request Method:
     GET
-
-Request Headers:
-    Accept:application/json, text/plain, */*
-    Accept-Encoding:gzip, deflate
-    Accept-Language:pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Connection:keep-alive
-    Cookie:JSESSIONID=13F1F830FE60CA13C502A0A3A326293B
-    Host:naatlas-confluence.openstack.local:8090
-    Referer:http://naatlas-confluence.openstack.local:8090/display/TS/Markup-test?src=contextnavpagetreemode
-    User-Agent:Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    X-Requested-With:XMLHttpRequest
 
 Response Status Code:
     200 OK
@@ -308,7 +233,7 @@ POST {git4c-backend-url}/{uuid}/file/commits
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/repository/file
+    http://confluence.local/confluence/rest/doc/1.0/documentation/repository/file
 
 Request Method:
     POST
@@ -319,37 +244,25 @@ Request Payload:
     "file":"Presentation.md"
 }
 
-
-Request Headers:
-    POST /confluence/rest/doc/1.0/documentation/1f152a523c6740c1891f646a821dc4d1/file/commits HTTP/1.1
-    Connection: keep-alive
-    Content-Length: 44
-    Accept: application/json, text/plain, */*
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://pc-kurban:1990/confluence/display/ds/Git4si
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=E521A81AD7B7C80521AA744A1B3A8625; confluence.browse.space.cookie=space-templates
-
 Response Status Code:
     200 OK
 
-Response Body:{
-"commitList":{
-                {
-                    "id":"b6d90a6a8b2661a4ebae1f8bd6f20f4c1dfc2c0f",
-                    "authorName":"Andrzej Ressel",
-                    "message":"Update",
-                    "date":1507194304000
-                },
-                {
-                    "id":"91b8a9857e8edf8de231b766fa9aa6fc4e420b64",
-                    "authorName":"Bartosz Bednarek",
-                    "message":"abc",
-                    "date":1505735249000
-                }]
+Response Body:
+{  
+   "commitList":[  
+      {  
+         "id":"b6d90a6a8b2661a4ebae1f8bd6f20f4c1dfc2c0f",
+         "authorName":"Andrzej Ressel",
+         "message":"Update",
+         "date":1507194304000
+      },
+      {  
+         "id":"91b8a9857e8edf8de231b766fa9aa6fc4e420b64",
+         "authorName":"Bartosz Bednarek",
+         "message":"abc",
+         "date":1505735249000
+      }
+   ]
 }
 ```
 
@@ -364,22 +277,10 @@ GET {git4c-backend-url}/{uuid}/extractorData
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/{uuid}/extractorData
+    http://confluence.local/confluence/rest/doc/1.0/documentation/{uuid}/extractorData
 
 Request Method:
     GET
-
-Request Headers:
-    GET /confluence/rest/doc/1.0/documentation/7b4879237a2c4de480225ea10cb45710/extractorData HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Accept: application/json, text/plain, */*
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36
-    Referer: http://pc-kurban:1990/confluence/display/ds/Git4si
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=E521A81AD7B7C80521AA744A1B3A8625; confluence.browse.space.cookie=space-templates
 
 Response Status Code:
     200 OK
@@ -443,7 +344,8 @@ data class DocumentationMacro(
         val branch: String,
         val glob: List<String>,
         val defaultDocItem: String,
-        val method: String?
+        val method: String?,
+        val rootDirectory: String?
 )
 
 
@@ -471,7 +373,7 @@ Values should be respectively "CUSTOM" and "PREDEFINED"
 ##### Example request and response
 ```
 Request URL:
-http://naatlas-confluence.openstack.local:8090/rest/doc/1.0/documentation
+http://confluence.local/rest/doc/1.0/documentation
 
 Request Method:
     POST
@@ -486,7 +388,8 @@ Request Payload:
   },
   "branch": "master",
   "glob": [],
-  "defaultDocItem": ""
+  "defaultDocItem": "",
+  "rootDirectory": "doc/**"
 }
 
 Request Headers:
@@ -526,25 +429,10 @@ DELETE {git4c-backend-url}/
 ##### Example request and response
 ```
 Request URL:
-    http://naatlas-confluence.openstack.local:8090/rest/doc/1.0/documentation
+    http://confluence.local/rest/doc/1.0/documentation
 
 Request Method:
     DELETE
-
-Request Headers:
-    DELETE /confluence/rest/doc/1.0/documentation HTTP/1.1
-    Host: naatlas-confluence.openstack.local:8090
-    Connection: keep-alive
-    Content-Length: 148
-    Accept: application/json, text/plain, */*
-    Origin: http://naatlas-confluence.openstack.local:8090
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://naatlas-confluence.openstack.local:8090/pages/resumedraft.action?draftId=8486914&draftShareId=e94d482a-8f77-460a-a139-a0bee40f8779
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=13F1F830FE60CA13C502A0A3A326293B
 
 Response Status Code:
     200 OK
@@ -564,24 +452,10 @@ DELETE {git4c-backend-url}/
 ##### Example request and response
 ```
 Request URL:
-    http://naatlas-confluence.openstack.local:8090/rest/doc/1.0/documentation
+    http://confluence.local/rest/doc/1.0/documentation
 
 Request Method:
     DELETE
-
-Request Headers:
-    DELETE /confluence/rest/doc/1.0/documentation/unused HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Accept: application/json, text/plain, */*
-    Origin: http://pc-kurban:1990
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36
-    Content-Type: application/json;charset=utf-8
-    Referer: http://pc-kurban:1990/confluence/plugins/servlet/git4c/admin
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=E521A81AD7B7C80521AA744A1B3A8625; confluence.browse.space.cookie=space-templates
 
 Response Status Code:
     200 OK
@@ -608,7 +482,7 @@ data class Branch(
 ##### Example request and response
 ```
 Request URL:
-    http://naatlas-confluence.openstack.local:8090/rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090/temporary
+    http://confluence.local/rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090/temporary
 
 Request Method:
     POST
@@ -617,22 +491,6 @@ Request Payload:
 {
     "branch": "feature/empty-ip-fix"
 }
-
-
-Request Headers:
-    POST /rest/doc/1.0/documentation/13e022d6cb1442c9ab7c8148bbd9c090/temporary HTTP/1.1
-    Host: naatlas-confluence.openstack.local:8090
-    Connection: keep-alive
-    Content-Length: 33
-    Accept: application/json, text/plain, */*
-    Origin: http://naatlas-confluence.openstack.local:8090
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://naatlas-confluence.openstack.local:8090/display/TS/Markup-test
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=13F1F830FE60CA13C502A0A3A326293B
 
 Response Status Code:
     200 OK
@@ -646,31 +504,56 @@ Response Body:
 #### 6.1.3.5 Get spaces with macro information
 =================================
 
-Git4C backend provides you with an endpoint to fetch information about all pages containing GIT4C macro
+Git4C backend provides you with an endpoint to fetch information about all pages containing GIT4C macro.
+Endpoint is done asynchronously - first request adds request to queue. To get status second endpoint must be invoked.
 
 ```
 GET {git4c-backend-url}/spaces
 ```
 
-##### Example request and response
+##### Inserting to queue
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/spaces
+    http://confluence.local/confluence/rest/doc/1.0/documentation/spaces
+
+Request Method:
+    GET
+    
+Response Body:
+{
+    "requestId: "95fb368e-e49a-11e7-80c1-9a214cf093ae" //This is id that must be used in next query
+}
+
+Response Status Code:
+    200 OK
+```
+
+##### Getting result
+
+###### When request is still processing
+
+```
+Request URL:
+    http://pc-aressel:1990/confluence/rest/doc/1.0/documentation/spaces/95fb368e-e49a-11e7-80c1-9a214cf093ae
 
 Request Method:
     GET
 
-Request Headers:
-    GET /confluence/rest/doc/1.0/documentation/spaces HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Accept: application/json, text/plain, */*
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36
-    Referer: http://pc-kurban:1990/confluence/plugins/servlet/git4c/admin
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=022AC4E7ADDE5EF21EE83F164E5C28CE; confluence.browse.space.cookie=space-templates
+Response Body:
+{}
+
+Response Status Code:
+    202 Accepted
+```
+
+###### When request is finished
+
+```
+Request URL:
+    http://pc-aressel:1990/confluence/rest/doc/1.0/documentation/spaces/95fb368e-e49a-11e7-80c1-9a214cf093ae
+
+Request Method:
+    GET
 
 Response Body:
 {
@@ -687,7 +570,7 @@ Response Body:
                         {
                             "type":"SINGLEFILEMACRO",
                             "id":"0a8ebdcfabd84420a869e98ef362f93e",
-                            "url": "https://XXX/markup-test.git",
+                            "url": "https://repository.git/markup-test",
                             "file":"testing/asciidoc/code/java.java"
                         }
                     ]
@@ -699,7 +582,7 @@ Response Body:
                         {
                             "type":"MULTIFILEMACRO",
                             "id":"298fcc33e83c47469b55bdab5f3f66cc",
-                            "url":"https://XXX/markup-test.git"
+                            "url": "https://repository.git/markup-test"
                         }
                     ]
                 }
@@ -707,8 +590,6 @@ Response Body:
         }
     ]
 }
-
-
 
 Response Status Code:
     200 OK
@@ -763,7 +644,7 @@ interface AuthorizationData
 ##### Example request and response
 ```
 Request URL:
-http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/predefine
+    http://confluence.local/confluence/rest/doc/1.0/documentation/predefine
 
 Request Method:
     POST
@@ -777,22 +658,6 @@ Request Payload:
         "type":"NOAUTH"
     }
 }
-
-
-Request Headers:
-    POST /confluence/rest/doc/1.0/documentation/predefine HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Content-Length: 127
-    Accept: application/json, text/plain, */*
-    Origin: http://pc-kurban:1990
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://pc-kurban:1990/confluence/plugins/servlet/git4c/admin
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=D265D06D93CAB101C9FAE30055347E94; confluence.browse.space.cookie=space-templates
 
 Response Status Code:
     200 OK
@@ -816,7 +681,7 @@ DELETE {git4c-backend-url}/predefine/{uuid}
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/predefine
+    http://confluence.local/rest/doc/1.0/documentation/predefine
 
 Request Method:
     DELETE
@@ -830,21 +695,6 @@ Request Payload:
         "type":"NOAUTH"
     }
 }
-
-
-Request Headers:
-    DELETE /confluence/rest/doc/1.0/documentation/predefine/67e52c01843844988d038076ef71b70d HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Accept: application/json, text/plain, */*
-    Origin: http://pc-kurban:1990
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=utf-8
-    Referer: http://pc-kurban:1990/confluence/plugins/servlet/git4c/admin
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=AE443C4BAB5989773D070B4AAB512FF7; confluence.browse.space.cookie=space-templates
 
 Response Status Code:
     200 OK
@@ -895,7 +745,7 @@ interface AuthorizationData
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9
+    http://confluence.local/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9
 
 Request Method:
     POST
@@ -909,22 +759,6 @@ Request Payload:
         "sshKey":"-----BEGIN RSA PRIVATE KEY-----SSHkee-----END RSA PRIVATE KEY-----\n"
     }
 }
-
-
-Request Headers:
-    POST /confluence/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9 HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Content-Length: 1056
-    Accept: application/json, text/plain, */*
-    Origin: http://pc-kurban:1990
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://pc-kurban:1990/confluence/plugins/servlet/git4c/admin
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=AE443C4BAB5989773D070B4AAB512FF7; confluence.browse.space.cookie=space-templates
 
 Response Status Code:
     200 OK
@@ -962,8 +796,7 @@ data class Branch(
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9/files
-
+    http://confluence.local/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9/files
 
 Request Method:
     POST
@@ -972,22 +805,6 @@ Request Payload:
 {
     "branch": "feature/empty-ip-fix"
 }
-
-
-Request Headers:
-    POST /confluence/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9/files HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Content-Length: 19
-    Accept: application/json, text/plain, */*
-    Origin: http://pc-kurban:1990
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://pc-kurban:1990/confluence/pages/createpage.action?spaceKey=ds
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=AE443C4BAB5989773D070B4AAB512FF7; confluence.browse.space.cookie=space-templates
 
 Response Status Code:
     200 OK
@@ -1038,7 +855,7 @@ data class Branch(
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9/file
+    http://confluence.local/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9/file
 
 
 Request Method:
@@ -1050,28 +867,20 @@ Request Payload:
     "file": "confluence-plugin/LICENCE.md"
 }
 
-
-Request Headers:
-    POST /confluence/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9/file HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Content-Length: 57
-    Accept: application/json, text/plain, */*
-    Origin: http://pc-kurban:1990
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://pc-kurban:1990/confluence/pages/createpage.action?spaceKey=ds
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=AE443C4BAB5989773D070B4AAB512FF7; confluence.browse.space.cookie=space-templates
-
 Response Status Code:
     200 OK
 
 Response Body:
 {
-    "content": "<p> file content </p>"
+    "content": "<span><h3 name=\"6beede81a2a04b5999e49e8fc418e2a0\">How to generate java classes from WSDL</h3> \n<p>To generate classes use 'wsimport' tool use command below:</p> \n<pre><code class=\"language-sh git4c-code git4c-highlightjs-code\">wsimport ProvisioningService.wsdl -p \"de.kdg.vas.nps.fixedip.core.provisioning\" -encoding \"UTF-8\" -keep\n</code></pre></span>",
+    "tableOfContents":{
+         "name": "",
+         "anchorName": "",
+         "children":[{
+             "name": "How to generate java classes from WSDL",
+             "anchorName": "6beede81a2a04b5999e49e8fc418e2a0",
+             "children":[]
+          }]
 }
 ```
 
@@ -1088,23 +897,10 @@ GET {git4c-backend-url}/predefine/{uuid}/branches
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9/branches
+    http://confluence.local/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9/branches
 
 Request Method:
     GET
-
-
-Request Headers:
-    GET /confluence/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9/branches HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Accept: application/json, text/plain, */*
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Referer: http://pc-kurban:1990/confluence/pages/createpage.action?spaceKey=ds
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=AE443C4BAB5989773D070B4AAB512FF7; confluence.browse.space.cookie=space-templates
 
 Response Status Code:
     200 OK
@@ -1159,7 +955,7 @@ data class Branch(
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9/methods
+    http://confluence.local/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9/methods
 
 Request Method:
     POST
@@ -1169,21 +965,6 @@ Request Payload:
     "branch": "master",
     "file": "confluence-plugin/LICENCE.md"
 }
-
-Request Headers:
-    POST /confluence/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9/methods HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Content-Length: 141
-    Accept: application/json, text/plain, */*
-    Origin: http://pc-kurban:1990
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://pc-kurban:1990/confluence/pages/createpage.action?spaceKey=ds
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=AE443C4BAB5989773D070B4AAB512FF7; confluence.browse.space.cookie=space-templates
 
 Response Status Code:
     200 OK
@@ -1214,22 +995,10 @@ GET {git4c-backend-url}/predefine
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/predefine
+    http://confluence.local/rest/doc/1.0/documentation/predefine
 
 Request Method:
     GET
-
-Request Headers:
-    GET /confluence/rest/doc/1.0/documentation/predefine HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Accept: application/json, text/plain, */*
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Referer: http://pc-kurban:1990/confluence/pages/createpage.action?spaceKey=ds
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=AE443C4BAB5989773D070B4AAB512FF7; confluence.browse.space.cookie=space-templates
 
 Response Status Code:
     200 OK
@@ -1265,25 +1034,10 @@ GET {git4c-backend-url}/predefine/{uuid}
 ##### Example request and response
 ```
 Request URL:
-http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9
+    http://confluence.local/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9
 
 Request Method:
     GET
-
-Request Headers:
-    GET /confluence/rest/doc/1.0/documentation/predefine/e48d4c85c7ce470d91500b2f7ce1b2b9 HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Content-Length: 127
-    Accept: application/json, text/plain, */*
-    Origin: http://pc-kurban:1990
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://pc-kurban:1990/confluence/plugins/servlet/git4c/admin
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=D265D06D93CAB101C9FAE30055347E94; confluence.browse.space.cookie=space-templates
 
 Response Status Code:
     200 OK
@@ -1325,26 +1079,10 @@ data class ForcePredefinedRepositoriesInfo(
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/settings/repository/predefine/force
+    http://confluence.local/rest/doc/1.0/documentation/settings/repository/predefine/force
 
 Request Method:
     POST
-
-Request Headers:
-
-POST /confluence/rest/doc/1.0/documentation/settings/repository/predefine/force HTTP/1.1
-Host: pc-kurban:1990
-Connection: keep-alive
-Content-Length: 16
-Accept: application/json, text/plain, */*
-Origin: http://pc-kurban:1990
-X-Requested-With: XMLHttpRequest
-User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36
-Content-Type: application/json;charset=UTF-8
-Referer: http://pc-kurban:1990/confluence/plugins/servlet/git4c/admin
-Accept-Encoding: gzip, deflate
-Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-Cookie: JSESSIONID=70C7DB1D70B4710FF3926DBFC940077E; confluence.browse.space.cookie=space-templates
 
 Request Payload:
 {
@@ -1356,9 +1094,9 @@ Response Status Code:
     200 OK
 
 Response Body:
-    {
-        "forced": true
-    }
+{
+    "forced": true
+}
 ```
 
 
@@ -1368,17 +1106,17 @@ You can check the current settings for forcing predefined repositories at
 ```
 GET {git4c-backend-url}/settings/repository/predefine/force
 
-Request Headers
-    GET /confluence/rest/doc/1.0/documentation/settings/repository/predefine/force HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Accept: application/json, text/plain, */*
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36
-    Referer: http://pc-kurban:1990/confluence/pages/createpage.action?spaceKey=ds
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=A714C053D1A1EDA8E587937B28330A64; confluence.browse.space.cookie=space-templates
+```
+
+##### Example request and response
+
+```
+
+Request URL:
+    http://confluence.local/rest/doc/1.0/documentation/settings/repository/predefine/force
+
+Request Method:
+    GET
 
 Response Status Code:
     200 OK
@@ -1418,7 +1156,7 @@ data class PredefinedGlobToCreate(
 ##### Example request and response
 ```
 Request URL:
-http://pc-aressel:1990/confluence/rest/doc/1.0/documentation/glob
+    http://confluence.local/rest/doc/1.0/documentation/glob
 
 Request Method:
     POST
@@ -1428,20 +1166,6 @@ Request Payload:
     "name":"C++",
     "glob":"**.cpp,**.c++"
 }
-
-Request Headers:
-    Accept:application/json, text/plain, */*
-    Accept-Encoding:gzip, deflate
-    Accept-Language:pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Connection:keep-alive
-    Content-Length:37
-    Content-Type:application/json;charset=UTF-8
-    Cookie:JSESSIONID=34DCF453195C17DBD49A0FCF7C8E895D
-    Host:pc-aressel:1990
-    Origin:http://pc-aressel:1990
-    Referer:http://pc-aressel:1990/confluence/plugins/servlet/git4c/admin
-    User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    X-Requested-With:XMLHttpRequest
 
 Response:
 {
@@ -1465,27 +1189,10 @@ The payload of the request should be empty.
 ##### Example request and response
 ```
 Request URL:
-http://pc-aressel:1990/confluence/rest/doc/1.0/documentation/glob/74d58662eac849539d107715baf9c212
+http://confluence.local/rest/doc/1.0/documentation/glob/74d58662eac849539d107715baf9c212
 
 Request Method:
     DELETE
-
-Request Payload:
-null
-
-Request Headers:
-    Accept:application/json, text/plain, */*
-    Accept-Encoding:gzip, deflate
-    Accept-Language:pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Connection:keep-alive
-    Content-Type:application/json;charset=utf-8
-    Cookie:JSESSIONID=34DCF453195C17DBD49A0FCF7C8E895D
-    Host:pc-aressel:1990
-    Origin:http://pc-aressel:1990
-    Referer:http://pc-aressel:1990/confluence/plugins/servlet/git4c/admin
-    User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    X-Requested-With:XMLHttpRequest
-
 
 Response:
 ""
@@ -1505,27 +1212,10 @@ The payload of the request should be empty.
 ##### Example request and response
 ```
 Request URL:
-http://pc-aressel:1990/confluence/rest/doc/1.0/documentation/glob
+http://confluence.local/rest/doc/1.0/documentation/glob
 
 Request Method:
     DELETE
-
-Request Payload:
-null
-
-Request Headers:
-    Accept:application/json, text/plain, */*
-    Accept-Encoding:gzip, deflate
-    Accept-Language:pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Connection:keep-alive
-    Content-Type:application/json;charset=utf-8
-    Cookie:JSESSIONID=34DCF453195C17DBD49A0FCF7C8E895D
-    Host:pc-aressel:1990
-    Origin:http://pc-aressel:1990
-    Referer:http://pc-aressel:1990/confluence/plugins/servlet/git4c/admin
-    User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    X-Requested-With:XMLHttpRequest
-
 
 Response:
 ""
@@ -1545,26 +1235,10 @@ The payload of the request should be empty.
 ##### Example request and response
 ```
 Request URL:
-http://pc-aressel:1990/confluence/rest/doc/1.0/documentation/glob/e74e6461fa534dc987ead1bf1f5dec11
+    http://confluence.local/rest/doc/1.0/documentation/glob/e74e6461fa534dc987ead1bf1f5dec11
 
 Request Method:
     GET
-
-Request Payload:
-null
-
-Request Headers:
-    Accept:application/json, text/plain, */*
-    Accept-Encoding:gzip, deflate
-    Accept-Language:pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cache-Control:no-cache
-    Connection:keep-alive
-    Cookie:JSESSIONID=9CE6F073B8F157E7F7F3FC8EC605B5A3
-    Host:pc-aressel:1990
-    Pragma:no-cache
-    Referer:http://pc-aressel:1990/confluence/plugins/servlet/git4c/admin
-    User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    X-Requested-With:XMLHttpRequest
 
 Response:
 {
@@ -1588,26 +1262,10 @@ The payload of the request should be empty.
 ##### Example request and response
 ```
 Request URL:
-http://pc-aressel:1990/confluence/rest/doc/1.0/documentation/glob
+    http://confluence.local/rest/doc/1.0/documentation/glob
 
 Request Method:
     GET
-
-Request Payload:
-null
-
-Request Headers:
-    Accept:application/json, text/plain, */*
-    Accept-Encoding:gzip, deflate
-    Accept-Language:pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cache-Control:no-cache
-    Connection:keep-alive
-    Cookie:JSESSIONID=9CE6F073B8F157E7F7F3FC8EC605B5A3
-    Host:pc-aressel:1990
-    Pragma:no-cache
-    Referer:http://pc-aressel:1990/confluence/plugins/servlet/git4c/admin
-    User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    X-Requested-With:XMLHttpRequest
 
 Response:
 {
@@ -1655,30 +1313,16 @@ The payload of the request should be empty.
 ##### Example request and response
 ```
 Request URL:
-http://pc-aressel:1990/confluence/rest/doc/1.0/documentation/glob
+    http://confluence.local/rest/doc/1.0/documentation/glob
 
 Request Method:
     HEAD
 
 Request Payload:
-null
-
-Request Headers:
-    Accept:application/json, text/plain, */*
-    Accept-Encoding:gzip, deflate
-    Accept-Language:pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Connection:keep-alive
-    Content-Type:application/json;charset=utf-8
-    Cookie:JSESSIONID=34DCF453195C17DBD49A0FCF7C8E895D
-    Host:pc-aressel:1990
-    Origin:http://pc-aressel:1990
-    Referer:http://pc-aressel:1990/confluence/plugins/servlet/git4c/admin
-    User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    X-Requested-With:XMLHttpRequest
-
+    null
 
 Response:
-200
+    200
 ```
 
 
@@ -1697,37 +1341,19 @@ POST {git4c-backend-url}/repository/branches
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/repository/branches
+    http://confluence.local/rest/doc/1.0/documentation/repository/branches
 
 Request Method:
     POST
 
 Request Payload:
 {
-    "sourceRepositoryUrl": "https://kurban@bitbucket.networkedassets.net/bitbucket/scm/condoc/markup.git",
+    "sourceRepositoryUrl": "https://github.com/torvalds/linux",
     "credentials":
     {
-        "type": "USERNAMEPASSWORD",
-        "username": "kurban",
-        "password": "mySuperSecretPassword1a4"
+        "type": "NOAUTH"
     }
 }
-
-
-Request Headers:
-    POST /confluence/rest/doc/1.0/documentation/repository/branches HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Content-Length: 195
-    Accept: application/json, text/plain, */*
-    Origin: http://pc-kurban:1990
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://pc-kurban:1990/confluence/pages/createpage.action?spaceKey=ds
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=AE443C4BAB5989773D070B4AAB512FF7; confluence.browse.space.cookie=space-templates
 
 Response Status Code:
     200 OK
@@ -1737,12 +1363,7 @@ Response Body:
     "currentBranch":null,
     "allBranches":
     [
-        "NAATLAS-962-Active-Objects",
-        "bugfix/dbfix",
-        "bugfix/resturl_branches",
-        "develop",
-        "feature/#923",
-        "feature/NAATLAS-1000-1020"
+        "master"
     ]
 }
 ```
@@ -1753,6 +1374,7 @@ Response Body:
 You can also refer the existing repository directly by its uuid.
 
 Endpoint for getting the list of branches is available at:
+
 ```
 GET {git4c-backend-url}/repository/{uuid}/branches
 ```
@@ -1769,39 +1391,20 @@ POST {git4c-backend-url}/repository/files
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/repository/files
+    http://confluence.local/rest/doc/1.0/documentation/repository/files
 
 Request Method:
     POST
 
 Request Payload:
 {
-    "sourceRepositoryUrl": "https://kurban@bitbucket.networkedassets.net/bitbucket/scm/condoc/markup.git",
+    "sourceRepositoryUrl": "https://github.com/torvalds/linux",
     "credentials":
     {
-        "type": "USERNAMEPASSWORD",
-        "username": "kurban",
-        "password": "mySuperSecretPassword1a4"
-    },
+        "type": "NOAUTH"
+    }
     "branch": "master"
 }
-
-
-
-Request Headers:
-    POST /confluence/rest/doc/1.0/documentation/repository/branches HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Content-Length: 195
-    Accept: application/json, text/plain, */*
-    Origin: http://pc-kurban:1990
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://pc-kurban:1990/confluence/pages/createpage.action?spaceKey=ds
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=AE443C4BAB5989773D070B4AAB512FF7; confluence.browse.space.cookie=space-templates
 
 Response Status Code:
     200 OK
@@ -1838,10 +1441,11 @@ Endpoint for getting a file from repository is available at:
 POST {git4c-backend-url}/repository/file
 ```
 
+
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/repository/file
+    http://confluence.local/confluence/rest/doc/1.0/documentation/repository/file
 
 Request Method:
     POST
@@ -1859,28 +1463,20 @@ Request Payload:
     "file": "confluence-plugin/LICENCE.md"
 }
 
-
-Request Headers:
-    POST /confluence/rest/doc/1.0/documentation/repository/file HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Content-Length: 251
-    Accept: application/json, text/plain, */*
-    Origin: http://pc-kurban:1990
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://pc-kurban:1990/confluence/pages/createpage.action?spaceKey=ds
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=AE443C4BAB5989773D070B4AAB512FF7; confluence.browse.space.cookie=space-templates
-
 Response Status Code:
     200 OK
 
 Response Body:
 {
-    "content": "<p>file content</p>"
+    "content": "<span><h3 name=\"6beede81a2a04b5999e49e8fc418e2a0\">How to generate java classes from WSDL</h3> \n<p>To generate classes use 'wsimport' tool use command below:</p> \n<pre><code class=\"language-sh git4c-code git4c-highlightjs-code\">wsimport ProvisioningService.wsdl -p \"de.kdg.vas.nps.fixedip.core.provisioning\" -encoding \"UTF-8\" -keep\n</code></pre></span>",
+    "tableOfContents":{
+         "name": "",
+         "anchorName": "",
+         "children":[{
+             "name": "How to generate java classes from WSDL",
+             "anchorName": "6beede81a2a04b5999e49e8fc418e2a0",
+             "children":[]
+          }]
 }
 ```
 
@@ -1906,37 +1502,22 @@ POST {git4c-backend-url}/repository/methods
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/repository/file/methods
+    http://confluence.local/confluence/rest/doc/1.0/documentation/repository/file/methods
 
 Request Method:
     POST
 
 {
-    "sourceRepositoryUrl": "https://kurban@bitbucket.networkedassets.net/bitbucket/scm/condoc/markup.git",
+    "sourceRepositoryUrl": "https://gitlab.local/repository.git",
     "credentials":
     {
         "type": "USERNAMEPASSWORD",
-        "username": "kurban",
-        "password": "mySuperSecretPassword1a4"
+        "username": "user",
+        "password": "password"
     },
     "branch": "master",
-    "file": "core/src/main/java/com/networkedassets/condoc/common/Documentation.java"
+    "file": "Main.java"
 }
-
-Request Headers:
-    POST /confluence/rest/doc/1.0/documentation/repository/file/methods HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Content-Length: 294
-    Accept: application/json, text/plain, */*
-    Origin: http://pc-kurban:1990
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://pc-kurban:1990/confluence/pages/createpage.action?spaceKey=ds
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=AE443C4BAB5989773D070B4AAB512FF7; confluence.browse.space.cookie=space-templates
 
 Response Status Code:
     200 OK
@@ -1946,8 +1527,8 @@ Response Body:
     "methods":
      [
          {
-             "name": "treeify",
-             "content": "Method content"
+             "name": "main",
+             "content": "<<content of method>>"
          }
 
      ]
@@ -1967,7 +1548,7 @@ GET {git4c-backend-url}/repository/{uuid}/methods
 
 #### 6.4.1.5 Verify repository
 
-Endpoint for veryfing repository is available at:
+Endpoint for verifying repository is available at:
 ```
 POST {git4c-backend-url}/repository/verify
 ```
@@ -1976,36 +1557,21 @@ POST {git4c-backend-url}/repository/verify
 ##### Example request and response
 ```
 Request URL:
-    http://pc-kurban:1990/confluence/rest/doc/1.0/documentation/repository/verify
+    http://confluence.local/rest/doc/1.0/documentation/repository/verify
 
 
 Request Method:
     POST
 
 {
-    "sourceRepositoryUrl": "https://kurban@bitbucket.networkedassets.net/bitbucket/scm/condoc/markup.git",
+    "sourceRepositoryUrl": "https://gitlab.local/repository.git",
     "credentials":
     {
         "type": "USERNAMEPASSWORD",
-        "username": "kurban",
-        "password": "mySuperSecretPassword1a4"
+        "username": "user",
+        "password": "password"
     }
 }
-
-Request Headers:
-    POST /confluence/rest/doc/1.0/documentation/repository/verify HTTP/1.1
-    Host: pc-kurban:1990
-    Connection: keep-alive
-    Content-Length: 195
-    Accept: application/json, text/plain, */*
-    Origin: http://pc-kurban:1990
-    X-Requested-With: XMLHttpRequest
-    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
-    Content-Type: application/json;charset=UTF-8
-    Referer: http://pc-kurban:1990/confluence/pages/createpage.action?spaceKey=ds
-    Accept-Encoding: gzip, deflate
-    Accept-Language: pl-PL,pl;q=0.8,en-US;q=0.6,en;q=0.4
-    Cookie: JSESSIONID=AE443C4BAB5989773D070B4AAB512FF7; confluence.browse.space.cookie=space-templates
 
 Response Status Code:
     200 OK
@@ -2017,8 +1583,388 @@ Response Body:
 }
 ```
 
-## 6.5 Possible Errors
+## 6.5 User specific
 
+### Recently used repositories
+
+Git4C stores information about 5 most recently used repositories by user while creating macro.
+That list is availabe at
+
+```
+GET {git4c-backend-url}/repository/usages
+```
+
+### Example request and response
+```
+Request URL:
+    http://confluence.local/rest/doc/1.0/documentation/repository/usages
+
+Request Method:
+    GET
+
+Status Code:
+    200 OK
+
+{  
+   "usages":[  
+      {  
+         "repositoryName":"My repo1",
+         "uuid":"0c3c65eb8ada4769818af061c7ecd60f"
+      },
+      {  
+         "repositoryName":"My repo1",
+         "uuid":"3560b89920a64cf491e683493d06a3d1"
+      },
+      {  
+         "repositoryName":"My repo2",
+         "uuid":"76a7291979c14a82b7cbc1024f7458ee"
+      }
+   ]
+}
+
+```
+
+
+## 6.6 File editor
+
+### Uploading file
+
+#### Inserting to queue
+
+File uploading is done asynchronously - first request adds request to queue. To get status second endpoint must be invoked.
+```
+GET {git4c-backend-url}/{macroId}/publishFile
+```
+
+```
+Request URL:
+
+    http://confluence.local/rest/doc/1.0/documentation/6349e8e5b0904e458acb05df4e222f24/publishFile
+
+Request Method:
+    POST
+
+{
+    "file":"documents/asciidoc/code/java.java",
+    "content":"import java.util.Random;\nimport my.lib;\nimport my.second.lib;\n\npublic class MyClass\n{ \n    public int myField;\n}",
+    "commitMessage: "Cleanup code"
+}
+
+Response Status Code:
+    200 OK
+    
+Response Body:
+{
+    "requestId: "95fb368e-e49a-11e7-80c1-9a214cf093ae" //This is id that must be used in next query
+}
+
+```
+
+#### Getting result
+```
+GET {git4c-backend-url}/request/publishFile/{id}
+```
+
+When request is still processing:
+
+```
+Request URL:
+    http://pc-aressel:1990/confluence/rest/doc/1.0/documentation/request/publishFile/95fb368e-e49a-11e7-80c1-9a214cf093ae
+    
+Request Method:
+    GET
+    
+Response Status Code:
+    202 Accepted
+    
+Body:
+    {}
+```
+
+#### Possible errors
+- When current branch is not writable, but other is
+    ```
+    Response Status Code:
+        500 ERROR
+        
+    Response Body:
+    {
+        "branch":"user/admin_WVjkXcRp", //Remote branch where file was pushed
+        "type":"ANOTHER_BRANCH"
+    }
+    ```
+    
+- When no branch is writable
+    ```
+    Response Status Code:
+        500 ERROR
+        
+    {
+        "branch":"user/admin_fm46hP9m", //Local branch where file was saved
+        "repoLocation":"C:\\Confluence\\container\\tomcat8x\\cargo-confluence-home\\temp\\git_source_plugin_cache\\5319231297464414797", //Local repo location
+        "type":"READ_ONLY_REPO"
+    }
+        
+    ```
+    
+
+
+## Requesting preview
+```
+
+Request URL:
+    http://confluence.local/rest/doc/1.0/documentation/1a3573f56818427f8a52e38da9ba87f7/file/preview
+    
+Request Method:
+    POST
+    
+Request Body:
+{
+    "file":"Presentation.md",
+    "content":"# Chapter 1\nText\n# Chapter 2\n## Chapter 2.1"
+}
+
+Response Status Code:
+    200 OK
+
+Response Body:
+{
+   "content":"<span><h1 name=\"2dc790fcb0e94955aff41cc6838e9f2d\">Chapter 1</h1> <p>Text</p> <h1 name=\"79b009d37b764991a8d9508dec41dac1\">Chapter 2</h1> <h2 name=\"7b780e0bd5b9463e970805117addacc9\">Chapter 2.1</h2> </span>",
+   "tableOfContents":{
+      "name":"",
+      "anchorName":"",
+      "children":[
+         {
+            "name":"Chapter 1",
+            "anchorName":"2dc790fcb0e94955aff41cc6838e9f2d",
+            "children":[
+
+            ]
+         },
+         {
+            "name":"Chapter 2",
+            "anchorName":"79b009d37b764991a8d9508dec41dac1",
+            "children":[
+               {
+                  "name":"Chapter 2.1",
+                  "anchorName":"7b780e0bd5b9463e970805117addacc9",
+                  "children":[
+
+                  ]
+               }
+            ]
+         }
+      ]
+   }
+}
+
+```
+
+## Getting edit branch
+
+When file cannot be upload on current branch, edit branch is added and pushed. This endpoint allows us to get this branch's name. If branch doesn't exist, is merged to base one or removed null is returned.
+
+### Inserting to queue
+
+```
+GET {git4c-backend-url}/{macroId}/editBranch
+```
+
+Example request:
+```
+Request URL:
+    http://CONFLUENCE_LOCATION/rest/doc/1.0/documentation/d11b8ed7d5bf45958d92e9df9835c773/editBranch
+
+Request Method:
+    GET
+
+Response Status Code:
+    200 OK
+    
+Response Body:
+{
+    "requestId":"c39c1917-8839-4adf-8788-938b2ce8d93e"
+}
+```
+
+### Getting result:
+
+```
+GET {git4c-backend-url}/editBranch/{requestId}
+```
+
+#### Example requests
+
+When request is still processing:
+
+```
+Request URL:
+    http://CONFLUENCE_LOCATION/rest/doc/1.0/documentation/editBranch/c39c1917-8839-4adf-8788-938b2ce8d93e
+    
+Request Method:
+    GET
+    
+Response Status Code:
+    202 Accepted
+    
+Body:
+    {}
+```
+
+When request is processed:
+
+```
+Request URL:
+    http://CONFLUENCE_LOCATION/rest/doc/1.0/documentation/editBranch/c39c1917-8839-4adf-8788-938b2ce8d93e
+    
+Request Method:
+    GET
+    
+Response Status Code:
+    200 OK
+    
+Body:
+{
+    branch: "Git4C_temporary_glNRLfvK" // or null
+}
+```
+
+
+## 6.5 Thread management
+
+Admin has an option to change number of threads in executors used for long operation in Git4C. For now he can manage number of threads used for checking git revision, pulling git repositories and converting files
+
+### 6.5.1 Downloading thread information
+```
+Request URL:
+    http://CONFLUENCE_LOCATION/rest/doc/1.0/documentation/executors
+   
+Request Method:
+    GET
+    
+Response Status Code:
+    200 OK
+    
+Response Body:
+{
+    "revisionCheckExecutor":40,
+    "repositoryPullExecutor":32,
+    "converterExecutor":12
+}
+```
+
+
+### 6.5.2 Updating thread information
+
+```
+Request URL:
+    http://CONFLUENCE_LOCATION/rest/doc/1.0/documentation/executors
+
+Request Method:
+    POST
+    
+{
+    "revisionCheckExecutor":40,
+    "repositoryPullExecutor":32,
+    "converterExecutor":12
+}
+
+Response Status Code:
+    200 OK
+    
+Response Body:
+{}
+```
+
+
+## 6.6 Admin panel
+
+### Refreshing macro location DB
+
+Due to Confluence limitation we cannot get list of all macros in Confluence instance via provided api. TO overcome that plugin holds location of macros in it's own database (entry is added when macro is displayed). However we don't know when macro was removed from page. Due to that database can get very large and a lot of entries could be already removed from Confluence. This endpoint flushed database and scans all Confluence pages for macros.
+
+#### Adding request to queue
+
+```
+Request URL:
+    http://confluence.local/rest/doc/1.0/documentation/database/macroLocation/refresh
+    
+Request Method:
+    GET
+    
+Response Status Code:
+    200 OK
+    
+Response Body:
+{
+    "requestId: "95fb368e-e49a-11e7-80c1-9a214cf093ae" //This is id that must be used in next query
+}
+    
+
+```
+
+#### Getting result
+
+When request is processing:
+
+```
+
+Request URL:
+    http://confluence.local/rest/doc/1.0/documentation/database/macroLocation/refresh/95fb368e-e49a-11e7-80c1-9a214cf093ae
+
+Request Method:
+    GET
+
+Response Status Code:
+    202 Accepted
+    
+Response Body:
+{}    
+
+```
+
+When request is processed:
+
+```
+
+Request URL:
+    http://CONFLUENCE_LOCATION/rest/doc/1.0/documentation/database/macroLocation/refresh/95fb368e-e49a-11e7-80c1-9a214cf093ae
+
+Request Method:
+    GET
+
+Response Status Code:
+    200 OK
+    
+Response Body:
+{}    
+
+```
+
+## 6.7 Other
+
+### Toggle file editor
+File editor can be enabled or disabled using REST API (it's disabled by default).
+
+```
+Request URL:
+    http://CONFLUENCE_LOCATION/rest/doc/1.0/documentation/editing
+
+Request Method:
+    POST
+    
+{
+    "editingEnabled": true/false
+}
+
+Response Status Code:
+    200 OK
+    
+Response Body:
+{}
+```
+
+## 6.8 Possible Errors
 
 ### Non existing macro
 Requested macro may have been deleted by the administrator. In that case backend will return error:

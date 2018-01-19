@@ -132,7 +132,7 @@ class ConfluenceApi(
 
     fun getPageByName(space: Space, pageName: String): Page? {
 
-        val (req, resp, res) = Fuel.get("$url/rest/api/space/${space.spaceKey}/content")
+        val (req, resp, res) = Fuel.get("$url/rest/api/space/${space.spaceKey}/content?limit=500")
                 .authenticate(username, password)
                 .responseString()
 

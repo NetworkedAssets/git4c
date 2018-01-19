@@ -21,7 +21,7 @@ class RestorePredefinedGlobsUseCase(
         predefinedGlobsDatabase.removeAll()
         globsMap.forEach({
             val uuid = idGenerator.generateNewIdentifier()
-            predefinedGlobsDatabase.insert(uuid, PredefinedGlob(uuid, it.value, it.key))
+            predefinedGlobsDatabase.put(uuid, PredefinedGlob(uuid, it.value, it.key))
         })
         val globs = predefinedGlobsDatabase.getAll()
         return Result.of {

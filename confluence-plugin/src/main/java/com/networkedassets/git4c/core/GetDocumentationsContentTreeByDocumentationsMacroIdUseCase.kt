@@ -8,14 +8,14 @@ import com.networkedassets.git4c.boundary.outbound.VerificationStatus
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
 import com.networkedassets.git4c.core.bussiness.DocumentsTreeConverter
 import com.networkedassets.git4c.core.datastore.cache.DocumentsViewCache
-import com.networkedassets.git4c.core.process.CheckUserPermissionProcess
+import com.networkedassets.git4c.core.process.ICheckUserPermissionProcess
 import com.networkedassets.git4c.delivery.executor.execution.UseCase
 
 
 class GetDocumentationsContentTreeByDocumentationsMacroIdUseCase(
         val cache: DocumentsViewCache,
-        val checkUserPermissionProcess: CheckUserPermissionProcess
-) : UseCase<GetDocumentationsContentTreeByDocumentationsMacroIdQuery, DocumentationsContentTree> {
+        val checkUserPermissionProcess: ICheckUserPermissionProcess
+        ) : UseCase<GetDocumentationsContentTreeByDocumentationsMacroIdQuery, DocumentationsContentTree> {
 
     override fun execute(request: GetDocumentationsContentTreeByDocumentationsMacroIdQuery): Result<DocumentationsContentTree, Exception> {
 
@@ -27,7 +27,8 @@ class GetDocumentationsContentTreeByDocumentationsMacroIdUseCase(
         }
 
         return cache.get(searchedMacroId)
-                ?.let { Result.of { DocumentsTreeConverter.treeify(it.files) } }
+                ?.let { it.files }
+                ?.let { Result.of { DocumentsTreeConverter.treeify(it) } }
                 ?: Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
     }
 }

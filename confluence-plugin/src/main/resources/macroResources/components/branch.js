@@ -40,7 +40,7 @@ Vue.component("branch", {
                 Events.$emit("errorOccured", "no_branches")
             } else {
                 const allBranches = branches.allBranches
-                const currentBranch = vm.$route.params.branch ? vm.$route.params.branch : branches.currentBranch ? branches.currentBranch : "master"
+                const currentBranch = vm.$route.query.branch ? vm.$route.query.branch : branches.currentBranch ? branches.currentBranch : "master"
 
                 vm.$nextTick(function() {
 
@@ -74,12 +74,8 @@ Vue.component("branch", {
         })
 
         Events.$on('branchChangeRequest', function(branch) {
-            if (vm.branches.includes(branch)) {
+            if (vm.branches.includes(branch) && branch !== vm.selectedBranch) {
                 vm.onChange(branch)
-            } else{
-                vm.$nextTick(function() {
-                    Events.$emit("errorOccured", "non_existing_branch")
-                })
             }
         })
     },
@@ -94,7 +90,7 @@ Vue.component("branch", {
             }
             Events.$emit('branchChanging')
             MarkupService.temporary(newBranch).then(function(id)  {
-                Events.$emit('branchChanged', id, newBranch.branch)
+                Events.$emit('branchChanged', id)
             });
 
             vm.$nextTick(function()  {

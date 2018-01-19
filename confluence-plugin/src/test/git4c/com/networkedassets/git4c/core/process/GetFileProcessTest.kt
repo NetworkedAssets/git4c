@@ -2,7 +2,6 @@ package com.networkedassets.git4c.core.process
 
 import com.networkedassets.git4c.data.RepositoryWithNoAuthorization
 import com.networkedassets.git4c.infrastructure.UuidIdentifierGenerator
-import com.networkedassets.git4c.infrastructure.git.DefaultGitClient
 import com.networkedassets.git4c.infrastructure.plugin.converter.ConverterPluginList
 import com.networkedassets.git4c.infrastructure.plugin.converter.images.ImageConverterPlugin
 import com.networkedassets.git4c.infrastructure.plugin.converter.main.JSoupPostProcessor
@@ -13,15 +12,17 @@ import com.networkedassets.git4c.infrastructure.plugin.converter.plaintext.Plain
 import com.networkedassets.git4c.infrastructure.plugin.converter.plantuml.PUMLConverterPlugin
 import com.networkedassets.git4c.infrastructure.plugin.converter.prismjs.PrismJSConverterPlugin
 import com.networkedassets.git4c.infrastructure.plugin.parser.Parsers
-import com.networkedassets.git4c.infrastructure.plugin.source.git.GitSourcePlugin
 import com.networkedassets.git4c.utils.genTransactionId
+import com.networkedassets.git4c.infrastructure.mocks.core.DirectorySourcePlugin
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Test
+import java.util.*
 import kotlin.test.assertNotNull
 
 class GetFileProcessTest() {
 
-    val gitClient = DefaultGitClient()
-    val importer = GitSourcePlugin(gitClient)
+    val importer = DirectorySourcePlugin()
     val identifierGenerator = UuidIdentifierGenerator()
     val postProcessor = JSoupPostProcessor(identifierGenerator)
     val mainPlugins = MainConverterPluginList(listOf(AsciidocConverterPlugin(), MarkdownConverterPlugin()), postProcessor)
@@ -38,33 +39,34 @@ class GetFileProcessTest() {
 
     @Test
     fun `Get File should return converted file content`() {
-        val repositoryUrl = "https://github.com/NetworkedAssets/git4c.git"
+
+        // Given
         val branch = "master";
         val file = "README.md"
-        val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
+        val repository = RepositoryWithNoAuthorization(genTransactionId(), "src/test/resources")
 
+        // When
         val answer = process.getFile(repository, branch, file);
+
+        // Then
         assertNotNull(answer.content)
+        assertThat(answer.content).contains("Readme Header")
     }
 
     @Test
-    fun `Get File should return converted file content in short time`() {
-        val repositoryUrl = "https://github.com/NetworkedAssets/git4c.git"
+    fun `Get File should throw an exception when file has not been found`() {
+
+        // Given
         val branch = "master";
-        val file = "README.md"
-        val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
-        gitClient.pull(repository, branch)
+        val file = "NotExisting.File"
+        val repository = RepositoryWithNoAuthorization(genTransactionId(), "src/test/resources")
 
-        val times = arrayListOf<Long>()
+        // When
+        val fileProcess = { process.getFile(repository, branch, file) }
 
-        for (i in 1..10) {
-            val time = System.currentTimeMillis()
-            val answer = process.getFile(repository, branch, file);
-            assertNotNull(answer.content)
-            val runtime = System.currentTimeMillis() - time
-            times.add(runtime)
-        }
+        // Then
+        assertThatThrownBy { fileProcess.invoke() }
+                .isInstanceOf(NoSuchElementException::class.java)
 
-        assert(times.average() < 300)
     }
 }

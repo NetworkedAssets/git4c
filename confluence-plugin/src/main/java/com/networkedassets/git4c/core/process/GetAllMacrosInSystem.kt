@@ -6,15 +6,17 @@ import com.networkedassets.git4c.core.business.PageManager
 class GetAllMacrosInSystem(
         val pageManager: PageManager,
         val macroExtractor: PageMacroExtractor
-): IGetAllMacrosInSystem {
+) : IGetAllMacrosInSystem {
 
     override fun extract(): List<String> {
 
-        return pageManager.getAllPages()
+        return pageManager.getAllPageKeys()
                 .asSequence()
-                .map {
-                    macroExtractor.extractMacro(it.content)
+                .mapNotNull {
+                    val page = pageManager.getPage(it) ?: return@mapNotNull null
+                    macroExtractor.extractMacro(page.content)
                 }
+                .filterNotNull()
                 .flatMap { it.map { it.uuid }.asSequence() }
                 .toList()
 

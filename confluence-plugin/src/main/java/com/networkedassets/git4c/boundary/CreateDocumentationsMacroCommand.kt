@@ -6,5 +6,6 @@ import com.networkedassets.git4c.delivery.executor.result.BackendRequest
 
 
 class CreateDocumentationsMacroCommand(
-        val documentMacroMacroToCreate: DocumentationMacro
+        val documentMacroMacroToCreate: DocumentationMacro,
+        val user: String
 ) : BackendRequest<SavedDocumentationsMacro>()

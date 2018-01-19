@@ -1,5 +1,6 @@
 package com.networkedassets.git4c.selenium
 
+import com.networkedassets.git4c.selenium.codeeditor.CodeEditorTest
 import com.networkedassets.git4c.selenium.confluence.ConfluenceApi
 import com.networkedassets.git4c.selenium.publicaccess.PublicAccessMultiFileUsageTest
 import com.networkedassets.git4c.selenium.publicaccess.PublicAccessSingleFileUsageTest
@@ -27,7 +28,9 @@ typealias SingleFileUsageTest = com.networkedassets.git4c.selenium.singlefile.Si
 
         PublicAccessSingleFileUsageTest::class,
         PublicAccessMultiFileUsageTest::class,
-        PublicAccessTests::class
+        PublicAccessTests::class,
+
+        CodeEditorTest::class
 )
 class SeleniumSuite {
 

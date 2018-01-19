@@ -13,9 +13,9 @@ class Parsers : ParserPlugin {
 
     override fun getMethods(file: ImportedFileData): List<Method> {
         if (file.extension == "feature") {
-            return GherkinParser().getMethods(file.contentString)
+            return GherkinParser().getMethods(String(file.content()))
         } else if (file.extension == "java") {
-            return JavaParser().getMethods(file.contentString)
+            return JavaParser().getMethods(String(file.content()));
         } else {
             return listOf()
         }

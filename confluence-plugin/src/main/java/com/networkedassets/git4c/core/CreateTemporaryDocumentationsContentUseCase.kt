@@ -9,15 +9,17 @@ import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
 import com.networkedassets.git4c.core.bussiness.ConverterPlugin
 import com.networkedassets.git4c.core.common.IdentifierGenerator
 import com.networkedassets.git4c.core.datastore.cache.DocumentsViewCache
+import com.networkedassets.git4c.core.datastore.cache.GlobForMacroCache
 import com.networkedassets.git4c.core.datastore.cache.MacroSettingsCache
 import com.networkedassets.git4c.core.datastore.cache.TemporaryIdCache
-import com.networkedassets.git4c.core.datastore.repositories.ExtractorDataDatabase
 import com.networkedassets.git4c.core.datastore.repositories.GlobForMacroDatabase
+import com.networkedassets.git4c.core.datastore.repositories.MacroLocationDatabase
 import com.networkedassets.git4c.core.datastore.repositories.MacroSettingsDatabase
 import com.networkedassets.git4c.core.datastore.repositories.RepositoryDatabase
-import com.networkedassets.git4c.core.exceptions.VerificationException
 import com.networkedassets.git4c.core.process.ICheckUserPermissionProcess
-import com.networkedassets.git4c.core.process.RefreshMacroProcess
+import com.networkedassets.git4c.core.process.MacroViewProcess
+import com.networkedassets.git4c.data.GlobForMacro
+import com.networkedassets.git4c.data.MacroLocation
 import com.networkedassets.git4c.data.MacroSettings
 import com.networkedassets.git4c.delivery.executor.execution.UseCase
 
@@ -27,12 +29,13 @@ class CreateTemporaryDocumentationsContentUseCase(
         val converter: ConverterPlugin,
         val macroSettingsDatabase: MacroSettingsDatabase,
         val repositoryDatabase: RepositoryDatabase,
-        val globForMacroDatabase: GlobForMacroDatabase,
-        val extractorDatabase: ExtractorDataDatabase,
         val idGenerator: IdentifierGenerator,
         val temporaryIdCache: TemporaryIdCache,
-        val refreshMacroProcess: RefreshMacroProcess,
-        val checkUserPermissionProcess: ICheckUserPermissionProcess
+        val checkUserPermissionProcess: ICheckUserPermissionProcess,
+        val macroViewProcess: MacroViewProcess,
+        val macroLocationDatabase: MacroLocationDatabase,
+        val globForMacroDatabase: GlobForMacroDatabase,
+        val globForMacroCache: GlobForMacroCache
 ) : UseCase<CreateTemporaryDocumentationsContentCommand, Id> {
 
     override fun execute(request: CreateTemporaryDocumentationsContentCommand): Result<Id, Exception> {
@@ -48,22 +51,34 @@ class CreateTemporaryDocumentationsContentUseCase(
         val key = "${macroSettings.uuid}|||${request.branch}"
         val tempId = temporaryIdCache.get(key) ?: idGenerator.generateNewIdentifier()
         val tempMacroSettings = macroSettingsDatabase.get(tempId) ?: {
-            val tempMacroSettings = MacroSettings(tempId, macroSettings.repositoryUuid, request.branch, macroSettings.defaultDocItem, macroSettings.extractorDataUuid)
-            settingsCache.insert(tempMacroSettings.uuid, tempMacroSettings)
-            temporaryIdCache.insert(key, tempId)
+            val tempMacroSettings = MacroSettings(tempId, macroSettings.repositoryUuid, request.branch, macroSettings.defaultDocItem, macroSettings.extractorDataUuid, macroSettings.rootDirectory)
+            settingsCache.put(tempMacroSettings.uuid, tempMacroSettings)
+            temporaryIdCache.put(key, tempId)
             tempMacroSettings
         }()
-        if (macroSettings.repositoryUuid == null) return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
-        val globs = globForMacroDatabase.getByMacro(macroSettings.uuid)
-        val repository = repositoryDatabase.get(macroSettings.repositoryUuid) ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
-        val extractor = extractorDatabase.getNullable(macroSettings.extractorDataUuid) ?: return@execute Result.error(NotFoundException(request.transactionInfo, ""))
 
-        try {
-            refreshMacroProcess.fetchDataFromSourceThenConvertAndCache(tempMacroSettings, globs, repository, extractor)
-            return Result.of { Id(tempMacroSettings.uuid) }
-        } catch (e: VerificationException) {
-            return@execute Result.error(IllegalArgumentException( e.verification.status.name))
+        val originGlobs = globForMacroDatabase.getByMacro(macroId)
+        val destGlobs = globForMacroDatabase.getByMacro(tempId)
+
+        if (destGlobs.isEmpty() && !originGlobs.isEmpty()) {
+            originGlobs.forEach {
+                val id = idGenerator.generateNewIdentifier()
+                globForMacroCache.put(id, GlobForMacro(id, tempId, it.glob))
+            }
         }
+
+        macroSettings.repositoryUuid ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+        repositoryDatabase.get(macroSettings.repositoryUuid) ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+
+        val existingMacroLocation = macroLocationDatabase.get(request.macroId)
+        existingMacroLocation ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+
+        macroLocationDatabase.put(tempMacroSettings.uuid,
+                MacroLocation(tempMacroSettings.uuid, existingMacroLocation.pageId, existingMacroLocation.spaceKey)
+        )
+        macroViewProcess.prepareMacroToBeViewed(tempMacroSettings.uuid);
+
+        return Result.of { Id(tempMacroSettings.uuid) }
     }
 
 }

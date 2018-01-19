@@ -23,11 +23,14 @@ var Git4COtherOptions = {
             '         <a id="remove_data-button-hint" style="margin-left: 10px; color: red;" class="aui-icon aui-icon-small aui-iconfont-error"></a>' +
             '     </div>' +
             '     <div id="force_predefined_repositories-div" style="margin-top: 50px;">' +
-            '      <h3 style="margin-bottom: 10px"> Force Predefined Repositories </h3> ' +
-            '      <label class="switch">' +
-            '      <input v-model="forcePredefinedUiState" ref="force_predefined_toggle" type="checkbox">' +
-            '      <span class="slider round"></span> ' +
-            '      </label>' +
+            '      <h3 style="margin-top: 20px; display: flex; justify-content: space-between; margin-bottom: 10px"> Force Predefined Repositories ' +
+            '      <div style="display: flex;">' +
+            '        <label class="switch">' +
+            '        <input v-model="forcePredefinedUiState" ref="force_predefined_toggle" type="checkbox">' +
+            '        <span class="slider round"></span> ' +
+            '        </label>' +
+            '      </div>' +
+                '</h3>'+
             '     </div>' +
             '</div>'
             ,

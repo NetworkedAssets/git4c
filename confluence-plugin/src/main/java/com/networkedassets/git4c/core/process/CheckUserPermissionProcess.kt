@@ -1,66 +1,54 @@
 package com.networkedassets.git4c.core.process
 
-import com.networkedassets.git4c.core.business.PageMacroExtractor
-import com.networkedassets.git4c.core.business.PageManager
-import com.networkedassets.git4c.core.business.SpaceManager
 import com.networkedassets.git4c.core.common.PermissionChecker
-import com.networkedassets.git4c.core.datastore.MacroIdToSpaceAndPageDatabase
+import com.networkedassets.git4c.core.datastore.cache.PageAndSpacePermissionsForUserCache
+import com.networkedassets.git4c.core.datastore.repositories.MacroLocationDatabase
+import com.networkedassets.git4c.data.PageAndSpacePermissionsForUser
+import com.networkedassets.git4c.utils.getLogger
+import com.networkedassets.git4c.utils.info
+import com.networkedassets.git4c.utils.warn
 
-open class CheckUserPermissionProcess(
-        val spaceManager: SpaceManager,
-        val pageManager: PageManager,
-        val macroExtractor: PageMacroExtractor,
-        val macroIdToSpaceAndPageDatabase: MacroIdToSpaceAndPageDatabase,
-        val permissionChecker: PermissionChecker
-): ICheckUserPermissionProcess {
+class CheckUserPermissionProcess(
+        val macroLocationDatabase: MacroLocationDatabase,
+        val permissionChecker: PermissionChecker,
+        val pageAndSpacePermissionsForUserCache: PageAndSpacePermissionsForUserCache
+) : ICheckUserPermissionProcess {
 
-    val lock = java.lang.Object()
+    private val log = getLogger()
 
-    /**
-     * Null returned when macro doesn't exist
-     */
-    override fun userHasPermissionToMacro(macroId: String, user: String?): Boolean? = synchronized(lock) {
+    override fun userHasPermissionToMacro(macroId: String, user: String?): Boolean? {
+        log.info { "Will check if user=${user} has permissions to the macro=${macroId}" }
+        val macroLocation = macroLocationDatabase.get(macroId)
 
-        val pair1 = macroIdToSpaceAndPageDatabase.getSpaceAndPageForMacro(macroId)
-
-        if (pair1 == null) {
-
-            val macrosToSpacesAndPages = spaceManager.getAllSpaces()
-                    .map {
-                        it to pageManager.getAllPagesForSpace(it.uuid)
-                    }
-                    .flatMap {
-                        val pair = it
-                        it.second.flatMap { page ->
-                            val macros = macroExtractor.extractMacro(page.content)
-
-                            macros.map {
-                              it.uuid to Pair(pair.first.uuid, page.id)
-                            }
-
-                        }
-                    }
-                    .toMap()
-
-            macroIdToSpaceAndPageDatabase.clear()
-
-            macrosToSpacesAndPages.forEach { macro, pair ->
-                macroIdToSpaceAndPageDatabase.putStaceAndPageForMacro(macro, pair)
-            }
-
-
+        if (macroLocation == null) {
+            log.info { "Macro=${macroId} has a page unknown to plugin" }
+            return null
         }
 
-        //We've tried second time and nothing was found - macro doesn't exist anymore
-        val pair = pair1 ?: macroIdToSpaceAndPageDatabase.getSpaceAndPageForMacro(macroId) ?: return null
+        log.info { "Macro=${macroId} has a space=${macroLocation.spaceKey} and page=${macroLocation.pageId}" }
 
-        val (spaceId, pageId) = pair
+        val existingPermission = pageAndSpacePermissionsForUserCache.get((user ?: "") + "_" + macroLocation.pageId + "_" + macroLocation.spaceKey)
 
-        return permissionChecker.hasEnterPermission(user) &&
-                permissionChecker.hasPagePermission(user, pageId) == true &&
-                permissionChecker.hasSpacePermission(user, spaceId) == true
+        if (existingPermission != null) {
+            return existingPermission.hasAccess
+        }
 
+        val hasAccess = permissionChecker.hasEnterPermission(user) &&
+                permissionChecker.hasPagePermission(user, macroLocation.pageId) == true &&
+                permissionChecker.hasSpacePermission(user, macroLocation.spaceKey) == true
+
+        val newPermission = PageAndSpacePermissionsForUser(
+                macroLocation.pageId,
+                macroLocation.spaceKey,
+                user ?: "",
+                hasAccess
+        )
+
+        pageAndSpacePermissionsForUserCache.put(newPermission.uuid, newPermission)
+
+        return newPermission.hasAccess
     }
+
 
 }
 

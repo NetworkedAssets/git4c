@@ -22,12 +22,8 @@ class RepositoryDatabase(
         return list.map { encryptor.decrypt(it) }
     }
 
-    override fun insert(uuid: String, data: Repository) {
-        repository.insert(uuid, encryptor.encrypt(data))
-    }
-
-    override fun update(uuid: String, data: Repository) {
-        repository.update(uuid, encryptor.encrypt(data))
+    override fun put(uuid: String, data: Repository) {
+        repository.put(uuid, encryptor.encrypt(data))
     }
 
     override fun remove(uuid: String) {

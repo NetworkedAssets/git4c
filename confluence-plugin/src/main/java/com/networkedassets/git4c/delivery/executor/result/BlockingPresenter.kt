@@ -8,7 +8,7 @@ import java.util.Objects.isNull
 
 class BlockingPresenter() : BackendPresenter<Any, Throwable> {
 
-    private var stopwatch: Optional<BackendTimer.Stopwatch> = Optional.empty<BackendTimer.Stopwatch>()
+    private var stopwatch: Optional<BackendTimer.Stopwatch> = Optional.empty()
 
     override fun render(result: Any): Any {
         if (result is Result<*, Exception>) {

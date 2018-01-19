@@ -7,7 +7,6 @@ import com.networkedassets.git4c.selenium.multifile.Utils.createMultifileMacro
 import org.junit.Test
 import org.openqa.selenium.By
 import org.openqa.selenium.JavascriptExecutor
-import org.openqa.selenium.interactions.Actions
 import uy.klutter.core.common.with
 import java.nio.file.Paths
 import kotlin.test.assertEquals
@@ -189,28 +188,59 @@ Nothing interesting to see here
                 createPageInside {
                     createMultifileMacro(NoAuth("https://github.com/jaagr/polybar"), true)
                 }
-
                 until { findElementById("git4c-main-content").isDisplayed }
-
                 until { findElementByClassName("git4c-file").text.isNotEmpty() }
 
-                val globInfoDiv = until { findElements(By.tagName("h3")).filter { it.getAttribute("class")=="header" && it.findElement(By.xpath("..")).getAttribute("class").contains("blur") }[0].findElement(By.xpath(".."))}
-                until {
-                    globInfoDiv.isDisplayed
+                val firstDirectory = driver.findElement(By.id("aui-vnav")).findElements(By.className("node"))[0].text
+                assertTrue(firstDirectory == ".hooks")
+            }
+        }
+    }
+
+
+
+    @Test
+    fun `Multi file macro will add anchor to query params in url when anchor used`() {
+        driver.with {
+            wait.with {
+                createPageInside {
+                    createMultifileMacro(NoAuth("https://github.com/jaagr/polybar"))
                 }
-                val globInfo = until { globInfoDiv.findElement(By.tagName("a")) }
+                until { findElementById("git4c-main-content").isDisplayed }
+                until { findElementByClassName("git4c-file").text.isNotEmpty() }
+                val pageurl = until { currentUrl }
+                get( pageurl.substringBeforeLast("/") + "/README.md?branch=master")
+                until { findElement(By.className("git4c-toc")).findElements(By.tagName("a")).filter{it.text == "Polybar"}[0]}.click()
 
-                val hoverAction = Actions(driver)
+                assertTrue { !pageurl.contains("anchor") }
+                assertTrue { currentUrl.contains("anchor") }
 
-                until {
-                    hoverAction.moveToElement(globInfo).perform()
-                    globInfo.getAttribute("aria-describedby") != null
+            }
+        }
+    }
+
+
+    @Test
+    fun `Multi file macro will navigate to anchor in url`() {
+        driver.with {
+            wait.with {
+                createPageInside {
+                    createMultifileMacro(NoAuth("https://github.com/jaagr/polybar"))
                 }
+                until { findElementById("git4c-main-content").isDisplayed }
+                until { findElementByClassName("git4c-file").text.isNotEmpty() }
+                val pageurl = currentUrl
+                get( pageurl.substringBeforeLast("/") + "/README.md?branch=master")
+                until { findElement(By.className("git4c-toc")).findElements(By.tagName("a")).filter{it.text == "Polybar"}[0]}.click()
 
-                val tooltipid = globInfo.getAttribute("aria-describedby")
-                val tooltip = findElement(By.id(tooltipid))
-                val glob = tooltip.findElement(By.className("tipsy-inner")).text
-                assert(glob.length > 0)
+
+                val newPageUrl = currentUrl
+
+                get(pageurl)
+                get(newPageUrl)
+
+                assertTrue { (driver as JavascriptExecutor).executeScript("return window.pageYOffset;") != 0 }
+
             }
         }
     }

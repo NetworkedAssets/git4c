@@ -1,0 +1,7 @@
+package com.networkedassets.git4c.infrastructure.cache
+
+import com.atlassian.cache.CacheFactory
+import com.networkedassets.git4c.core.datastore.cache.PageAndSpacePermissionsForUserCache
+import com.networkedassets.git4c.data.PageAndSpacePermissionsForUser
+
+class AtlassianPageAndSpacePermissionsForUserCache(cacheFactory: CacheFactory) : ShortConfluenceCache<PageAndSpacePermissionsForUser>(cacheFactory), PageAndSpacePermissionsForUserCache

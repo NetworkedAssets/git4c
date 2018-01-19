@@ -10,9 +10,9 @@ class MacroSettingsProvider(val dataStoreSplitter: UnifiedDataStore<MacroSetting
         return macroSettingsDatabase.getByRepository(uuid)
     }
 
-    override fun update(uuid: String, data: MacroSettings) {
+    override fun put(uuid: String, data: MacroSettings) {
         dataStoreSplitter.remove(uuid)
-        dataStoreSplitter.insert(uuid, data)
+        dataStoreSplitter.put(uuid, data)
     }
 
     override fun isAvailable(uuid: String): Boolean = dataStoreSplitter.isAvailable(uuid)
@@ -20,10 +20,6 @@ class MacroSettingsProvider(val dataStoreSplitter: UnifiedDataStore<MacroSetting
     override fun get(uuid: String): MacroSettings? = dataStoreSplitter.get(uuid)
 
     override fun getAll(): List<MacroSettings> = dataStoreSplitter.getAll()
-
-    override fun insert(uuid: String, data: MacroSettings) {
-        dataStoreSplitter.insert(uuid, data)
-    }
 
     override fun remove(uuid: String) {
         dataStoreSplitter.remove(uuid)

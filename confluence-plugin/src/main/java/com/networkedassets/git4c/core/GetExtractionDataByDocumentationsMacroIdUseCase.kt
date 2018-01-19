@@ -3,11 +3,9 @@ package com.networkedassets.git4c.core
 import com.atlassian.confluence.core.service.NotAuthorizedException
 import com.github.kittinunf.result.Result
 import com.networkedassets.git4c.boundary.GetExtractionDataByDocumentationsMacroIdQuery
-import com.networkedassets.git4c.boundary.outbound.LineRange
-import com.networkedassets.git4c.boundary.outbound.SimpleExtractorData
-import com.networkedassets.git4c.boundary.outbound.SimpleMethod
-import com.networkedassets.git4c.boundary.outbound.VerificationStatus
+import com.networkedassets.git4c.boundary.outbound.*
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
+import com.networkedassets.git4c.core.datastore.extractors.EmptyExtractorData
 import com.networkedassets.git4c.core.datastore.extractors.ExtractorData
 import com.networkedassets.git4c.core.datastore.extractors.LineNumbersExtractorData
 import com.networkedassets.git4c.core.datastore.extractors.MethodExtractorData
@@ -37,15 +35,12 @@ class GetExtractionDataByDocumentationsMacroIdUseCase(
 
     }
 
-    private fun convertExtractorDataToOutbound(data: ExtractorData): SimpleExtractorData{
-        return when(data){
-            is MethodExtractorData -> {
-                SimpleMethod(data.method)
-            }
-            is LineNumbersExtractorData -> {
-                LineRange(data.startLine, data.endLine)
-            }
-            else -> throw RuntimeException("Unknown extraction data type: ${data.javaClass}")
+    private fun convertExtractorDataToOutbound(data: ExtractorData): SimpleExtractorData {
+        return when (data) {
+            is MethodExtractorData -> SimpleMethod(data.method)
+            is LineNumbersExtractorData -> LineRange(data.startLine, data.endLine)
+            is EmptyExtractorData -> EmptyExtractor()
+            else -> throw RuntimeException("Unknown extractor data ${data.javaClass}")
         }
     }
 

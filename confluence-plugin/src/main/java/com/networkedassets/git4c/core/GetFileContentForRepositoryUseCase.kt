@@ -16,12 +16,13 @@ class GetFileContentForRepositoryUseCase(
 ) : UseCase<GetFileContentForRepositoryQuery, FileContent> {
 
     override fun execute(request: GetFileContentForRepositoryQuery): Result<FileContent, Exception> {
+        // TODO: Pull and non-blocking!
         val repository = detectRepository(request.repositoryToGetFile)
         val branch = request.repositoryToGetFile.branch
         return Result.of {
-                process.getFile(repository, branch, request.repositoryToGetFile.file)
-            }
+            process.getFile(repository, branch, request.repositoryToGetFile.file)
         }
+    }
 
     private fun detectRepository(repositoryFromCommand: RepositoryToGetFile): Repository {
         when (repositoryFromCommand.credentials) {

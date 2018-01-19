@@ -14,13 +14,14 @@ Admin panel is located in General configuration → Administration → Git4C Adm
 6. Button for adding a predefined filter
 7. Remove given predefined filter button
 8. List of macros in system
-9. Multi file macro indication
-10. Single file macro indication
+9. Button to show/hide list of macros
+10. Macro type indicator
 11. Macro healthcheck
 12. Remove all plugin data
 13. Remove all filters and restore default ones
 14. Clean all unused data
 15. Force users to use predefined repositories only
+16. Thread settings
 
 # Cleaning data
 To remove all plugin click "Clean data" on the bottom of the page. To conflirm action click "Clean".
@@ -29,7 +30,7 @@ To remove all plugin click "Clean data" on the bottom of the page. To conflirm a
 
 
 # Creating predefined repository
-You can create new predefined repository by clicking "Add Predefined".
+You can create new predefined repository by clicking "Add Predefined Repository".
 
 After clicking the button a dialog would show up.
 
@@ -67,8 +68,20 @@ Git4C offers a possibility to allow users creating macro only with predefined re
 
 To block custom repositories simply switch the toggle button on.
 
-<b> Remember, this will only block creating a new macro with custom repository. Those already craeted will still be functional and editable.<b/>
+<b> Remember, this will only block creating a new macro with custom repository. Those already craeted will still be functional and editable.</b>
 
 To confirm this action click the <b>Block</b> button on warning dialog.
 
 ![](images/force-predefined-warning.png)
+
+# Changing number of used threads
+
+In version 1.4.0 we've changed backend architecture to asynchronous one. Due to these changes we're allowing administrators to set number of used thread to utilize workload specifically for server specification.
+
+![](images/used-threads.png)
+
+1. Number of threads used for revision checking
+2. Number of threads used for repository pulling
+3. Number of threads used for converting documents
+4. Number of threads used for heavy I/O operations (like indexing macros using DB)
+5. Button to save settings

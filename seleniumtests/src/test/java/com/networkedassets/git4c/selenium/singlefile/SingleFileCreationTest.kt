@@ -31,4 +31,20 @@ class SingleFileCreationTest : BaseSeleniumTest() {
 
     }
 
+    @Test
+    fun `Single file repository with NoAuth repository and line range selected should be created`() {
+        driver.createPageInside {
+            createSingleFileMacro(
+                    repoType = NoAuth("https://github.com/jaagr/polybar"),
+                    file = ".travis.yml",
+                    fileRange = Pair(2,10)
+
+            )
+        }
+
+        wait.until { driver.findElementByClassName("git4c-singlefile-app") }
+
+    }
+
+
 }

@@ -21,3 +21,7 @@ Feature: Navigate in multi file macro
     Then previous file is selected in file tree
     Then previous file is present in the url
 
+  Scenario: User can use link to file with specified branch and anchor in Multi File macro and will be navigated to correct fragment
+    Given a confluence page with multi file macro
+    When user uses a link with specified branch and anchor
+    Then Git4C macro will navigate to specified in link fragment.

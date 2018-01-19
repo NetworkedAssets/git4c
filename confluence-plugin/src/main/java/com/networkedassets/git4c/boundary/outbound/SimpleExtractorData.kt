@@ -12,3 +12,5 @@ data class LineRange(
         val startLine: Int,
         val endLine: Int
 ): SimpleExtractorData(type = "LINES")
+
+class EmptyExtractor : SimpleExtractorData(type = "EMPTY")

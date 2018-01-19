@@ -8,7 +8,7 @@ import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import org.slf4j.LoggerFactory
 
-class MarkdownConverterPlugin: MainConverterPlugin {
+class MarkdownConverterPlugin : MainConverterPlugin {
 
     private val log = LoggerFactory.getLogger(MarkdownConverterPlugin::class.java)
 
@@ -21,7 +21,7 @@ class MarkdownConverterPlugin: MainConverterPlugin {
 
     override fun convert(fileData: ImportedFileData): String {
         val renderer = HtmlRenderer.builder().extensions(extensions).build()
-        val node = parser.parse(fileData.contentString)
+        val node = parser.parse(String(fileData.content()))
         return "<span>${renderer.render(node)}</span>"
     }
 

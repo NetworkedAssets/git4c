@@ -6,7 +6,7 @@ var commitHistory = function (){
 }
 
 var TopBar = {
-    getComponent: function(Events, uuid, lineNumbers, collapsible, collapseByDefault) {
+    getComponent: function(Events, uuid, lineNumbers, collapsible, collapseByDefault, fileEditEnabled) {
         return {
             template:
         '<div class="git4c-singlefile-topbar-outer">'+
@@ -41,6 +41,11 @@ var TopBar = {
         '                <span class="expand-control-icon icon" v-bind:class="{ expanded: !collapsed }">&nbsp;</span>{{ collapsedButtonText }}'+
         '                </button> '+
         '            </div>'+
+        '            <button v-if="fileData && fileEditEnabled" id="git4c-toolbar-edit-button" title="Edit file" class="aui-button" v-on:click="editFile()" style="margin-left: 10px">' +
+        '                <span class="aui-icon aui-icon-small aui-iconfont-edit" style="margin-right: 1px">' +
+        '                Edit file' +
+        '                </span>' +
+        '            </button>' +
         '            <div v-if="fileData">'+
         '                <button ref="raw_file_button" class="aui-button raw-file-button" v-on:click="openDialog()" v-if="hasSource" style="margin-left: 10px">'+
         '                    <span class="aui-icon aui-icon-small aui-iconfont-devtools-file">'+
@@ -50,6 +55,9 @@ var TopBar = {
         '            </div>'+
         '            <div style="margin-left: 10px; display: flex; flex-direction: column; justify-content: center" v-if="document">'+
         '                <commit-history ref="commit_history"></commit-history>'+
+        '            </div>'+
+        '            <div style="margin-left: 10px; display: flex; flex-direction: column; justify-content: center" v-show="editBranch">'+
+        '                <span title="You are currently on modified file" ref="edit_branch_icon" class="aui-icon aui-icon-small aui-iconfont-error">Insert meaningful text here for accessibility</span>'+
         '            </div>'+
         '        </span>'+
         '    </div>'+
@@ -63,7 +71,13 @@ var TopBar = {
                     extractorData: undefined,
                     lines: lineNumbers,
                     canHaveLines: true,
-                    collapsible: collapsible
+                    collapsible: collapsible,
+                    fileEditEnabled: fileEditEnabled
+                }
+            },
+            props: {
+                editBranch: {
+                    type: Boolean
                 }
             },
             components:{
@@ -101,11 +115,15 @@ var TopBar = {
             mounted: function () {
                 const vm = this
 
+                AJS.$(vm.$refs["edit_branch_icon"]).tooltip();
+
                 Vue.http.get(UrlService.getRestUrl('documentation', uuid, "extractorData")).then(function(extractorData) {
-                    if(extractorData.body.type == "METHOD") {
+                    if(extractorData.body.type === "METHOD") {
                         vm.extractorData = extractorData.body.name
-                    }else if(extractorData.body.type == "LINES"){
+                    }else if(extractorData.body.type === "LINES"){
                         vm.extractorData = "Lines: " + extractorData.body.startLine + " - " + extractorData.body.endLine
+                    } else {
+                        vm.extractorData = null
                     }
                 })
 
@@ -197,8 +215,10 @@ var TopBar = {
                 },
                 updateCommitHistory: function(){
                     this.$refs.commit_history.getInfoAndUpdate(uuid, this.document.fullName)
+                },
+                editFile: function () {
+                    Events.$emit("editFile")
                 }
-
             }
         }
     }

@@ -55,22 +55,30 @@
         '         <div class="aui-item">'+
         '            <div class="field-group">'+
         '                <label for="doc_macro-predefined_repository">Repository</label>'+
-        '                <select class="select" v-show="(repositories && repositories.length!=0) || customRepository" v-model="repository"  style="max-width: 50%">'+
-        '                    <option v-if="customRepository" v-bind:value="customRepository">'+
+        '                <select class="select" v-show="(repositories && repositories.length!=0) || customRepository || (recentlyUsedRepositories && recentlyUsedRepositories.length!=0)" v-model="repository"  style="max-width: 50%">'+
+        '                   <optgroup v-if="customRepository" label="Choosen repository">'+
+        '                      <option v-bind:value="customRepository">'+
         '                         {{ customRepository.repositoryName }}'+
-        '                    </option>'+
-        '                    <option v-for="repo in repositories" v-bind:value="repo">'+
+        '                      </option>'+
+        '                   </optgroup>'+
+        '                   <optgroup label="Recently used repositories">'+
+        '                       <option  v-for="repo in recentlyUsedRepositories" v-bind:value="repo">'+
+        '                         {{ repo.repositoryName }}'+
+        '                       </option>'+
+        '                   </optgroup>'+
+        '                   <optgroup label="Predefined repositories">'+
+        '                       <option  v-for="repo in repositories" v-bind:value="repo">'+
         '                         {{ repo.name }}'+
-        '                    </option>'+
+        '                       </option>'+
+        '                   </optgroup>'+
         '                </select>'+
-        '                <select class="select" v-show="(!repositories || repositories.length==0) && !customRepository" :disabled="true"  style="max-width: 50%">'+
+        '                <select class="select" v-show="(!repositories || repositories.length==0) && !customRepository && !(recentlyUsedRepositories && recentlyUsedRepositories.length!=0)" :disabled="true"  style="max-width: 50%">'+
         '                    <option>No Repositories Available</option>'+
         '                </select>'+
         '                <button  v-bind:disabled="forcedPredefined" ref="custom_repository_button"  id="git4c-multi_file_dialog-add_repository-button" @click.prevent v-on:click="openCustomRepositoryDialog" class="aui-button aui-button-primary">'+
         '                    <span class="aui-icon aui-icon-small aui-iconfont-add"/>'+
         '                </button>'+
         '            </div>'+
-        '       '+
         '            <div class="field-group">'+
         '               <label for="doc_macro-repo_branch">Repository branch</label>'+
         '               <select class="select" v-show="downloadingBranches == true" :disabled="true">'+
@@ -87,11 +95,15 @@
         '            </div>'+
         '            <div class="field-group">'+
         '              <label for="doc_macro-repo_glob">Filter</label>'+
-        '               <input style="max-width: 50%" class="text" type="text" ref="doc_macro-glob" placeholder="pattern"></input>'+
-        '                    <button id="git4c-multi_file_dialog-select_root_dir_button" style="position: absolute; margin-left: 1%;" v-bind:disabled="!fileTree" @click.prevent="showFileTreeDialog()" class="aui-button aui-button-primary">'+
-        '                        <span class="aui-icon aui-icon-small aui-iconfont-nav-children-large">Show file tree</span>'+
-        '                    </button>'+
+        '               <input class="text" type="text" ref="doc_macro-glob" placeholder="pattern"></input>'+
         '               <div class="description">Please type your <a ref="pattern_tooltip" href="https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob">pattern</a> (Optional)</div>'+
+        '            </div>'+
+        '            <div class="field-group">'+
+        '              <label for="doc_macro-repo_root_directory">Root Directory</label>'+
+        '               <input style="max-width: 50%" v-model="rootDirectory" class="text" type="text" disabled ref="doc_macro-root_directory"></input>'+
+        '                    <button v-bind:style="[downloadingFiles? {width: \'9%\'} : {}]" id="git4c-multi_file_dialog-select_root_dir_button" v-bind:disabled="downloadingFiles" @click.prevent="showFileTreeDialog()" class="aui-button aui-button-primary">'+
+        '                        <span v-bind:style="[downloadingFiles? {margin: \'0\'} : {}]" v-bind:class="{\'aui-icon aui-icon-wait\': downloadingFiles, \'aui-iconfont-nav-children-large\': !downloadingFiles}" class="aui-icon aui-icon-small">Show file tree</span>'+
+        '                    </button>'+
         '            </div>'+
         '            <div class="field-group">'+
         '               <label for="doc_macro-default_Doc_Item">Default File</label>'+
@@ -135,6 +147,7 @@
             //Default values
             var dataModel = {
                 repositories: undefined,
+                recentlyUsedRepositories: undefined,
                 repository: undefined,
 
                 customRepository: undefined,
@@ -159,7 +172,11 @@
                 globList: Array(),
                 defaultDocItem: "",
 
+                rootDirectory: "",
+
                 forcedPredefined: true,
+
+                downloadingFiles: false,
 
                 currentError: undefined,
                 errors: errors,
@@ -198,7 +215,10 @@
                 data.repositories = undefined
                 data.uuid = uuid
 
+                data.downloadingFiles = undefined
+
                 data.fileTree = undefined
+                data.recentlyUsedRepositories = undefined
 
 
 
@@ -230,6 +250,12 @@
                 },
                 watch: {
                     repository: function () {
+                        if(this.isRecentlyUsed(this.repository)) {
+                            this.customRepository = {
+                                uuid: this.repository.uuid,
+                                repositoryName: this.repository.repositoryName
+                            }
+                        }
                         this.fileTree = null
                         this.getBranches()
                         this.checkIfFilled()
@@ -238,16 +264,24 @@
                         if(this.branch) {
                             this.prevBranch = this.branch
                             this.fileTree = null
-                            this.$nextTick(function(){
-                                this.getFileTree()
-                            })
-
                         }
                         this.checkIfFilled()
                     }
-
                 },
                 methods: {
+                    isRecentlyUsed: function (repo) {
+                        var includes = false
+                        if(this.recentlyUsedRepositories) {
+                            this.recentlyUsedRepositories.forEach(function (it) {
+                                if(it.repositoryName === repo.repositoryName && it.uuid === repo.uuid)
+                                {
+                                    includes = true
+                                }
+                            })
+                        }
+
+                        return includes
+                    },
                     closeDialog: function(){
                         this.$refs.custom_repository_dialog.clearFields()
                         AJS.dialog2(dialogInstance).hide()
@@ -279,21 +313,23 @@
                         this.closeCustomRepositoryDialog()
                         this.customRepository = repository
                         this.repository = this.customRepository
-                        this.existingRepositoryUuid = undefined
                         this.customRepositoryAuthType = this.repository.credentials.sshKey ? "SSHKEY" : this.repository.credentials.username ? "USERNAMEPASSWORD" : "NOAUTH"
                         this.customRepositoryName = this.repository.repositoryName
                         this.customRepositoryUrl = this.repository.sourceRepositoryUrl
 
+                    },
+                    isPredefined: function () {
+                        return !this.customRepository ? true : (this.repository.uuid !== this.customRepository.uuid) &&  (this.repository.repositoryName !== this.customRepository.repositoryName)
                     },
                     getBranches: function () {
                         const vm = this
                         this.downloadingBranches = true;
                         if(this.repository) {
                             this.branches = undefined;
-                            const isPredefined = !this.customRepository ? true : this.repository != this.customRepository
+                            const isPredefined = this.isPredefined()
                             var promise = undefined
-                            if (this.existingRepositoryUuid && !isPredefined) {
-                                const uuid = this.existingRepositoryUuid
+                            if (this.customRepository && this.customRepository.uuid && !isPredefined) {
+                                const uuid = this.customRepository.uuid
                                 promise = Vue.http.get(restUrl + "/repository/" + uuid + "/branches")
                             } else {
                                 if (isPredefined) {
@@ -330,10 +366,6 @@
                                         }
                                         vm.prevBranch = vm.branch
                                     }
-                                    vm.$nextTick(function(){
-                                        vm.getFileTree()
-                                    })
-
                                 }, function(error) {
                                     error.text().then(function(text) {
                                             vm.showError(text)
@@ -349,14 +381,15 @@
 
                     getFileTree: function () {
                         const vm = this
+                        vm.downloadingFiles = true
                         if(this.repository) {
-                            const isPredefined = !this.customRepository ? true : this.repository != this.customRepository
+                            const isPredefined = this.isPredefined()
                             var promise
                             const branch = {
                                 branch: this.branch
                             }
-                            if (this.existingRepositoryUuid && !isPredefined) {
-                                const uuid = this.existingRepositoryUuid
+                            if (this.customRepository && this.customRepository.uuid && !isPredefined) {
+                                const uuid = this.customRepository.uuid
                                 promise = Vue.http.post(restUrl + "/repository/" + uuid + "/files", branch)
                             } else {
                                 if (isPredefined) {
@@ -378,7 +411,10 @@
                                 promise.then(function(response) {
                                     var tree = response.data.tree
                                     vm.fileTree = vm.filterFileTreeNodes(tree, function(node) {return node.type === "DIR"} )
-                            }, function(error) {
+                                    vm.downloadingFiles = false
+                                    createFileTreeDialog(vm.fileTree, vm.processSelectedRootFilter, vm)
+                                }, function(error) {
+                                    vm.downloadingFiles = false
                                     error.text().then(function(text) {
                                         vm.showError(text)
                                 })
@@ -403,9 +439,9 @@
                         const vm = this
 
                         this.saving = true
-                        const isPredefined = !this.customRepository ? true : this.repository != this.customRepository
+                        const isPredefined = this.isPredefined()
                         if(isPredefined){
-                            this.existingRepositoryUuid = undefined
+                            this.customRepository = undefined
                             this.customRepositoryUrl = undefined
                             this.customRepositoryAuthType = undefined
                             this.customRepositoryName = undefined
@@ -421,39 +457,46 @@
                         const globToSave = this.glob ? this.glob.split(',') : []
                         const defaultDocItemToSave = this.defaultDocItem ? this.defaultDocItem : ""
 
-                        if(!this.existingRepositoryUuid){
+                        var repositoryName = null
+                        if(this.customRepository && this.customRepository.uuid){
+                            repositoryName = this.repository.repositoryName
+                            vm.customRepositoryName = repositoryName
+                            repositoryDetails = {
+                                repository: {
+                                    type: "EXISTING",
+                                    uuid: this.repository.uuid
+                                }
+                            }
+                        } else{
                             if (!isPredefined) {
+                                repositoryName = this.repository.repositoryName
                                 repositoryDetails = {
-                                        repository: {
-                                            type: "CUSTOM",
-                                            url: this.repository.sourceRepositoryUrl,
-                                            credentials: this.repository.credentials
+                                    repository: {
+                                        type: "CUSTOM",
+                                        url: this.repository.sourceRepositoryUrl,
+                                        credentials: this.repository.credentials
 
                                     }
                                 }
                             } else {
+                                repositoryName = this.repositories.filter( function(it) { return (it.uuid === vm.repository.uuid) } )[0].name
                                 repositoryDetails = {
-                                        repository: {
-                                            type: "PREDEFINED",
-                                            uuid: this.repository.uuid
+                                    repository: {
+                                        type: "PREDEFINED",
+                                        uuid: this.repository.uuid
 
                                     }
                                 }
                             }
-                        } else{
-                            repositoryDetails = {
-                                    repository: {
-                                        type: "EXISTING",
-                                        uuid: this.existingRepositoryUuid
-
-                                }
-                            }
                         }
+
                         toSend = {
                             repositoryDetails: repositoryDetails,
+                            repositoryName: repositoryName,
                             branch: this.branch,
                             glob:  globToSave,
-                            defaultDocItem: defaultDocItemToSave
+                            defaultDocItem: defaultDocItemToSave,
+                            rootDirectory: this.rootDirectory
                         }
                         this.$http.post(restUrl, toSend, {}).then(function(response) {
                             const uuid = response.body.uuid
@@ -470,17 +513,27 @@
                     getRepositoryList: function () {
                         const vm = this;
 
+
+                        vm.$http.get(restUrl + "/repository/usages", {}).then(function(response) {
+                            vm.recentlyUsedRepositories = response.body.usages.reverse()
+                        }, function(error) {
+                            error.text().then(function(text) {
+                                vm.showError(text)
+                            })
+                        })
+
+
                         vm.$http.get(restUrl + "/predefine", {}).then(function(response) {
                             vm.repositories = response.data
                             if(vm.predefinedRepositoryUuid){
                                 var list = vm.repositories.filter( function(it) { return (it.uuid === vm.predefinedRepositoryUuid) } )
-                                if(list.length != 0){
+                                if(list.length !== 0){
                                     vm.repository = list[0]
                                 }else{
                                     vm.predefinedRepositoryUuid = null
                                 }
                             }
-                            if(!vm.repository) {
+                            if(!vm.repository && !vm.customRepositoryName) {
                                 vm.repository = vm.repositories[0]
                             }
                         }, function(error) {
@@ -488,6 +541,8 @@
                                 vm.showError(text)
                             })
                         })
+
+
                     },
                     getGlobList: function () {
                         const vm = this;
@@ -534,11 +589,17 @@
                     init: function(){
                         const vm = this
 
+                        if(vm.customRepositoryName) {
+                            vm.customRepository = {
+                                repositoryName: vm.customRepositoryName
+                            }
+                            vm.repository = vm.customRepository
+                        }
+
                         Vue.http.get(restUrl + "/settings/repository/predefine/force").then(function(response) {
                             if(response.body.forced === true) {
                                 vm.forcedPredefined = true
                                 vm.$refs.custom_repository_button.title = "Administrator blocked custom repositories"
-
                             }
                             else {
                                 vm.forcedPredefined = false
@@ -560,11 +621,13 @@
                             }
 
                             Vue.http.get(restUrl + "/" + data.uuid).then(function(response) {
-                                vm.existingRepositoryUuid = response.body.repositoryUuid
                                 if(vm.customRepositoryName) {
-                                    vm.getBranches()
+                                    vm.customRepository = {
+                                        uuid: response.body.repositoryUuid,
+                                        repositoryName: vm.customRepositoryName
+                                    }
+                                    vm.repository = vm.customRepository
                                 }
-
                             }, function(error) {
                                 if(error.statusText == "Not Found")
                                 {
@@ -575,9 +638,7 @@
                                     })
                                 }
                             })
-                            if(this.customRepositoryName) {
-                                this.customRepository = {repositoryName: this.customRepositoryName}
-                                this.repository = this.customRepository
+                            if(this.customRepositoryName && this.customRepositoryUrl) {
                                 const repoInfo = {
                                     name: this.customRepositoryName,
                                     sourceRepositoryUrl: this.customRepositoryUrl,
@@ -585,17 +646,20 @@
                                 }
                                 this.$refs.custom_repository_dialog.initFields(repoInfo)
                             }
-
-
                         }
                     },
                     showFileTreeDialog: function() {
-                        createFileTreeDialog(this.fileTree, this.processSelectedRootFilter, this)
+                        if(this.fileTree) {
+                            createFileTreeDialog(this.fileTree, this.processSelectedRootFilter, this)
+                        }
+                        else{
+                            this.getFileTree()
+                        }
                     },
                     processSelectedRootFilter: function(file) {
-                        const newGlobValue = this.glob? this.glob.concat("," + file + "/**") : file + "/**"
+                        const rootGlob =  file + "/**"
                         if (file) {
-                            $(this.$refs['doc_macro-glob']).val(newGlobValue).trigger("change")
+                            this.rootDirectory = rootGlob
                         }
                     }
 

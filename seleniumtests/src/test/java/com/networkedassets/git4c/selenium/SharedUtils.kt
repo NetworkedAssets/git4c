@@ -1,7 +1,6 @@
 package com.networkedassets.git4c.selenium
 
 import com.networkedassets.git4c.selenium.utils.WebdriverExtensions.findElementById
-import com.sun.org.apache.xerces.internal.impl.xpath.XPath
 import org.openqa.selenium.*
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.FluentWait
@@ -111,7 +110,6 @@ interface SharedUtils {
 
         wait.until {
             val element = driver.findElement(By.xpath("//*[contains(.,'$spaceName Home')]"))
-            println(element)
             element
         }
 
@@ -129,20 +127,6 @@ interface SharedUtils {
                 .withTimeout(5, TimeUnit.SECONDS)
                 .pollingEvery(1, TimeUnit.SECONDS)
                 .ignoring(org.openqa.selenium.NoSuchElementException::class.java)
-
-//
-//        git4c-multi_file_dialog-add_repository-button
-
-//        try {
-//            wait.until { driver.findElementById("git4c-multi_file_dialog-add_repository-button") }.click()
-//        } catch (e: Exception) {
-////            wait.until { driver.findElementById("git4c-singlefiledialog-add-custom-repository") }.click()
-//            try {
-//                wait.until { driver.findElementById("git4c-single-file-dialog-content").findElement(By.className("aui-iconfont-add")) }.click()
-//            } catch (e: Exception) {
-//
-//            }
-//        }
 
         wait.until { driver.findElementById("doc_macro-repo_name") }.sendKeys(name)
 
@@ -171,18 +155,14 @@ interface SharedUtils {
                 .withTimeout(5, TimeUnit.SECONDS)
                 .pollingEvery(1, TimeUnit.SECONDS)
                 .ignoring(org.openqa.selenium.NoSuchElementException::class.java)
-        val rootList = driver.findElement(By.xpath("//*[@id=\"git4c-single-dialog-tree-div\"]/span/ol"))
+        val rootList = wait.until { driver.findElement(By.xpath("//*[@id=\"git4c-single-dialog-tree-div\"]/span/ol")) }
         val elements = rootList.findElements(By.tagName("span"))
         val dir = elements[0].findElement(By.tagName("li")).findElement(By.tagName("div")).findElement(By.tagName("a"))
         wait.until { dir.click() }
         val saveButton = driver.findElement(By.xpath("//*[@id=\"dialog-next-button\"]"))
         wait.until { saveButton.click() }
 
-        wait.until { driver.findElement(By.className("select2-search-choice")) }
-
-
-
-
+        Thread.sleep(2000)
     }
 
 }

@@ -12,6 +12,7 @@ import com.networkedassets.git4c.utils.dispatchAndPresentHttp
 import com.networkedassets.git4c.utils.info
 import org.slf4j.LoggerFactory
 import java.net.URLDecoder
+import java.util.concurrent.TimeUnit
 import javax.servlet.http.HttpServletRequest
 import javax.ws.rs.*
 import javax.ws.rs.core.Context
@@ -44,9 +45,10 @@ class MacroRest(
 
     @POST
     @Path("/")
-    fun createNewDocumentationsMacro(documentationJson: String): Response {
+    fun createNewDocumentationsMacro(documentationJson: String, @Context req: HttpServletRequest): Response {
         val documentation = deserialize(documentationJson, DocumentationMacro::class.java)
-        return dispatchAndPresentHttp { CreateDocumentationsMacroCommand(documentation) }
+        val username = userManager.getRemoteUsername(req)
+        return dispatchAndPresentHttp { CreateDocumentationsMacroCommand(documentation, username) }
     }
 
     @GET
@@ -54,7 +56,7 @@ class MacroRest(
     @Path("/{uuid}")
     fun getMacro(@PathParam("uuid") macroId: String, @Context req: HttpServletRequest): Response {
         val user = userManager.getRemoteUsername(req)
-        return dispatchAndPresentHttp { GetDocumentationsMacroByDocumentationsMacroIdQuery(macroId.urlDecode(), user) }
+        return dispatchAndPresentHttp({ GetDocumentationsMacroByDocumentationsMacroIdQuery(macroId.urlDecode(), user) }, 5, TimeUnit.MINUTES)
     }
 
     @GET
@@ -80,6 +82,29 @@ class MacroRest(
         val user = userManager.getRemoteUsername(req)
         val documentation = deserialize(documentationJson, DetailsToGetFile::class.java)
         return dispatchAndPresentHttp { GetCommitHistoryForFileByMacroIdQuery(macroId.urlDecode(), documentation, user) }
+    }
+
+    @GET
+    @Path("/request/publishFile/{id}")
+    fun publishFileResult(@PathParam("id") requestId: String): Response {
+        return dispatchAndPresentHttp { PublishFileResultRequest(requestId) }
+    }
+
+    @POST
+    @Path("/{uuid}/file/publishFile")
+    fun publishFile(@PathParam("uuid") macroId: String, documentationJson: String, @Context req: HttpServletRequest): Response {
+        val user = userManager.getRemoteUsername(req)
+        val file = deserialize(documentationJson, FileToSave::class.java)
+        return dispatchAndPresentHttp { PublishFileCommand(user, macroId, file) }
+    }
+
+    @POST
+    @AnonymousAllowed
+    @Path("/{uuid}/file/preview")
+    fun previewFile(@PathParam("uuid") macroId: String, documentationJson: String, @Context req: HttpServletRequest): Response {
+        val user = userManager.getRemoteUsername(req)
+        val file = deserialize(documentationJson, FileToGeneratePreview::class.java)
+        return dispatchAndPresentHttp { PreviewFileCommand(user, macroId, file) }
     }
 
     @POST
@@ -114,6 +139,12 @@ class MacroRest(
         return dispatchAndPresentHttp { GetExtractionDataByDocumentationsMacroIdQuery(macroId, user) }
     }
 
+    @GET
+    @Path("/{uuid}/latestRevision")
+    fun getLatestRevisionForDocumentationsMacroUuid(@PathParam("uuid") macroId: String): Response {
+        return dispatchAndPresentHttp({ GetLatestRevisionByDocumentationsMacroIdQuery(macroId) }, 30, TimeUnit.SECONDS)
+    }
+
     @POST
     @AnonymousAllowed
     @Path("/{uuid}/doc-item")
@@ -121,6 +152,20 @@ class MacroRest(
         val user = userManager.getRemoteUsername(req)
         val file = deserialize(documentationJson, RequestedFile::class.java)
         return dispatchAndPresentHttp { GetDocumentItemInDocumentationsMacroQuery(macroId.urlDecode(), file.file, user) }
+    }
+
+    @GET
+    @AnonymousAllowed
+    @Path("/{uuid}/editBranch")
+    fun getTemporaryEditBranch(@PathParam("uuid") macroId: String): Response {
+        return dispatchAndPresentHttp { GetTemporaryEditBranchCommand(macroId) }
+    }
+
+    @GET
+    @AnonymousAllowed
+    @Path("/editBranch/{requestId}")
+    fun getTemporaryEditBranchResult(@PathParam("requestId") requestId: String): Response {
+        return dispatchAndPresentHttp { GetTemporaryEditBranchResultCommand(requestId) }
     }
 
     @GET
@@ -159,7 +204,7 @@ class MacroRest(
     fun createTemporaryDocumentationsContent(@PathParam("uuid") macroId: String, documentationJson: String, @Context req: HttpServletRequest): Response {
         val user = userManager.getRemoteUsername(req)
         val documentation = deserialize(documentationJson, Branch::class.java)
-        return dispatchAndPresentHttp { CreateTemporaryDocumentationsContentCommand(macroId, documentation.branch, user) }
+        return dispatchAndPresentHttp({ CreateTemporaryDocumentationsContentCommand(macroId, documentation.branch, user) }, 5, TimeUnit.MINUTES)
     }
 
     @GET
@@ -326,6 +371,12 @@ class MacroRest(
         return dispatchAndPresentHttp { GetSpacesWithMacroQuery() }
     }
 
+    @GET
+    @Path("/spaces/{uuid}")
+    fun getAllSpacesWithGit4CMacroResult(@PathParam("uuid") id: String): Response {
+        return dispatchAndPresentHttp { GetSpacesWithMacroResultRequest(id) }
+    }
+
     @POST
     @Path("/settings/repository/predefine/force")
     fun forceUsersToUsePredefinedRepositiores(documentationJson: String): Response {
@@ -338,6 +389,83 @@ class MacroRest(
     fun forceUsersToUsePredefinedRepositiores(): Response {
         return dispatchAndPresentHttp { GetForceUsersToUsePredefinedRepositoriesSettingQuery() }
     }
+
+    @GET
+    @Path("/repository/usages")
+    fun getRepoositoryUsagesForUser(@Context req: HttpServletRequest): Response {
+        val user = userManager.getRemoteUsername(req)
+        return dispatchAndPresentHttp { GetRepositoryUsagesForUserQuery(user) }
+    }
+
+    @POST
+    @Path("/editing")
+    fun setEditingEnabled(@Context req: HttpServletRequest, documentationJson: String): Response {
+
+        val username = userManager.getRemoteUsername(req)
+
+        if (username == null || !userManager.isAdmin(username)) {
+            return Response.status(Response.Status.FORBIDDEN).build()
+        }
+
+        val option = deserialize(documentationJson, EditingEnabled::class.java)
+        return dispatchAndPresentHttp { SetEditingEnabledQuery(option) }
+    }
+
+    @GET
+    @Path("/database/macroLocation/refresh")
+    fun refreshMacroLocationDatabase(@Context req: HttpServletRequest): Response {
+
+        val username = userManager.getRemoteUsername(req)
+
+        if (username == null || !userManager.isAdmin(username)) {
+            return Response.status(Response.Status.FORBIDDEN).build()
+        }
+
+        return dispatchAndPresentHttp { RefreshMacroLocationsCommand() }
+    }
+
+    @GET
+    @Path("/database/macroLocation/refresh/{uuid}")
+    fun refreshMacroLocationDatabaseResult(@Context req: HttpServletRequest, @PathParam("uuid") uuid: String): Response {
+
+        val username = userManager.getRemoteUsername(req)
+
+        if (username == null || !userManager.isAdmin(username)) {
+            return Response.status(Response.Status.FORBIDDEN).build()
+        }
+
+        return dispatchAndPresentHttp { RefreshMacroLocationsResultCommand(uuid) }
+
+    }
+
+    @GET
+    @Path("/executors")
+    fun getExecutorThreadNumbers(@Context req: HttpServletRequest): Response {
+        val username = userManager.getRemoteUsername(req)
+
+        if (username == null || !userManager.isAdmin(username)) {
+            return Response.status(Response.Status.FORBIDDEN).build()
+        }
+
+        return dispatchAndPresentHttp { GetExecutorThreadNumbersQuery() }
+
+    }
+
+    @POST
+    @Path("/executors")
+    fun updateExecutorThreadNumbers(@Context req: HttpServletRequest, json: String): Response? {
+
+        val username = userManager.getRemoteUsername(req)
+
+        if (username == null || !userManager.isAdmin(username)) {
+            return Response.status(Response.Status.FORBIDDEN).build()
+        }
+
+        val data = deserialize(json, ExecutorThreadNumbersIn::class.java)
+
+        return dispatchAndPresentHttp { SaveExecutorThreadNumbersQuery(data) }
+    }
+
 
     private fun String.urlDecode() = URLDecoder.decode(this, "UTF-8")
 

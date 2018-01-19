@@ -117,7 +117,7 @@ open class BaseSeleniumTest : SharedUtils {
                 @Throws(Throwable::class)
                 override fun evaluate() {
                     var caughtThrowable: Throwable? = null
-                    val retryCount = 3
+                    val retryCount = 5
 
                     for (i in 0 until retryCount) {
                         try {
@@ -139,6 +139,7 @@ open class BaseSeleniumTest : SharedUtils {
                         }
                         driver.close()
                     }
+
                 }
 
                 fun captureScreenshot(fileName: String, tryNr: Int) {

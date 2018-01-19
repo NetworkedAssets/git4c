@@ -1,0 +1,15 @@
+.git4c-toc {
+    margin-bottom: 30px
+}
+
+.git4c-toc li:hover .git4c-toc-li-content {
+    background-color: #eee;
+}
+
+.git4c-toc-li-content a {
+    text-decoration: none;
+}
+
+.git4c-toc-first-ul {
+    padding-left: 0 !important;
+}

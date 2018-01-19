@@ -44,10 +44,6 @@
     width: 20%;
 }
 
-.markup .git4c-toc {
-    margin-bottom: 30px
-}
-
 .markup .html-content {
     white-space: normal;
 }
@@ -363,14 +359,6 @@ pre.line-numbers {
    /*color: black;*/
 /*}*/
 
-.git4c-toc li:hover .git4c-toc-li-content {
-    background-color: #eee;
-}
-
-.git4c-toc-li-content a {
-    text-decoration: none;
-}
-
 .git4c-link-black {
     color: black !important;
 }
@@ -380,43 +368,4 @@ pre.line-numbers {
 .git4c-tree-container {
     background-color: white;
     /*border: 2px solid black;*/
-}
-
-#git4c-content .sect1 {
-    margin-top: 30px;
-}
-
-#git4c-content .sect2 {
-    margin-top: 30px;
-}
-
-#git4c-content .sect3 {
-    margin-top: 30px;
-}
-
-#git4c-content .sect4 {
-    margin-top: 20px;
-}
-
-#git4c-content .sect5 {
-    margin-top: 20px;
-}
-
-#git4c-content .sect6 {
-    margin-top: 20px;
-}
-
-#git4c-content .sect1:first-child,
-#git4c-content .sect2:first-child,
-#git4c-content .sect3:first-child,
-#git4c-content .sect4:first-child,
-#git4c-content .sect5:first-child,
-#git4c-content .sect6:first-child {
-    margin-top: 0;
-}
-
-#git4c-main-content i.aui-iconfont-collapsed {
-    /* Default icon is not cented so we must do it ourselved */
-    height: 10px !important;
-    margin-top: 4.5px;
 }

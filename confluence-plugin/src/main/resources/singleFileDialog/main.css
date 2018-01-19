@@ -71,3 +71,7 @@ pre.line-numbers {
 #git4c-single-dialog-code-holder .line-numbers {
     margin-bottom: 0;
 }
+
+.git4c-singlefile-toc {
+    padding: 20px 20px 0;
+}

@@ -5,8 +5,8 @@ import com.networkedassets.git4c.boundary.GetFileContentForExistingRepositoryQue
 import com.networkedassets.git4c.boundary.outbound.FileContent
 import com.networkedassets.git4c.boundary.outbound.VerificationStatus
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
-import com.networkedassets.git4c.core.process.GetFileProcess
 import com.networkedassets.git4c.core.datastore.repositories.RepositoryDatabase
+import com.networkedassets.git4c.core.process.GetFileProcess
 import com.networkedassets.git4c.delivery.executor.execution.UseCase
 
 class GetFileContentForExistingRepositoryUseCase(
@@ -15,6 +15,7 @@ class GetFileContentForExistingRepositoryUseCase(
 
 ) : UseCase<GetFileContentForExistingRepositoryQuery, FileContent> {
     override fun execute(request: GetFileContentForExistingRepositoryQuery): Result<FileContent, Exception> {
+        // TODO: Pull and non-blocking!
         val repository = repositoryDatabase.get(request.repository)
         val branch = request.detailsToGetFile.branch
         if (repository == null) return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))

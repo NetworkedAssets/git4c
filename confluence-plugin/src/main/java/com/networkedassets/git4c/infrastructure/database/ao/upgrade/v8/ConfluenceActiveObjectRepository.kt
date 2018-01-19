@@ -22,7 +22,8 @@ class ConfluenceActiveObjectRepository(val ao: ActiveObjects) : EncryptedReposit
         return noAuthorizationEntity ?: withUsernameAndPasswordEntity ?: withSshKeyEntity
     }
 
-    override fun insert(uuid: String, data: EncryptedRepository) {
+    override fun put(uuid: String, data: EncryptedRepository) {
+        remove(uuid)
         val entity = when (data.repository) {
             is RepositoryWithNoAuthorization -> {
                 val no = ao.create(RepositoryWithNoAuthorizationEntity::class.java)
@@ -55,11 +56,6 @@ class ConfluenceActiveObjectRepository(val ao: ActiveObjects) : EncryptedReposit
         list.addAll(ao.find(RepositoryWithUsernameAndPasswordEntity::class.java).map { it.convert() })
         list.addAll(ao.find(RepositoryWithSshKeyEntity::class.java).map { it.convert() })
         return list
-    }
-
-    override fun update(uuid: String, data: EncryptedRepository) {
-        remove(uuid)
-        insert(uuid, data)
     }
 
     override fun remove(uuid: String) {

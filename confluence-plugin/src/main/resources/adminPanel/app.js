@@ -24,8 +24,12 @@ var Git4CAdminPanel = {
                 '     @globProcessed="postProcessNewGlob"'+
                 '     @removeGlobRequest="openRemoveGlobWarning($event)"'+
                 '     ></predefinedGlobList>'+
+                '    <hr style="margin-top: 80px"/>'+
                 '     <pagesWithMacroList></pagesWithMacroList>'+
                 '    <otherOptions ref="other_options" id="other_options" @refreshRequest="refresh" @cleanDataRequest="openCleanDataWarning" @restoreDefaultGlobsRequest="openRestoreDefaultGlobsWarning" @forcePredefinedRepositoriesRequest="openForcePredefinedRepositoriesWarning" @cleanUnusedDataRequest="openCleanUnusedDataWarning"></otherOptions>'+
+                '    <hr style="margin-top: 80px"/>'+
+                '        <executorThreadNumbersSettings style="margin-top: 20px"></executorThreadNumbersSettings>'+
+                '    <hr style="margin-top: 80px"/>'+
                 '    <div id="custom_repository-dialog-div">'+
                 '        <customRepositoryDialog id="custom_repository-dialog" ref="custom_repository_dialog" @closeCustomRepositoryDialog="closeCustomRepositoryDialog()" @repositoryDefined="forwardNewRepository($event)"></customRepositoryDialog>'+
                 '    </div>'+
@@ -59,7 +63,9 @@ var Git4CAdminPanel = {
                 restoreDefaultGlobsWarning: Git4CRestoreDefaultGlobsWarning.getComponent(Events),
                 cleanUnusedDataWarning: Git4CUnusedDataWarning.getComponent(Events),
 
-                forcePredefinedRepositoriesWarning: Git4CForcePredefinedRepositoriesWarning.getComponent(Events)
+                forcePredefinedRepositoriesWarning: Git4CForcePredefinedRepositoriesWarning.getComponent(Events),
+
+                executorThreadNumbersSettings: Git4CThreadNumberSettings.getComponent(Events)
             },
             methods: {
 

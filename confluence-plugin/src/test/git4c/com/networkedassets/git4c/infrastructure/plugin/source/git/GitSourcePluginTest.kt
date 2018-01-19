@@ -1,37 +1,24 @@
 package com.networkedassets.git4c.infrastructure.plugin.source.git
 
+import com.google.common.io.Files
+import com.networkedassets.git4c.boundary.outbound.VerificationStatus
+import com.networkedassets.git4c.core.business.Commit
+import com.networkedassets.git4c.core.exceptions.VerificationException
 import com.networkedassets.git4c.data.MacroSettings
 import com.networkedassets.git4c.data.RepositoryWithNoAuthorization
 import com.networkedassets.git4c.infrastructure.git.DefaultGitClient
 import com.networkedassets.git4c.utils.genTransactionId
+import org.assertj.core.api.Assertions.assertThat
 import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.api.ResetCommand
-import org.junit.*
 import org.junit.Assert.assertTrue
+import org.junit.Ignore
+import org.junit.Test
 import java.io.File
-import kotlin.test.assertEquals
+import java.nio.file.Paths
+import kotlin.test.fail
 
-
+@Ignore
 class GitSourcePluginTest {
-
-    //remoteRepositoryDir, startServer(), stopServer()
-    lateinit var server:  Triple<File, Function0<Unit>, Function0<Unit>>
-
-    @Before
-    fun setUpServer(){
-        server = TestJGitServer.create()
-
-        val thread =Thread {
-            server.second()
-            server.first.deleteRecursively()
-        }
-        thread.start()
-    }
-
-    @After
-    fun stopServer(){
-        server.third()
-    }
 
     @Test
     fun `Verify process should pass when proper Git repository`() {
@@ -71,7 +58,7 @@ class GitSourcePluginTest {
         val branch = "master"
         val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
 
-        val revision = git.revision(MacroSettings("uuid", repository.uuid, branch, "", null), repository).use { it.revision }
+        val revision = git.revision(MacroSettings("uuid", repository.uuid, branch, "", null, null), repository).use { it.revision }
 
         assertTrue(revision.isNotBlank())
     }
@@ -82,7 +69,7 @@ class GitSourcePluginTest {
         val repositoryUrl = "https://github.com/NetworkedAssets/git4c.git"
         val branch = "master"
         val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
-        val macro = MacroSettings("uuid", repository.uuid, branch, "", null)
+        val macro = MacroSettings("uuid", repository.uuid, branch, "", null, null)
         git.revision(macro, repository)
 
         val times = arrayListOf<Long>()
@@ -167,69 +154,130 @@ class GitSourcePluginTest {
 
 
     @Test
-    fun `Git4c retries push and deletes cache when exception`() {
-
-        val remoteDir = server.first
-        val git4cGitClient = GitSourcePlugin(DefaultGitClient())
-        val remoteUrl = "http://127.0.0.1:${TestJGitServer.PORT}/repo"
-        val repo = RepositoryWithNoAuthorization("1", remoteUrl)
+    fun `updateAndPushFile on read only repository throws exception with WRONG_CREDENTIALS`() {
 
 
-        val testText1 = "1\n 2\n 3\n 4\n 5\n 6\n 7\n 8\n 9\n 0"
-        val testText2 = "Q\n W\n E\n R\n T\n 6\n 7\n 8\n 9\n 0"
-        val testText3 = "Q\n W\n E\n A\n S\n D\n F\n 8\n 9\n 0"
-
+        val git = GitSourcePlugin(DefaultGitClient())
+        val repositoryUrl = "https://github.com/github/gitignore.git"
         val branch = "master"
-        val fileName = "broken.md"
 
-        git4cGitClient.pull(repo, branch)
+        val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
+        git.pull(repository, branch)
 
-        val localRepoPath = File.createTempFile("LocalRepository", "")
-        localRepoPath.delete()
-        localRepoPath.mkdirs()
+        try {
+            git.updateFile(repository, "master", "newfile", "content", Commit("", "", ""))
+            git.pushLocalBranch(repository, "master")
+            fail()
+        } catch (e: VerificationException) {
+            assertThat(e.verification.status).isEqualTo(VerificationStatus.WRONG_CREDENTIALS)
+        }
 
-        val localRepository = Git.cloneRepository().setURI(remoteUrl).setDirectory(localRepoPath)
-                .setBranch(branch).call()
-        localRepository.pull()
-        localRepository.pull()
-
-        val brokenFile = File(localRepoPath, fileName)
-
-        brokenFile.createNewFile()
-        brokenFile.writeText(testText1)
-        localRepository.add().addFilepattern(fileName).call()
-        localRepository.commit().setMessage("Submit broken file").call()
-        localRepository.push().setRemote(remoteDir.absolutePath).call()
-
-        val importedFiles1 = git4cGitClient.pull(repo, branch)
-
-        assertEquals(2, importedFiles1.imported.size)
-
-        brokenFile.writeText(testText2)
-        localRepository.add().addFilepattern(fileName).call()
-        localRepository.commit().setMessage("Submit broken file").call()
-        localRepository.push().setRemote(remoteDir.absolutePath).call()
-
-        val importedFiles2 = git4cGitClient.pull(repo, branch)
-
-        assertEquals(2, importedFiles2.imported.size)
-
-        localRepository.reset().setMode(ResetCommand.ResetType.HARD).setRef("HEAD~1").call()
-        brokenFile.writeText(testText3)
-        localRepository.add().addFilepattern(fileName).call()
-        localRepository.commit().setMessage("Submit second broken file").call()
-        localRepository.push().setForce(true).setRemote(remoteDir.absolutePath).call()
-        localRepository.pull().call()
-
-
-        git4cGitClient.pull(repo, branch)
-        val importedFiles3 = git4cGitClient.pull(repo, branch)
-
-
-        assertTrue(importedFiles3.imported[0].contentString.replace("\r\n","\n").contains(testText3))
     }
 
+    @Test
+    fun `pushLocalBranch on read only repository throws exception with WRONG_CREDENTIALS`() {
 
+        val git = GitSourcePlugin(DefaultGitClient())
+        val repositoryUrl = "https://github.com/github/gitignore.git"
+        val branch = "master"
 
+        val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
+        git.pull(repository, branch)
+
+        try {
+            git.createNewBranch(repository, "master", "mybranch")
+            git.pushLocalBranch(repository, "mybranch")
+            fail()
+        } catch (e: VerificationException) {
+            assertThat(e.verification.status).isEqualTo(VerificationStatus.WRONG_CREDENTIALS)
+        }
+
+    }
+
+    @Test
+    fun `resetBranch replaces local branch with remote one`() {
+
+        val git = GitSourcePlugin(DefaultGitClient())
+        val repositoryUrl = "https://github.com/github/gitignore.git"
+        val branch = "master"
+        val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
+
+        val repositoryLocation = git.getLocation(repository)
+        val jGit = Git.open(repositoryLocation)
+
+        val commits = Git.open(repositoryLocation).log().add(jGit.repository.resolve("refs/heads/master")).call().map { it.id.name }
+
+        git.pull(repository, branch)
+
+        val oldContent = Paths.get(repositoryLocation.parent, "README.md").toFile().readText()
+
+        git.updateFile(repository, "master", "README.md", "New content", Commit("user", "user@user.user", "user"))
+
+        assertThat(Paths.get(repositoryLocation.parent, "README.md").toFile()).hasContent("New content")
+
+        git.resetBranch(repository, "master")
+
+        assertThat(Paths.get(repositoryLocation.parent, "README.md").toFile()).hasContent(oldContent)
+
+        assertThat(Git.open(repositoryLocation).log().add(jGit.repository.resolve("refs/heads/master")).call().map { it.id.name }).isEqualTo(commits)
+
+        assertThat(jGit.status().call().hasUncommittedChanges()).isFalse()
+
+    }
+
+    @Test
+    fun `resetLastChange removes new files`() {
+
+        val git = GitSourcePlugin(DefaultGitClient())
+        val repositoryUrl = "https://github.com/github/gitignore.git"
+        val branch = "master"
+        val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
+
+        val repositoryLocation = git.getLocation(repository)
+        val jGit = Git.open(repositoryLocation)
+
+        val commits = Git.open(repositoryLocation).log().add(jGit.repository.resolve("refs/heads/master")).call().map { it.id.name }
+
+        assertThat(Paths.get(repositoryLocation.parent, "README_new.md").toFile()).doesNotExist()
+
+        git.pull(repository, branch)
+
+        git.updateFile(repository, "master", "README_new.md", "New content", Commit("user", "user@user.user", "user"))
+
+        assertThat(Paths.get(repositoryLocation.parent, "README_new.md").toFile()).hasContent("New content")
+
+        git.resetBranch(repository, "master")
+
+        assertThat(Paths.get(repositoryLocation.parent, "README_new.md").toFile()).doesNotExist()
+
+        assertThat(Git.open(repositoryLocation).log().add(jGit.repository.resolve("refs/heads/master")).call().map { it.id.name }).isEqualTo(commits)
+
+        assertThat(jGit.status().call().hasUncommittedChanges()).isFalse()
+
+    }
+
+    @Test
+    fun `updateFile doesn't allow files that aren't in repository`() {
+
+        val git = GitSourcePlugin(DefaultGitClient())
+        val repositoryUrl = "https://github.com/github/gitignore.git"
+        val repository = RepositoryWithNoAuthorization(genTransactionId(), repositoryUrl)
+
+        val tempLoc = Files.createTempDir()
+
+        val rougeFile = File(tempLoc, "rougeFile.txt")
+
+        try {
+            git.updateFile(repository, "master", rougeFile.absolutePath, "New content", Commit("user", "user@user.user", "user"))
+            fail()
+        } catch (e: Exception) {
+            assertThat(e).hasMessageContaining("Unauthorized file write")
+        }
+
+        assertThat(rougeFile).doesNotExist()
+
+        tempLoc.deleteRecursively()
+
+    }
 
 }

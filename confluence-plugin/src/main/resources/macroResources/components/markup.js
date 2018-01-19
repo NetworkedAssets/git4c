@@ -17,11 +17,17 @@ var dynamiccontent = {
                     anchor: function (id) {
                         const top = document.getElementsByName(id)[0].offsetTop;
                         window.scrollTo(0, top);
+                        Events.$emit("pushAnchor", id)
                     },
                     moveToFile: function (file, anchor) {
                         //File is already encoded
-                        this.$router.push(file + "&" + encodeURIComponent(this.$route.params.branch))
-                        Events.$emit("NextAnchor", anchor)
+                        Events.$emit("pushFile", file)
+
+                        if(anchor) {
+                            Events.$emit("pushAnchor", anchor)
+                            Events.$emit("NextAnchor", anchor)
+                        }
+
                         Events.$emit("TreeviewInvalidate")
                     }
                 }
@@ -42,6 +48,7 @@ var Markup = {
     template: '#markup',
 
     components: {
+        toc: Git4CToc.getComponent(Events),
         dynamiccontent: dynamiccontent,
         commitHistory: commitHistory()
     },
@@ -61,28 +68,44 @@ var Markup = {
             tree: undefined,
             fullscreen: false,
             sticky: false,
-            nextAnchor: undefined
+            nextAnchor: undefined,
+            simpleMce: undefined,
+            fileTimeout: undefined
         };
     },
     watch: {
-        '$route.params.fullName': 'update',
-        '$route.params.branch': function (branch) {
-            if (branch) {
-                Events.$emit("branchChangeRequest", branch)
+        '$route.params.fullName': function () {
+            this.update()
+            if(this.$route.params.fullName) {
+                this.fileTimeout = setTimeout(function () {
+                    Events.$emit("FileLoading", true)
+                }, 250)
             }
+        },
+        '$route.query.branch': function (branch) {
+                if (branch) {
+                    Events.$emit("branchChangeRequest", branch)
+                }
         }
     },
     methods: {
         update: function () {
             const fullName = this.$route.params.fullName
+            const urlAnchor = this.$route.query.anchor
+            if(urlAnchor){
+                this.nextAnchor = urlAnchor
+            }
+
             if (fullName) {
                 const file = {
                     file: fullName
                 }
-                // this.loading = true;
+                Events.$emit("OverlayChange", false)
                 const vm = this
-
+                vm.content=''
                 MarkupService.getItem(file).then(function (docItem) {
+                    //make sure content will be visible
+                    $(vm.$el.parentElement).height("")
 
 
                     vm.locationPath = docItem.locationPath;
@@ -131,9 +154,12 @@ var Markup = {
 
                         });
                         vm.$refs.commit_history.macroUuid = ParamsService.getUuid()
-                        vm.$refs.commit_history.update(vm.$route.params.branch, fullName)
+                        vm.$refs.commit_history.update(vm.$route.query.branch, fullName)
 
                         vm.$nextTick(function() {
+                            clearTimeout(vm.fileTimeout)
+                            Events.$emit("OverlayChange", false)
+                            Events.$emit("FileLoading", false)
                             vm.stickToolbar()
                         })
 
@@ -148,11 +174,14 @@ var Markup = {
 
 
                 }, function () {
+                    clearTimeout(vm.fileTimeout)
+                    Events.$emit("OverlayChange", false)
+                    Events.$emit("FileLoading", false)
                     vm.nextAnchor = undefined
                     vm.fileData = undefined;
                     vm.template = "<span>File cannot be found</span>"
                     NotifyService.error('Error', 'File cannot be found. Returning to default file.')
-                    vm.$router.push("&" + encodeURIComponent(vm.$route.params.branch))
+                    vm.$router.push({ path: "/", query: vm.$route.query })
                     vm.$root.getTree()
                 });
             }
@@ -202,6 +231,27 @@ var Markup = {
 
 
             $("#git4c-markdown-dialog-close-button").blur()
+
+        },
+        editFile: function () {
+
+            this.$refs.editdialog.show(ParamsService.getUuid(), this.locationPath.join("/"), this.rawContent)
+
+        },
+        closeEditDialog: function () {
+
+            const editorText = this.simpleMce.value()
+
+
+            MarkupService.updateFile(this.locationPath, editorText)
+                .then(function (res) {
+                    alert("Finished")
+                }, function (err) {
+                    alert("Error " + err)
+                })
+
+
+            // alert(editorText)
 
         },
         closeRawContentDialog: function(){
@@ -293,17 +343,31 @@ var Markup = {
             vm.update();
         });
 
-        Events.$on('branchChanging', function() {
-            //Remove content, so loader would be visible
-            vm.content = ''
-        });
-
         Events.$on('updateStart', function() {
             vm.content = ''
         });
 
         Events.$on('OverlayChange', function(overlayVisible) {
+            if(overlayVisible){
+                //remove content and make overlay visible
+                vm.content = ''
+                $(vm.$el.parentElement).height("0")
+            }else {
+                //make content visible
+                $(vm.$el.parentElement).height("")
+            }
             vm.overlayVisible = overlayVisible
+        })
+
+        Events.$on('FileLoading', function(isLoading) {
+            if(isLoading){
+                vm.locationPath=''
+                $(vm.$el.parentElement).height("0")
+                vm.content=''
+            }else {
+                //make content visible
+                $(vm.$el.parentElement).height("")
+            }
         })
 
         Events.$on("FullscreenModeToggled", function(){
@@ -323,13 +387,14 @@ var Markup = {
             $(vm.$el.parentElement).height("500px")
         })
 
-        Events.$on('branchChanged', function () {
-            $(vm.$el.parentElement).height("")
+        Events.$on('branchChanging', function () {
+            $(vm.$el.parentElement).height("0")
         })
 
         Events.$on("NextAnchor", function(anchor) {
             vm.nextAnchor = anchor
         })
+
 
         $(this.$el).find("#git4c-toolbar_filetree-button").tooltip()
         $(this.$el).find("#git4c-filetree-expand_button").tooltip()

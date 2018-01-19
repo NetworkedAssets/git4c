@@ -1,44 +1,23 @@
 package com.networkedassets.git4c.test
 
 import com.atlassian.activeobjects.external.ActiveObjects
-import com.atlassian.activeobjects.test.TestActiveObjects
-import com.atlassian.cache.memory.MemoryCacheManager
 import com.networkedassets.git4c.application.PluginComponents
-import com.networkedassets.git4c.core.business.ErrorPageBuilder
-import com.networkedassets.git4c.core.business.PageMacroExtractor
-import com.networkedassets.git4c.core.business.PageManager
-import com.networkedassets.git4c.core.business.SpaceManager
-import com.networkedassets.git4c.core.datastore.PluginSettings
-import com.networkedassets.git4c.core.datastore.repositories.PredefinedGlobsDatabase
+import com.networkedassets.git4c.boundary.RemoveAllDataCommand
+import com.networkedassets.git4c.boundary.RestoreDefaultPredefinedGlobsCommand
+import com.networkedassets.git4c.boundary.outbound.PredefinedGlobsData
+import com.networkedassets.git4c.core.business.DefaultGlobsMap
+import com.networkedassets.git4c.delivery.executor.execution.BackendDispatcher
 import com.networkedassets.git4c.delivery.executor.execution.UseCase
-import com.networkedassets.git4c.infrastructure.ConfluencePluginSettingsDatabase
-import com.networkedassets.git4c.infrastructure.RepositoryDesEncryptor
-import com.networkedassets.git4c.infrastructure.UuidIdentifierGenerator
-import com.networkedassets.git4c.infrastructure.cache.AtlassianDocumentsViewCache
-import com.networkedassets.git4c.infrastructure.cache.AtlassianMacroSettingsCache
-import com.networkedassets.git4c.infrastructure.cache.AtlassianTemporaryIdCache
-import com.networkedassets.git4c.infrastructure.database.ao.*
-import com.networkedassets.git4c.infrastructure.database.ao.repository.*
-import com.networkedassets.git4c.infrastructure.plugin.converter.ConverterPluginList
-import com.networkedassets.git4c.infrastructure.plugin.converter.images.ImageConverterPlugin
-import com.networkedassets.git4c.infrastructure.plugin.converter.main.JSoupPostProcessor
-import com.networkedassets.git4c.infrastructure.plugin.converter.main.MainConverterPluginList
-import com.networkedassets.git4c.infrastructure.plugin.converter.main.asciidoc.AsciidocConverterPlugin
-import com.networkedassets.git4c.infrastructure.plugin.converter.main.markdown.MarkdownConverterPlugin
-import com.networkedassets.git4c.infrastructure.plugin.converter.plaintext.PlainTextConverterPlugin
-import com.networkedassets.git4c.infrastructure.plugin.converter.plantuml.PUMLConverterPlugin
-import com.networkedassets.git4c.infrastructure.plugin.converter.prismjs.PrismJSConverterPlugin
-import com.networkedassets.git4c.infrastructure.plugin.parser.Parsers
-import com.networkedassets.git4c.infrastructure.plugin.source.directory.DirectorySourcePlugin
-import com.nhaarman.mockito_kotlin.mock
+import com.networkedassets.git4c.utils.InMemoryApplication.getComponents
+import com.networkedassets.git4c.utils.sendToExecution
 import net.java.ao.EntityManager
 import net.java.ao.test.jdbc.H2Memory
 import net.java.ao.test.jdbc.Jdbc
 import net.java.ao.test.junit.ActiveObjectsJUnitRunner
 import org.junit.Before
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mock
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 @RunWith(ActiveObjectsJUnitRunner::class)
 @Jdbc(H2Memory::class)
@@ -49,108 +28,97 @@ abstract class UseCaseTest<USECASE : UseCase<*, *>> {
 
     lateinit var components: PluginComponents
 
-    lateinit var builder: Builder
+    lateinit var builder: MockPluginBuilder
 
     lateinit var useCase: USECASE
 
     @Before
     fun setUp() {
-        assertNotNull(entityManager)
-        ao = TestActiveObjects(entityManager)
-        ao.migrate(MacroSettingsEntity::class.java, GlobEntity::class.java, RepositoryEntity::class.java, RepositoryWithNoAuthorizationEntity::class.java, RepositoryWithSshKeyEntity::class.java, RepositoryWithUsernameAndPasswordEntity::class.java, PredefinedRepositoryEntity::class.java, PredefinedGlobEntity::class.java)
-        val cacheManager = MemoryCacheManager()
-        val macroSettingsDatabaseService = ConfluenceActiveObjectMacroSettings(ao)
-        val predefinedRepositoryDatabaseService = ConfluenceActiveObjectPredefinedRepository(ao)
-        val repositoryDatabaseService = ConfluenceActiveObjectRepository(ao)
-        val globsForMacroDatabaseService = ConfluenceActiveObjectGlobForMacro(ao)
-        val defaultGlobsDatabase = ConfluenceActiveObjectPredefinedGlobs(ao)
-        val extractorDatabase = ConfluenceActiveObjectExtractorData(ao)
-        components = createPlugin(
-                macroSettingsDatabaseService,
-                cacheManager,
-                predefinedRepositoryDatabaseService,
-                repositoryDatabaseService,
-                globsForMacroDatabaseService,
-                defaultGlobsDatabase,
-                extractorDatabase
-        )
-        builder = Builder(components)
+        components = getComponents()
+        builder = MockPluginBuilder(components)
         useCase = getUseCase(components)
         builder.state.reset()
     }
 
+    abstract fun getUseCase(plugin: PluginComponents): USECASE
+}
 
-    fun createPlugin(macroSettingsDatabase: ConfluenceActiveObjectMacroSettings,
-                     cacheManager: MemoryCacheManager,
-                     predefinedRepositoryDatabase: ConfluenceActiveObjectPredefinedRepository,
-                     encryptedRepositoryDatabase: ConfluenceActiveObjectRepository,
-                     globsForMacroDatabase: ConfluenceActiveObjectGlobForMacro,
-                     defaultGlobsDatabase: PredefinedGlobsDatabase,
-                     extractorData: ConfluenceActiveObjectExtractorData
-    ): PluginComponents {
+class MockPluginBuilder(components: PluginComponents) {
+    val commands = CommandBuilder()
+    val queries = QueryBuilder()
+    val executor = UseCaseExecutor(components.dispatcher, commands, queries)
+    val state = StateBuilder(components, commands, queries, executor)
+}
 
-        val temporaryIdCache = AtlassianTemporaryIdCache(cacheManager)
-        val documentsViewCache = AtlassianDocumentsViewCache(cacheManager)
-        val macroSettingsCache = AtlassianMacroSettingsCache(cacheManager)
+class StateBuilder(components: PluginComponents, val commands: CommandBuilder, val queries: QueryBuilder, val executor: UseCaseExecutor) {
 
-        // Important that it uses files from test!!!
-        val importer = DirectorySourcePlugin()
+    val assertions = UseCaseAssertions(components)
 
-        val identifierGenerator = UuidIdentifierGenerator()
-
-        val postProcessor = JSoupPostProcessor(identifierGenerator)
-
-        val mainPlugins = MainConverterPluginList(listOf(AsciidocConverterPlugin(), MarkdownConverterPlugin()), postProcessor)
-        val converterPlugins = listOf(mainPlugins, PrismJSConverterPlugin(), ImageConverterPlugin(), PUMLConverterPlugin())
-        val converter = ConverterPluginList(converterPlugins, PlainTextConverterPlugin())
-
-        val encryptor = RepositoryDesEncryptor()
-
-        val parser = Parsers()
-
-        val pluginSettingsDatabase = ConfluencePluginSettingsDatabase(object: PluginSettings {
-            val hashmap = HashMap<String, String>()
-            override fun put(key: String, setting: String) {
-                hashmap.put(key, setting)
-            }
-
-            override fun get(key: String): String? {
-                return hashmap.get(key)
-            }
-
-            override fun remove(key: String) {
-                hashmap.remove(key)
-            }
-        })
-
-        return PluginComponents(
-                importer,
-                converter,
-                documentsViewCache,
-                macroSettingsCache,
-                temporaryIdCache,
-                macroSettingsDatabase,
-                globsForMacroDatabase,
-                predefinedRepositoryDatabase,
-                encryptedRepositoryDatabase,
-                extractorData,
-                encryptor,
-                identifierGenerator,
-                defaultGlobsDatabase,
-                parser,
-                mock(ErrorPageBuilder::class.java),
-                mock(SpaceManager::class.java),
-                mock(PageManager::class.java),
-                mock(PageMacroExtractor::class.java),
-                pluginSettingsDatabase,
-                mock(),
-                mock()
-        )
-
+    fun reset() {
+        removeAllData()
+        restoreDefaultPredefinedGlobs()
     }
 
-    abstract fun getUseCase(plugin: PluginComponents): USECASE
+    private fun restoreDefaultPredefinedGlobs() {
+        executor.restoreDefaultPredefinedGlobs()
+        assertions.thereAreOnlyDefultGlobsInDatabase()
+    }
 
+    private fun removeAllData() {
+        executor.removeAllDataUseCase()
+        assertions.thereIsNoDataInDatabase()
+    }
+}
+
+class CommandBuilder {
+
+    fun removeAllDataCommand(): RemoveAllDataCommand {
+        return RemoveAllDataCommand()
+    }
+
+    fun restoreDefaultPredefinedGlobsCommand(): RestoreDefaultPredefinedGlobsCommand {
+        return RestoreDefaultPredefinedGlobsCommand()
+    }
 
 }
 
+class QueryBuilder {
+}
+
+class UseCaseExecutor(val dispatcher: BackendDispatcher<Any, Throwable>, val commands: CommandBuilder, val queries: QueryBuilder) {
+
+    fun removeAllDataUseCase(): String {
+        return sendToExecution(dispatcher, commands.removeAllDataCommand())
+    }
+
+    fun restoreDefaultPredefinedGlobs(): PredefinedGlobsData {
+        return sendToExecution(dispatcher, commands.restoreDefaultPredefinedGlobsCommand())
+    }
+
+}
+
+class UseCaseAssertions(val components: PluginComponents) {
+
+    val defaultGlobsMap = DefaultGlobsMap().defaultGlobs
+
+    fun thereAreOnlyDefultGlobsInDatabase() {
+        val predefinedGlobsInDatabase = components.predefinedGlobsDatabase.getAll()
+        assertTrue(predefinedGlobsInDatabase.size == 5)
+
+        defaultGlobsMap.forEach { globFromDefault ->
+            assertNotNull(predefinedGlobsInDatabase.firstOrNull { it.name == globFromDefault.key && it.glob.contains(globFromDefault.value) })
+        }
+    }
+
+    fun thereIsNoDataInDatabase() {
+        assertTrue(components.macroSettingsDatabase.getAll().isEmpty())
+        assertTrue(components.predefinedGlobsDatabase.getAll().isEmpty())
+        assertTrue(components.repositoryDatabase.getAll().isEmpty())
+        assertTrue(components.predefinedRepositoryDatabase.getAll().isEmpty())
+        assertTrue(components.globsForMacroDatabase.getAll().isEmpty())
+        assertTrue(components.encryptedRepositoryDatabase.getAll().isEmpty())
+        assertTrue(components.macroSettingsCachableDatabase.getAll().isEmpty())
+        assertTrue(components.macroSettingsCache.getAll().isEmpty())
+        assertTrue(components.temporaryIdCache.getAll().isEmpty())
+    }
+}

@@ -5,8 +5,8 @@ Vue.component('git4cnouislider', {
     '<div>'+
     '    <div ref="slider"></div>'+
     '    <div style="margin-top: 20px; display: inline-flex">'+
-    '        <input ref="startinput" style="width: 50%" type="number" name="start" value="10">'+
-    '        <input ref="endinput" style="width: 50%" type="number" name="end" value="30">'+
+    '        <input id="git4c_single_file_dialog_start_line" ref="startinput" style="width: 50%" type="number" name="start" value="10">'+
+    '        <input id="git4c_single_file_dialog_end_line" ref="endinput" style="width: 50%" type="number" name="end" value="30">'+
     '    </div>'+
     '</div>',
     props: ['numberOfLines'],

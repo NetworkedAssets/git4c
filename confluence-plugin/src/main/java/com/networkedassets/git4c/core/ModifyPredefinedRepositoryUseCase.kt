@@ -35,8 +35,8 @@ class ModifyPredefinedRepositoryUseCase(
         importer.verify(repository).apply {
             if (isOk()) {
                 repositoryDatabase.remove(repository.uuid)
-                repositoryDatabase.insert(repository.uuid, repository)
-                predefinedRepositoryDatabase.update(predefinedRepository.uuid, predefinedRepository)
+                repositoryDatabase.put(repository.uuid, repository)
+                predefinedRepositoryDatabase.put(predefinedRepository.uuid, predefinedRepository)
                 return@execute Result.of { SavedPredefinedRepository(predefinedRepository.uuid) }
             } else {
                 return@execute Result.error(IllegalArgumentException(status.name))

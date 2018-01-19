@@ -16,5 +16,7 @@ enum class VerificationStatus {
     WRONG_URL,
     WRONG_KEY_FORMAT,
     CAPTCHA_REQUIRED,
-    REMOVED
+    REMOVED,
+    ACCESS_DENIED,
+    UNKNOWN_HOST
 }

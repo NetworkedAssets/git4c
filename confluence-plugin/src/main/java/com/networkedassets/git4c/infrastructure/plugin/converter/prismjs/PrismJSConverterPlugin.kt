@@ -2,7 +2,7 @@ package com.networkedassets.git4c.infrastructure.plugin.converter.prismjs
 
 import com.networkedassets.git4c.core.business.ExtractionResult
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
-import com.networkedassets.git4c.data.macro.documents.item.DocumentsItem
+import com.networkedassets.git4c.data.macro.documents.item.ConvertedDocumentsItem
 import com.networkedassets.git4c.data.macro.documents.item.TableOfContents
 import com.networkedassets.git4c.infrastructure.plugin.converter.main.markdown.InternalConverterPlugin
 import org.apache.commons.lang3.StringEscapeUtils
@@ -24,11 +24,9 @@ class PrismJSConverterPlugin : InternalConverterPlugin {
 
     val extensions = map.values.flatten()
 
-//    override fun convert(fileData: ImportedFileData) = convert(fileData, 0)
+    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult): ConvertedDocumentsItem? {
 
-    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult): DocumentsItem? {
-
-        val content = fileData.contentString
+        val content = fileData.content()
         val extension = fileData.extension
         val language = map.entries.first { it.value.contains(extension) }.key
 
@@ -42,7 +40,7 @@ class PrismJSConverterPlugin : InternalConverterPlugin {
             </div>
         """
 
-        return DocumentsItem(fileData.path, fileData.updateAuthorFullName, fileData.updateAuthorEmail, fileData.updateDate, content, pageContent, TableOfContents("", "", listOf()))
+        return ConvertedDocumentsItem(fileData.path, fileData.updateAuthorFullName, fileData.updateAuthorEmail, fileData.updateDate, String(content), pageContent, TableOfContents("", "", listOf()))
 
 
     }

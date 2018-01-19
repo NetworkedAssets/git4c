@@ -6,7 +6,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils
 
 class HtmlErrorPageBuilder: ErrorPageBuilder {
 
-    override fun build(file: ImportedFileData, ex: Exception): String {
+    override fun build(file: ImportedFileData, ex: Throwable): String {
 
         val stackTrace = ExceptionUtils.getStackTrace(ex)
 

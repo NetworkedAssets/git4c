@@ -12,8 +12,7 @@ data class ImportedFileData(
         private val updateDateFun: () -> Date,
         private val contentFun: () -> ByteArray
 ) {
-
-    val content by lazy { contentFun() }
+    fun content() = contentFun()
 
     val updateDate by lazy { updateDateFun() }
 
@@ -21,10 +20,7 @@ data class ImportedFileData(
 
     val updateAuthorEmail by lazy { updateAuthorEmailFun() }
 
-    val contentString by lazy { String(content) }
-
     fun getAbsolutePath(): Path = context.resolve(path)
 
     val extension: String get() = FilenameUtils.getExtension(path)
-
 }

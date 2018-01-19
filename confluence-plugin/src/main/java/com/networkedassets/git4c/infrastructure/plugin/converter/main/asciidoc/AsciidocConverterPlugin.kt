@@ -30,7 +30,7 @@ class AsciidocConverterPlugin(
     }
 
     override fun convert(fileData: ImportedFileData): String {
-        return asciidoctor.convert(fileData.contentString, mapOf())
+        return asciidoctor.convert(String(fileData.content()), mapOf())
     }
 
 

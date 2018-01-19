@@ -21,7 +21,41 @@
 
     <resource key="icons" name="icons/" type="download" location="images"/>
 
+    <web-resource key="ace-${timestamp}" name="Ace editor">
+        <resource type="download" name="ace.js" location="lib/ace/ace.js"/>
+        <context>com.networkedassets.git4c.ace</context>
+    </web-resource>
 
+    <web-resource key="simplemde-${timestamp}" name="SimpleMDE">
+        <resource type="download" name="simplemde.css" location="lib/simplemde/simplemde.min.css"/>
+        <resource type="download" name="simplemde.js" location="lib/simplemde/simplemde.min.js"/>
+        <context>com.networkedassets.git4c.simplemde</context>
+    </web-resource>
+
+    <web-resource key="components-filepreview-${timestamp}" name="File preview">
+        <dependency>com.networkedassets.git4c.confluence-plugin:components-toc-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:vuejs-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:highlightjs-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:prism-${timestamp}</dependency>
+        <resource type="download" name="filepreview.js" location="components/filepreview/filepreview.js"/>
+        <resource type="download" name="filepreview.css" location="components/filepreview/filepreview.css"/>
+        <context>com.networkedassets.git4c.filepreview</context>
+    </web-resource>
+
+    <web-resource key="components-sourceeditdialog-${timestamp}" name="Source edit dialog">
+        <dependency>com.networkedassets.git4c.confluence-plugin:components-filepreview-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:ajs-compat-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:simplemde-${timestamp}</dependency>
+        <resource type="download" name="editdialog.js" location="components/editdialog/editdialog.js"/>
+        <resource type="download" name="editdialog.css" location="components/editdialog/editdialog.css"/>
+        <context>com.networkedassets.git4c.editdialog</context>
+    </web-resource>
+
+    <web-resource key="components-toc-${timestamp}" name="Filetree component">
+        <resource type="download" name="toc.css" location="components/tableofcontent/toc.css"/>
+        <resource type="download" name="toc.js" location="components/tableofcontent/toc.js"/>
+        <context>com.networkedassets.git4c.components.toc</context>
+    </web-resource>
 
     <web-resource key="components-overlay-${timestamp}" name="Overlay component">
         <resource type="download" name="overlay.css" location="components/overlay/overlay.css"/>
@@ -110,12 +144,16 @@
 
         <resource type="download" name="pagesWithMacroList.js" location="adminPanel/components/pagesWithMacroList.js"/>
 
+        <resource type="download" name="threadNumberSettings.js" location="adminPanel/components/threadNumberSettings.js"/>
+
         <resource type="download" name="predefinedGlobList.js" location="adminPanel/components/predefinedGlobList.js"/>
-        <resource type="download" name="cleanUnusedDataWarning.js" location="adminPanel/components/cleanUnusedDataWarning.js"/>
+        <resource type="download" name="cleanUnusedDataWarning.js"
+                  location="adminPanel/components/cleanUnusedDataWarning.js"/>
         <resource type="download" name="removeGlobWarning.js" location="adminPanel/components/removeGlobWarning.js"/>
         <resource type="download" name="customGlobDialog.js" location="adminPanel/components/customGlobDialog.js"/>
 
-        <resource type="download" name="forcePredefinedRepositoriesWarning.js" location="adminPanel/components/forcePredefinedRepositoriesWarning.js"/>
+        <resource type="download" name="forcePredefinedRepositoriesWarning.js"
+                  location="adminPanel/components/forcePredefinedRepositoriesWarning.js"/>
 
         <resource type="download" name="toggleButton.css" location="adminPanel/components/toggleButton.css"/>
 
@@ -133,7 +171,7 @@
         <dependency>com.atlassian.auiplugin:aui-experimental-tooltips</dependency>
         <dependency>com.atlassian.auiplugin:aui-select2</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:select2single-${timestamp}</dependency>
-        <dependency>com.networkedassets.git4c.customRepositoryDialog</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:custom-repository-dialog-${timestamp}</dependency>
         <dependency>confluence.editor.actions:editor-macro-browser</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:components-filetree-${timestamp}</dependency>
         <resource name="polyfill.js" type="download" location="js/polyfill.js"/>
@@ -146,18 +184,20 @@
         <dependency>confluence.editor.actions:editor-macro-browser</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:nouislider-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:vuejs-${timestamp}</dependency>
-        <dependency>com.networkedassets.git4c.confluence-plugin:prism-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:highlightjs-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:prism-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:utils-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:select2single-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:components-overlay-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:components-markup-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:components-filetree-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:components-toc-${timestamp}</dependency>
         <resource name="polyfill.js" type="download" location="js/polyfill.js"/>
         <resource type="download" name="styles-main.css" location="singleFileDialog/main.css"/>
         <resource type="download" name="nouislidervue.js" location="singleFileDialog/nouislidervue.js"/>
         <resource type="download" name="dialog-main.js" location="singleFileDialog/main.js"/>
-        <resource type="download" name="customRepositoryDialog.js" location="customRepositoryDialog/customRepositoryDialog.js"/>
+        <resource type="download" name="customRepositoryDialog.js"
+                  location="customRepositoryDialog/customRepositoryDialog.js"/>
         <context>macro-browser</context>
     </web-resource>
 
@@ -183,8 +223,6 @@
                   location="macroResources/components/markup.js"/>
         <resource type="download" name="components/globs.js"
                   location="macroResources/components/globs.js"/>
-        <resource type="download" name="components/toc.js"
-                  location="macroResources/components/toc.js"/>
         <resource type="download" name="components/treeview.js"
                   location="macroResources/components/treeview.js"/>
         <resource type="download" name="components/branch.js"
@@ -235,6 +273,7 @@
         <resource type="download" name="services/url-service.js"
                   location="singleFile/services/url-service.js"/>
         <resource type="download" name="topbar.js" location="singleFile/components/topbar.js"/>
+        <resource type="download" name="filecontent.js" location="singleFile/components/filecontent.js"/>
         <resource type="download" name="components/commit-history.js"
                   location="macroResources/components/commit-history.js"/>
         <resource type="download" name="app.css" location="singleFile/app.css"/>
@@ -288,11 +327,6 @@
         <description>Provides REST endpoints used by Git4C</description>
     </rest>
 
-    <component name="Git4C Extractor" key="git4cExtractor"
-               class="com.networkedassets.git4c.interfaces.callback.Git4CExtractor" public="true">
-        <interface>com.atlassian.confluence.plugins.index.api.Extractor2</interface>
-    </component>
-
     <!--Backup store-->
     <component-import key="pluginSettingsFactory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"
                       filter=""/>
@@ -320,7 +354,7 @@
                       filter=""/>
 
     <component-import key="permissionManager" interface="com.atlassian.confluence.security.PermissionManager"
-                      filter="" />
+                      filter=""/>
 
     <component key="tx-annotation-processor"
                class="com.atlassian.activeobjects.external.TransactionalAnnotationProcessor"/>
@@ -357,6 +391,21 @@
         <interface>com.networkedassets.git4c.core.datastore.repositories.ExtractorDataDatabase</interface>
     </component>
 
+    <component key="macroLocationDatabase"
+               class="com.networkedassets.git4c.infrastructure.database.ao.repository.ConfluenceActiveObjectMacroLocation">
+        <interface>com.networkedassets.git4c.core.datastore.repositories.MacroLocationDatabase</interface>
+    </component>
+
+    <component key="repositoryUsageDatabase"
+               class="com.networkedassets.git4c.infrastructure.database.ao.repository.ConfluenceActiveObjectRepositoryUsage">
+        <interface>com.networkedassets.git4c.core.datastore.repositories.RepositoryUsageDatabase</interface>
+    </component>
+
+    <component key="temporaryEditBranchesDatabase"
+               class="com.networkedassets.git4c.infrastructure.database.ao.repository.ConfluenceActiveObjectTemporaryEditBranches">
+        <interface>com.networkedassets.git4c.core.datastore.repositories.TemporaryEditBranchesDatabase</interface>
+    </component>
+
     <component key="plugin" class="com.networkedassets.git4c.ConfluencePlugin">
         <interface>com.networkedassets.git4c.application.Plugin</interface>
     </component>
@@ -372,6 +421,9 @@
         <entity>com.networkedassets.git4c.infrastructure.database.ao.GlobEntity</entity>
         <entity>com.networkedassets.git4c.infrastructure.database.ao.ExtractorLineNumbersEntity</entity>
         <entity>com.networkedassets.git4c.infrastructure.database.ao.ExtractorMethodEntity</entity>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.MacroLocationEntity</entity>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.RepositoryUsageEntity</entity>
+        <entity>com.networkedassets.git4c.infrastructure.database.ao.TemporaryEditBranchEntity</entity>
 
         <upgradeTask>com.networkedassets.git4c.infrastructure.database.ao.upgrade.v1.MacroSettingsUpgradeTask001
         </upgradeTask>

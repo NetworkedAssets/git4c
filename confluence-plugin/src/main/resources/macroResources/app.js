@@ -1,7 +1,7 @@
 const router = new VueRouter({
     mode: 'hash',
     routes: [
-        {path: '/:fullName?&:branch?', component: Markup}
+        {path: '/:fullName?', component: Markup}
     ]
 });
 
@@ -9,36 +9,38 @@ var Events = new Vue({});
 
 AJS.toInit(function () {
 
-
     var lastRevision = undefined;
     var alertShown = false;
     var intervalId = undefined;
+    const timeoutInterval = 90000
 
     const startInterval = function () {
 
-        if (intervalId) {
-            return
-        }
-
-        intervalId = setInterval(function () {
-            MarkupService.getDocumentation().then(function(documentation) {
+        const checkRevision = function () {
+            MarkupService.getLatestRevision().then(function (revision) {
                 if (!lastRevision) {
-                    lastRevision = documentation.revision
+                    lastRevision = revision.id
+                    setTimeout(checkRevision, timeoutInterval)
                 } else {
-                    if (lastRevision !== documentation.revision) {
-                        lastRevision = documentation.revision;
+                    if (lastRevision !== revision.id) {
+                        lastRevision = revision.id;
                         if (!alertShown) {
                             NotifyService.persistent("Content of Git4C Macro is out of date. There is a new version of document available.",
                                 '<ul class="aui-nav-actions-list">' +
                                 '<li><a href="#" onclick="location.reload(true); return false;">Refresh page</a></li>' +
                                 '</ul>');
-                            clearInterval(intervalId);
                             alertShown = true
                         }
+                    } else {
+                        setTimeout(checkRevision, timeoutInterval)
                     }
                 }
+            }, function (error) {
+                setTimeout(checkRevision, timeoutInterval)
             })
-        }, 10000);
+        }
+
+        setTimeout(checkRevision, timeoutInterval)
     }
 
 
@@ -100,7 +102,7 @@ AJS.toInit(function () {
                     if (!vm.$route.params.fullName) {
                         var defaultDocItemName = vm.getDefaultDocItemName(tree);
                         if (defaultDocItemName) {
-                            vm.$router.push('/' + encodeURIComponent(defaultDocItemName) + "&" + vm.getBranchNameFromPath());
+                            vm.pushFileName(encodeURIComponent(defaultDocItemName))
                         }
                     }
                     var nodesToOpen = decodeURIComponent(vm.$route.params.fullName).split('/');
@@ -129,8 +131,9 @@ AJS.toInit(function () {
                             })
                         } else {
                             vm.$nextTick(function() {
+                                NotifyService.error('Error', 'This file doesn\'t exist in this branch, returning to default file.')
                                 vm.clearFilenameInPath()
-                            vm.getTree()
+                                vm.getTree()
                             })
                             return
                         }
@@ -166,32 +169,37 @@ AJS.toInit(function () {
 
             },
             getFileNameFromPath: function () {
-                var fullPath = this.$route.path;
-                fullPath = fullPath.split("&");
-                return (fullPath[0] ? fullPath[0] : "")
+                var fullPath = decodeURIComponent(this.$route.params.fullName)
+                return (fullPath ? fullPath : "")
             },
             getBranchNameFromPath: function () {
-                var fullPath = this.$route.path;
-                fullPath = fullPath.split("&");
-                return (fullPath[1] ? fullPath[1] : "master")
+                const branch = decodeURIComponent(this.$route.query.branch)
+                return (branch ? branch : "master")
+            },
+            getAnchorNameFromPath: function () {
+                const anchor = decodeURIComponent(this.$route.query.anchor)
+                return (anchor ? anchor : "")
             },
             clearFilenameInPath: function () {
-                this.pushBranch(this.getBranchNameFromPath(), false)
+                this.pushFileName("/")
             },
             getTemporary: function (branch) {
                 //this.working = true;
                 Events.$emit('updateStart');
+
 
                 MarkupService.getBranches().then(function(branchesResponse) {
 
                     const branches = branchesResponse.allBranches
 
                     if ($.inArray(branch.branch, branches) === -1) {
+
                         console.log("Branch doesn't exist")
                         // NotifyService.error('Error', `Requested branch doesn't exist. Please select another one.`)
                         Events.$emit('branchDoesntExist');
                     } else {
                         console.log("Branch exists")
+
                         MarkupService.temporary(branch).then(function(id){
                                 //  this.working = false;
                                 startInterval()
@@ -211,7 +219,6 @@ AJS.toInit(function () {
                                 }
                             });
                     }
-
                 }, function (err) {
                     console.log(err);
                     if (err.status == 404) {
@@ -221,26 +228,25 @@ AJS.toInit(function () {
                     }
                 })
             },
-            pushBranch: function (branchName, filename) {
-                filename = typeof filename !== 'undefined' ? filename : true;
-
-                if (filename && this.$route.params.fullName) {
-                    this.$router.push(encodeURIComponent(this.$route.params.fullName) + '&' + encodeURIComponent(branchName))
-                } else {
-                    this.$router.push('&' + encodeURIComponent(branchName))
-                }
+            pushBranch: function (branchName) {
+                this.$router.replace({ query: {branch: branchName, anchor: this.$route.query.anchor} })
             },
+            pushFileName: function (fullName) {
+                this.$router.push({ path: fullName, query: this.$route.query })
+            },
+            pushAnchor: function (anchor) {
+                this.$router.replace({ query: {branch: this.$route.query.branch ,anchor: anchor} })
+            }
         },
 
         created: function () {
             const vm = this
-
             Events.$on('updateComplete', function () {
                 //NotifyService.info('Info', 'Updating content completed successfully');
                 vm.getTree();
             });
-
             Events.$on('branchChanged', function(id) {
+
                 ParamsService.setUuid(id.id);
                 vm.getTree();
                 clearInterval(intervalId);
@@ -256,14 +262,6 @@ AJS.toInit(function () {
 
             //Translate old overlay calls to new one
             Events.$on('updateStart', function () {
-                const loading = true;
-                Events.$emit("OverlayChange", loading)
-            });
-            Events.$on('treeLoaded', function () {
-                const loading = false;
-                Events.$emit("OverlayChange", loading)
-            });
-            Events.$on('branchChanging', function () {
                 const loading = true;
                 Events.$emit("OverlayChange", loading)
             });
@@ -283,11 +281,18 @@ AJS.toInit(function () {
                 })
             })
 
+            Events.$on("pushAnchor", function (id) {
+                vm.pushAnchor(id)
+            })
+
+            Events.$on("pushFile", function (id) {
+                vm.pushFileName(id)
+            })
+
+
             var branch = {
-                branch: this.$route.params.branch
+                branch: this.$route.query.branch
             }
-
-
             MarkupService.getDefaultBranch().then(function (promise) {
                 var defaultBranch = promise.body.currentBranch
                 if (!branch.branch || branch.branch === defaultBranch) {

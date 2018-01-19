@@ -8,13 +8,14 @@ Vue.component("nav-collapse", {
     mounted: function() {
         const vm = this
         Events.$on("toggleSideBar", function () {
-            vm.toggle()
+            vm.expandedtoggle()
         })
         $($(this.$el).find("button")[0]).tooltip()
     },
     methods: {
-        toggle: function () {
+        expandedtoggle: function () {
             //Fix FF bug
+            console.log("Toggle")
             this.isExpanded ? this.collapse() : this.expand();
         },
         expand: function () {

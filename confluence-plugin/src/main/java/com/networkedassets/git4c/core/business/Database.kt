@@ -7,8 +7,7 @@ interface Database<T> {
     fun isAvailable(uuid: String): Boolean
     fun get(uuid: String): T?
     fun getAll(): List<T>
-    fun insert(uuid: String, data: T)
-    fun update(uuid: String, data: T)
+    fun put(uuid: String, data: T)
     fun remove(uuid: String)
     fun removeAll()
 }

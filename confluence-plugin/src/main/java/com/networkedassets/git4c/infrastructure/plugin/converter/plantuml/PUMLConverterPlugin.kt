@@ -2,7 +2,7 @@ package com.networkedassets.git4c.infrastructure.plugin.converter.plantuml
 
 import com.networkedassets.git4c.core.business.ExtractionResult
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
-import com.networkedassets.git4c.data.macro.documents.item.DocumentsItem
+import com.networkedassets.git4c.data.macro.documents.item.ConvertedDocumentsItem
 import com.networkedassets.git4c.data.macro.documents.item.TableOfContents
 import com.networkedassets.git4c.infrastructure.plugin.converter.main.markdown.InternalConverterPlugin
 import net.sourceforge.plantuml.FileFormat
@@ -13,12 +13,12 @@ import java.util.*
 
 class PUMLConverterPlugin : InternalConverterPlugin {
 
-    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult): DocumentsItem? {
-        val content = fileData.contentString
+    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult): ConvertedDocumentsItem? {
+        val content = fileData.content()
 
         val tempFile = Files.createTempFile(null, null).toFile()
 
-        tempFile.writeText(content)
+        tempFile.writeText(String(content))
 
         val reader = SourceFileReader(tempFile, Files.createTempDirectory("temp").toFile(), FileFormatOption(FileFormat.SVG))
         val images = reader.generatedImages
@@ -32,7 +32,7 @@ class PUMLConverterPlugin : InternalConverterPlugin {
             </div>
         """
 
-        return DocumentsItem(fileData.path, fileData.updateAuthorFullName, fileData.updateAuthorEmail, fileData.updateDate, String(fileData.content), pageContent, TableOfContents("", "", listOf()))
+        return ConvertedDocumentsItem(fileData.path, fileData.updateAuthorFullName, fileData.updateAuthorEmail, fileData.updateDate, String(content), pageContent, TableOfContents("", "", listOf()))
     }
 
     override fun supportedExtensions() = listOf("puml")

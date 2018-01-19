@@ -213,6 +213,9 @@ Git Viewer For Confluence uses external libraries, which have their own licenses
 - [AsciidoctorJ](https://github.com/asciidoctor/asciidoctorj) (Apache 2.0)
 - [WNUMB](https://refreshless.com/wnumb/) (WTFPL)
 - [NoUiSlider](https://refreshless.com/nouislider/) (WTFPL)
+- [SimpleMDE](https://github.com/sparksuite/simplemde-markdown-editor) (MIT)
+- [Ace](https://ace.c9.io/) (BSD 3-clause)
+
 For plugin testing following libraries are used:
 - [JUnit](http://junit.org/junit4/license.html) (Eclipse Public License 1.0)
 - [Spock Framework](https://github.com/spockframework/spock) (Apache 2.0)

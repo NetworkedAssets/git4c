@@ -1,0 +1,144 @@
+@startuml
+
+skinparam handwritten false
+
+skinparam rectangle {
+    roundCorner<<Concept>> 25
+}
+
+PageOwner as "Page Owner"
+Reader as "Reader"
+FileEditor as "File Editor"
+Reviewer as "Reviewer"
+
+
+usecase CreateMacro as "
+
+Create Macro
+
+..
+Created macro has a link to repository and is used to
+display file or files from repository in version from selected branch.
+"
+
+
+PageOwner --> CreateMacro
+
+rectangle SingleFileMacro as "
+Single File Macro
+
+..
+
+Has only one file that is able to display in fixed way.
+Editing functionality is available only for the file and branch
+that has been originally used to display contenct of file within macro.
+"
+
+rectangle MultipleFilesMacro as "
+Files Tree Macro
+
+..
+
+Has many files in a tree view and user may choose a file to display.
+Editing file functionality is available for currently selected branch.
+User is able to create a new file within repository structure.
+"
+
+
+CreateMacro --> SingleFileMacro
+CreateMacro --> MultipleFilesMacro
+
+
+
+usecase ReadMacroContent as "
+
+Read Documentation
+
+..
+User is able to read documentation in selected version based on branch.
+"
+
+SingleFileMacro --> ReadMacroContent
+MultipleFilesMacro --> ReadMacroContent
+
+Reader -> ReadMacroContent
+
+usecase EditFileContent as "
+
+Edit Documentation
+
+..
+Click on EDIT button allows to display file content in separate window
+and edit it in the native document format.
+There is PREVIEW button to replace editor with preview
+There is BRANCH button to enable option to specify target branch
+There is SAVE button available to proceed with saving changes.
+"
+
+note " PREVIEW - click " as PreviewButton
+note " EDIT - click " as EditButton
+
+usecase PreviewFileContent as "
+
+Preview Documentation
+
+User can see preview of edited file
+There is EDIT file to return to editor
+"
+
+ReadMacroContent --> EditButton
+EditButton --> EditFileContent
+
+FileEditor -> EditFileContent
+
+note " BRANCH - click " as BranchButton
+
+usecase DefaultBranch as "
+Default branch
+"
+
+usecase SpecifyBranch as "
+
+Specify branch
+
+..
+User can edit target branch
+
+"
+
+usecase SaveFileContent as "
+
+Save Documentation
+
+..
+Click on SAVE button allows to proceed with saving process.
+"
+
+note " SAVE - click " as SaveButton
+
+EditFileContent -> PreviewButton
+PreviewButton -> PreviewFileContent
+PreviewFileContent --> EditButton
+EditFileContent --> BranchButton
+BranchButton --> SpecifyBranch
+SpecifyBranch --> SaveButton
+EditFileContent --> DefaultBranch
+DefaultBranch --> SaveButton
+SaveButton --> SaveFileContent
+
+
+usecase SaveToTargetBranch as "
+
+Commit Documentation to TARGET branch
+
+..
+Documentation is commited to the target branch.
+"
+
+
+SaveFileContent --> SaveToTargetBranch
+
+SaveToTargetBranch ..> Reviewer
+
+
+@enduml

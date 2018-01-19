@@ -1,12 +1,13 @@
 package com.networkedassets.git4c.core
 
+import com.jayway.awaitility.Awaitility.await
 import com.networkedassets.git4c.application.PluginComponents
 import com.networkedassets.git4c.boundary.GetDocumentationsMacroByDocumentationsMacroIdQuery
 import com.networkedassets.git4c.boundary.outbound.DocumentationsMacro
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
 import com.networkedassets.git4c.core.process.ICheckUserPermissionProcess
 import com.networkedassets.git4c.data.MacroSettings
-import com.networkedassets.git4c.data.RepositoryWithUsernameAndPassword
+import com.networkedassets.git4c.data.RepositoryWithNoAuthorization
 import com.networkedassets.git4c.test.UseCaseTest
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
@@ -20,7 +21,7 @@ class GetDocumentationsMacroByDocumentationsMacroIdUseCaseTest : UseCaseTest<Get
 
     override fun getUseCase(plugin: PluginComponents): GetDocumentationsMacroByDocumentationsMacroIdUseCase {
         whenever(checkUserPermissionProcess.userHasPermissionToMacro(any(), any())).thenReturn(true)
-        return GetDocumentationsMacroByDocumentationsMacroIdUseCase(plugin.refreshProcess, plugin.macroSettingsCachableDatabase, plugin.globsForMacroDatabase, plugin.repositoryDatabase, plugin.extractorDataDatabase, checkUserPermissionProcess)
+        return GetDocumentationsMacroByDocumentationsMacroIdUseCase(plugin.extractorDataDatabase, checkUserPermissionProcess, plugin.macroSettingsDatabase, plugin.repositoryDatabase, plugin.documentsViewCache, plugin.macroViewProcess, plugin.macroViewCache, plugin.importer)
     }
 
     @Test
@@ -33,14 +34,18 @@ class GetDocumentationsMacroByDocumentationsMacroIdUseCaseTest : UseCaseTest<Get
 
     @Test
     fun `Macro is return when present in database`() {
-        val repository = RepositoryWithUsernameAndPassword("1", "src/test/resources", "user", "pass123")
-        val settings = MacroSettings("1", repository.uuid, "master", "item", null)
-        components.macroSettingsCachableDatabase.insert("abc", settings)
-        components.repositoryDatabase.insert("1", repository)
+        val repository = RepositoryWithNoAuthorization("1", "src/test/resources")
+        val settings = MacroSettings("1", repository.uuid, "master", "item", null, null)
+        components.macroSettingsCachableDatabase.put("1", settings)
+        components.repositoryDatabase.put("1", repository)
 
-        val result = useCase.execute(GetDocumentationsMacroByDocumentationsMacroIdQuery("abc", null))
+        components.macroViewProcess.prepareMacroToBeViewed("1")
 
-        assertTrue { result.component1() is DocumentationsMacro }
-        assertTrue { result.component2() == null }
+        await().until {
+            val result = useCase.execute(GetDocumentationsMacroByDocumentationsMacroIdQuery("1", null))
+
+            assertTrue { result.component1() is DocumentationsMacro }
+            assertTrue { result.component2() == null }
+        }
     }
 }

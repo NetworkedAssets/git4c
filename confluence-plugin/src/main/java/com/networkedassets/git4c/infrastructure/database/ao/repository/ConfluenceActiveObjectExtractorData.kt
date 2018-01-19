@@ -2,9 +2,9 @@ package com.networkedassets.git4c.infrastructure.database.ao.repository
 
 import com.atlassian.activeobjects.external.ActiveObjects
 import com.networkedassets.git4c.core.datastore.extractors.ExtractorData
-import com.networkedassets.git4c.core.datastore.repositories.ExtractorDataDatabase
 import com.networkedassets.git4c.core.datastore.extractors.LineNumbersExtractorData
 import com.networkedassets.git4c.core.datastore.extractors.MethodExtractorData
+import com.networkedassets.git4c.core.datastore.repositories.ExtractorDataDatabase
 import com.networkedassets.git4c.infrastructure.database.ao.ExtractorEntity
 import com.networkedassets.git4c.infrastructure.database.ao.ExtractorLineNumbersEntity
 import com.networkedassets.git4c.infrastructure.database.ao.ExtractorMethodEntity
@@ -18,13 +18,8 @@ class ConfluenceActiveObjectExtractorData(val ao: ActiveObjects) : ExtractorData
 
     override fun getAll() = getAllFromDatabase().mapNotNull { convertFromDatabase(it) }
 
-    override fun insert(uuid: String, data: ExtractorData) {
+    override fun put(uuid: String, data: ExtractorData) {
         convertToDatabase(uuid, data)
-    }
-
-    override fun update(uuid: String, data: ExtractorData) {
-        remove(uuid)
-        insert(uuid, data)
     }
 
     override fun remove(uuid: String) {
@@ -65,15 +60,15 @@ class ConfluenceActiveObjectExtractorData(val ao: ActiveObjects) : ExtractorData
 
         val extractor: ExtractorEntity
 
-        when(data) {
+        when (data) {
             is LineNumbersExtractorData -> {
-                val entity = ao.create(ExtractorLineNumbersEntity::class.java)
+                val entity = ao.findByUuid(uuid) ?: ao.create(ExtractorLineNumbersEntity::class.java)
                 entity.startLine = data.startLine
                 entity.endLine = data.endLine
                 extractor = entity
             }
             is MethodExtractorData -> {
-                val entity = ao.create(ExtractorMethodEntity::class.java)
+                val entity = ao.findByUuid(uuid) ?: ao.create(ExtractorMethodEntity::class.java)
                 entity.method = data.method
                 extractor = entity
             }

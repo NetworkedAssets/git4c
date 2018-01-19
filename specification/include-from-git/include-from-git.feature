@@ -61,3 +61,8 @@ Feature: Include file from git in a page
     When current repository state causes a conflicted state on Git4C cache
     Then Repository folder in cache will be removed
     And File fetch will be retried 3 times
+
+  Scenario: User can choose the repository from the list of 5 most recently used repositories.
+    Given User creates a macro with repository
+    When User creates another macro
+    Then He can select previous repository from the list

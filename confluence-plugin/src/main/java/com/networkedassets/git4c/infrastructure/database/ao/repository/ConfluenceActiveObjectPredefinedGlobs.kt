@@ -4,6 +4,7 @@ import com.atlassian.activeobjects.external.ActiveObjects
 import com.networkedassets.git4c.core.datastore.repositories.PredefinedGlobsDatabase
 import com.networkedassets.git4c.data.PredefinedGlob
 import com.networkedassets.git4c.infrastructure.database.ao.PredefinedGlobEntity
+import com.networkedassets.git4c.utils.ActiveObjectsUtils.findByUuid
 import net.java.ao.Query
 
 class ConfluenceActiveObjectPredefinedGlobs(val ao: ActiveObjects) : PredefinedGlobsDatabase {
@@ -14,8 +15,8 @@ class ConfluenceActiveObjectPredefinedGlobs(val ao: ActiveObjects) : PredefinedG
 
     private fun getFromDatabase(uuid: String) = ao.find(PredefinedGlobEntity::class.java, Query.select().where("UUID = ?", uuid))
 
-    override fun insert(uuid: String, data: PredefinedGlob) {
-        val entity = ao.create(PredefinedGlobEntity::class.java)
+    override fun put(uuid: String, data: PredefinedGlob) {
+        val entity = ao.findByUuid(uuid) ?: ao.create(PredefinedGlobEntity::class.java)
         entity.uuid = uuid
         entity.glob = data.glob
         entity.name = data.name
@@ -23,11 +24,6 @@ class ConfluenceActiveObjectPredefinedGlobs(val ao: ActiveObjects) : PredefinedG
     }
 
     override fun getAll(): List<PredefinedGlob> = ao.find(PredefinedGlobEntity::class.java).map { it.convert() }
-
-    override fun update(uuid: String, data: PredefinedGlob) {
-        remove(uuid)
-        insert(uuid, data)
-    }
 
     override fun remove(uuid: String) {
         getFromDatabase(uuid).firstOrNull()?.let { ao.delete(it) }

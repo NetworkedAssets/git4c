@@ -8,10 +8,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME
 
 data class DocumentationMacro(
         val repositoryDetails: RepositoryDetails,
+        val repositoryName: String,
         val branch: String,
         val glob: List<String>,
         val defaultDocItem: String,
-        val extractor: ExtractorData?
+        val extractor: ExtractorData?,
+        val rootDirectory: String?
 )
 
 data class RepositoryDetails(

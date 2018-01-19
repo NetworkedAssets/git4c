@@ -1,5 +1,6 @@
 package com.networkedassets.git4c.core.business
 
 interface SpaceManager {
-    fun getAllSpaces(): List<Space>
+    fun getAllSpaceKeys(): List<String>
+    fun getSpace(spaceKey: String): Space?
 }

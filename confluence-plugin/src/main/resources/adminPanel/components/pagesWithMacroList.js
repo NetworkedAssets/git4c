@@ -6,19 +6,34 @@ var Git4CPagesWithMacroList = {
 
         const contextPath = AJS.contextPath()
 
+        const PRE_DOWNLOADING = "PRE_DOWNLOADING"
+        const DOWNLOADING = "DOWNLOADING"
+        const DOWNLOADING_ENDED = "DOWNLOADING_ENDED"
+
         return {
             data: function () {
                 return {
                     spaces: undefined,
                     macros: undefined,
                     statuses: undefined,
-                    contextPath: contextPath
+                    contextPath: contextPath,
+                    shown: false,
+                    downloadingState: PRE_DOWNLOADING
                 }
             },
             template:
                 "<div>" +
-                    '<h3 style="margin-top: 20px">Macros in system</h3>' +
-                    '<table id="delayedSortedTable" ref="table" class="aui" v-if="macros">' +
+                '    <div>'+
+                '    <h3 style="margin-top: 20px; display: flex; justify-content: space-between">'+
+                '        Macros in system'+
+                '        <div style="display: flex">'+
+                '            <div style="width: 32px; height: 32px;" ref="spinner" class="button-spinner">'+
+                '            </div>'+
+                '            <button v-on:click="toggleShow" class="aui-button">{{buttonText}}</button>'+
+                '        </div>'+
+                '   </h3>'+
+                '   </div>'+
+                    '<table id="delayedSortedTable" ref="table" class="aui" v-show="macros && shown">' +
                         "<thead>" +
                             '<tr>'+
                                 "<th>Space</th>" +
@@ -50,6 +65,15 @@ var Git4CPagesWithMacroList = {
             watch: {
                 spaces: function () {
                    this.handleSpacesChange()
+                }
+            },
+            computed: {
+                buttonText: function () {
+                    if (this.shown) {
+                        return "Hide"
+                    } else {
+                        return "Show"
+                    }
                 }
             },
             methods: {
@@ -102,20 +126,59 @@ var Git4CPagesWithMacroList = {
 
                     }
 
-                }
-            },
-            mounted: function() {
-                const vm = this
+                },
+                toggleShow: function () {
 
-                Vue.http.get(restUrl + "/spaces")
-                    .then(function(response) {
-                        vm.spaces = response.body.spaces
-                        // AJS.tablessortable.setTableSortable(AJS.$(this.$refs.table));
-                        vm.$nextTick(function () {
-                            AJS.tablessortable.setTableSortable(AJS.$("#delayedSortedTable"));
-                            $(this.$el).find(".tooltipable").tooltip()
-                        })
-                    })
+                    this.shown = !this.shown
+
+
+                    if (this.shown && this.downloadingState==PRE_DOWNLOADING) {
+
+                        AJS.$(this.$refs["spinner"]).spin()
+
+                        this.downloadingState=DOWNLOADING
+
+                        const vm = this
+
+                        const wait = function (requestId) {
+
+                            return Vue.http.get(restUrl + "/spaces/" + requestId)
+                                .then(function (response) {
+
+                                    if (response.status === 202) {
+
+                                        return new Promise(function (resolve, reject) {
+                                            setTimeout(function () {
+                                                resolve(wait(requestId))
+                                            }, 1000)
+                                        })
+
+                                    }
+
+                                    return response
+
+                                })
+
+                        }
+
+                        Vue.http.get(restUrl + "/spaces")
+                            .then(function (response) {
+                                return response.body.requestId
+                            })
+                            .then(function (requestId) {
+                                return wait(requestId)
+                            })
+                            .then(function (response) {
+                                vm.spaces = response.body.spaces
+                                vm.$nextTick(function () {
+                                    AJS.tablessortable.setTableSortable(AJS.$("#delayedSortedTable"));
+                                    $(this.$el).find(".tooltipable").tooltip()
+                                    this.downloadingState=DOWNLOADING_ENDED
+                                    AJS.$(this.$refs["spinner"]).spinStop()
+                                })
+                            })
+                    }
+                }
             }
         }
     }

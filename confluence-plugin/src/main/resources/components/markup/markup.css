@@ -11,3 +11,54 @@
     border: 1px solid #cccccc;
     background-color: #F0F0F0
 }
+
+.git4c-any-content .sect1 {
+    margin-top: 30px;
+}
+
+.git4c-any-content .sect2 {
+    margin-top: 30px;
+}
+
+.git4c-any-content .sect3 {
+    margin-top: 30px;
+}
+
+.git4c-any-content .sect4 {
+    margin-top: 20px;
+}
+
+.git4c-any-content .sect5 {
+    margin-top: 20px;
+}
+
+.git4c-any-content .sect6 {
+    margin-top: 20px;
+}
+
+.git4c-any-content .sect1:first-child,
+.git4c-any-content .sect2:first-child,
+.git4c-any-content .sect3:first-child,
+.git4c-any-content .sect4:first-child,
+.git4c-any-content .sect5:first-child,
+.git4c-any-content .sect6:first-child {
+    margin-top: 0;
+}
+
+.git4c-any-main-content i.aui-iconfont-collapsed {
+    /* Default icon is not cented so we must do it ourselved */
+    height: 10px !important;
+    margin-top: 4.5px;
+}
+
+.git4c-any-content .listingblock {
+    margin-top: 10px;
+}
+
+.git4c-any-content .ulist {
+    margin-top: 10px;
+}
+
+.git4c-any-content .paragraph {
+    margin-top: 10px
+}
