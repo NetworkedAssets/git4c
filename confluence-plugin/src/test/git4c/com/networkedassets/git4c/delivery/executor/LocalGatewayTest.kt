@@ -4,8 +4,8 @@ import com.github.kittinunf.result.Result
 import com.networkedassets.git4c.delivery.executor.execution.UseCase
 import com.networkedassets.git4c.delivery.executor.execution.UseCasesProvider
 import com.networkedassets.git4c.delivery.executor.result.BackendRequest
+import com.networkedassets.git4c.utils.InMemoryApplication.application
 import com.networkedassets.git4c.utils.sendToExecution
-
 import org.junit.Test
 
 
@@ -14,7 +14,7 @@ class LocalGatewayTest {
     @Test
     fun check() {
 
-        val useCase = object : UseCase<BackendRequest<String>, String> {
+        val useCase = object : UseCase<BackendRequest<String>, String>(application.bussines) {
             override fun execute(request: BackendRequest<String>): Result<String, Exception> {
                 return Result.of { "" }
             }

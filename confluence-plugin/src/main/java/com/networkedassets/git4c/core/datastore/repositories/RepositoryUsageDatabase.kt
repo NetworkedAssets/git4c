@@ -7,4 +7,5 @@ import com.networkedassets.git4c.data.RepositoryUsage
 @Transactional
 interface RepositoryUsageDatabase: Database<RepositoryUsage>{
     fun getByUsername(username: String): List<RepositoryUsage>
+    fun getByRepositoryUuid(repositoryUuid: String): List<RepositoryUsage>
 }

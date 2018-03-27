@@ -8,7 +8,7 @@ Git4C is a confluence plugin that allows you to keep your documentation by code 
 
 
 - [Atlassian SDK](https://developer.atlassian.com/docs/getting-started/set-up-the-atlassian-plugin-sdk-and-build-a-project)
-- Confluence (version 5.8.2 - 6.1.0)
+- Confluence (from version 5.8.2)
 - IntelliJ IDEA (Community version would be enough if you won't edit JS - in that case Ultimate edition or VSCode is recommended)
 
 ## 1.2 Quality Goals

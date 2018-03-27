@@ -7,4 +7,4 @@ import com.networkedassets.git4c.delivery.executor.result.BackendRequest
 
 class ForceUsersToUsePredefinedRepositoriesCommand(
         val force: ForcePredefinedRepositoriesInfo
-): BackendRequest<isForcedPredefined>()
+) : BackendRequest<isForcedPredefined>()

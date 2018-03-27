@@ -3,11 +3,12 @@ package com.networkedassets.git4c.infrastructure.plugin.converter
 import com.networkedassets.git4c.core.business.ExtractionResult
 import com.networkedassets.git4c.core.common.IdentifierGenerator
 import com.networkedassets.git4c.data.macro.documents.item.ConvertedDocumentsItem
-import com.networkedassets.git4c.data.macro.documents.item.DocumentsItem
 import com.networkedassets.git4c.infrastructure.plugin.converter.main.JSoupPostProcessor
 import com.networkedassets.git4c.infrastructure.plugin.converter.main.MainConverterPluginList
 import com.networkedassets.git4c.infrastructure.plugin.converter.main.asciidoc.AsciidocConverterPlugin
 import com.networkedassets.git4c.infrastructure.plugin.converter.main.markdown.MarkdownConverterPlugin
+import com.networkedassets.git4c.infrastructure.plugin.converter.plaintext.PlainTextConverterPlugin
+import com.networkedassets.git4c.infrastructure.plugin.converter.plantuml.PUMLConverterPlugin
 
 import java.nio.file.Paths
 
@@ -38,6 +39,18 @@ class ConverterUtils {
         def converter = new MainConverterPluginList([markdownConverter], new JSoupPostProcessor(new UUIDGen()))
 
         return source.collect { converter.convert(it, EXTRACTION_RESULT) }.grep()[0]
+    }
+
+    public static ConvertedDocumentsItem getPUML(String location) {
+
+        def source = getDataFromDirectory(Paths.get(location))
+
+        def pumlConverter = new PUMLConverterPlugin()
+
+        def converter = new ConverterPluginList([pumlConverter], new PlainTextConverterPlugin())
+
+        return source.collect { converter.convert(it, EXTRACTION_RESULT) }.grep()[0]
+
     }
 
     private static class UUIDGen implements IdentifierGenerator {

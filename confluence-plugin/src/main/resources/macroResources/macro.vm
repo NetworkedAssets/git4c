@@ -8,14 +8,17 @@
 #requireResource("com.atlassian.auiplugin:aui-spinner")
 #requireResourcesForContext("com.networkedassets.git4c.ajscompat")
 #requireResourcesForContext("com.networkedassets.git4c.vuejs")
+#requireResourcesForContext("com.networkedassets.git4c.api")
 #requireResourcesForContext("com.networkedassets.git4c.stickykit")
 #requireResourcesForContext("com.networkedassets.git4c.highlightjs")
 #requireResourcesForContext("com.networkedassets.git4c.prism")
 #requireResourcesForContext("com.networkedassets.git4c.filepreview")
 #requireResourcesForContext("com.networkedassets.git4c.components.markup")
 #requireResourcesForContext("com.networkedassets.git4c.components.overlay")
+#requireResourcesForContext("com.networkedassets.git4c.commithistory")
 #requireResourcesForContext("com.networkedassets.git4c.components.toc")
 #requireResourcesForContext("com.networkedassets.git4c.macroResources")
+#requireResourcesForContext("com.networkedassets.git4c.sourcedialog")
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ace.js" integrity="sha256-U//RSeH3TR3773Rk+1lAufJnRjEaG5LcdbvGV72kHEM=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ext-modelist.js" integrity="sha256-i0OqQaptcaStnjDX8HR+vkkvOLXoAUBAquwMvnqmLTU=" crossorigin="anonymous"></script>

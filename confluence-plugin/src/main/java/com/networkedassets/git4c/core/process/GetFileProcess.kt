@@ -4,7 +4,7 @@ import com.networkedassets.git4c.boundary.outbound.FileContent
 import com.networkedassets.git4c.core.bussiness.ConverterPlugin
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
 import com.networkedassets.git4c.data.Repository
-import com.networkedassets.git4c.data.macro.documents.item.TableOfContents.Companion.EMPTYTOC
+import com.networkedassets.git4c.data.macro.documents.item.TableOfContents.Companion.EMPTY
 import java.util.*
 
 class GetFileProcess(
@@ -19,7 +19,7 @@ class GetFileProcess(
             val file = files.imported.first() { it.path == requestedFile }
             val result = extractContentProcess.extract(null, file)
             val item = converter.convert(file, result)
-            FileContent(item?.content ?: "", item?.tableOfContents ?: EMPTYTOC)
+            FileContent(item?.content ?: "", item?.tableOfContents ?: EMPTY)
         }
     }
 

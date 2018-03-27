@@ -9,23 +9,25 @@ var Git4CPredefinedRepositoryList = {
                 return {
                     repositoryList: undefined,
                     editing: false,
+                    loading: true,
                     editedId: undefined
                 }
             },
             template: '<div id="manage_repositories-div" style="margin-top: 30px;">' +
             '    <div id="add_repository-div ">' +
             '        <h3>Predefined Repositories' +
-            '            <button v-on:click="openCustomDialog()" id="add_repository-button" class="aui-button" style="float:right; margin-bottom:10px">Add Predefined Repository</button>' +
+            '            <button v-on:click="openCreateNewRepositoryDialog()" id="add_repository-button" class="aui-button" style="float:right; margin-bottom:10px">Add Predefined Repository</button>' +
             '            <a id="add_repository-button-hint" style="margin-right: 10px; padding-top:13px; float:right;" class="aui-icon aui-icon-small aui-iconfont-info"></a>' +
             '        </h3>' +
             '    </div>' +
             '    ' +
-            '    <table id="predefined_repo_table" class="aui">' +
+            '    <table v-show="listAvailable" id="predefined_repo_table" class="aui">' +
             '        <thead>' +
             '            <tr>' +
             '                <th id="predefined_table-url">URL</th>' +
             '                <th id="predefined_table-name">Name</th>' +
             '                <th id="predefined_table-type">Type</th>' +
+            '                <th id="predefined_table-editable">Editable</th>' +
             '                <th id="predefined_table-action">Action</th>' +
             '            </tr>' +
             '        </thead>' +
@@ -34,6 +36,10 @@ var Git4CPredefinedRepositoryList = {
             '            <td> {{repo.sourceRepositoryUrl}} </td>' +
             '            <td> {{repo.name}} </td>' +
             '            <td> {{repo.authType}} </td>' +
+            '             <td>'+
+            '                 <span class="aui-icon aui-icon-small aui-iconfont-approve" v-if="repo.editable">Editable</span>'+
+            '                 <span v-else class="aui-icon aui-icon-small aui-iconfont-error">Not editable</span>'+
+            '             </td>'+
             '            <td>' +
             '            <ul class="menu">' +
             '                <li>' +
@@ -47,9 +53,25 @@ var Git4CPredefinedRepositoryList = {
             '            </tr>' +
             '        </tbody>' +
             '    </table>' +
+            '    <div v-show="!loading && !listAvailable" class="aui-message aui-message-info">' +
+            '        <p class="title">' +
+            '            <strong>No items</strong>' +
+            '        </p>' +
+            '    </div>' +
             '</div>'
             ,
+            computed: {
+                listAvailable: function(){
+                    return this.repositoryList && this.repositoryList.length
+                }
+            },
             methods: {
+                openCreateNewRepositoryDialog: function () {
+                    this.editing = false
+                    this.$nextTick(function () {
+                        this.openCustomDialog()
+                    })
+                },
                 openCustomDialog: function (repositoryInfo) {
                     if (this.editing == true) {
                         this.$emit("openCustomRepositoryDialog", repositoryInfo)
@@ -61,37 +83,46 @@ var Git4CPredefinedRepositoryList = {
                 getPredefinedList: function () {
                     const vm = this
 
-                    Vue.http.get(restUrl + "/predefine?timestamp="+$.now())
-                        .then(function (response) {
-                            if (response.status !== 200) {
-                                throw new Error(response.statusText)
-                            }
-                            vm.repositoryList = response.data
+                    vm.loading = true
+
+                    vm.repositoryList = []
+
+                    Git4CApi.getPredefinedRepositories()
+                        .then(function (repositories) {
+                            vm.loading = false
+                            vm.repositoryList = repositories
                             vm.$nextTick(function () {
                                 vm.setTooltips()
                             })
-                        }).catch(function (err) {
-                        return Promise.reject(err);
-                    });
+                        })
                 },
 
                 processRepository: function (repository) {
                     const vm = this
-                    var url = restUrl + "/predefine"
-                    if (this.editing == true) {
-                        url += "/" + this.editedId
 
+                    var promise
+
+                    if (this.editing) {
+                        promise = Git4CApi.updatePredefinedRepository(this.editedId, repository)
+                    } else {
+                        promise = Git4CApi.createPredefinedRepository(repository)
                     }
-                    const response = this.$http.post(url, repository).then(function (response) {
-                        if (response.status !== 200) {
-                            throw new Error(response.statusText);
-                        }
-                        vm.$emit("repositoryProcessed", response.json)
-                    }).catch(function (err) {
-                        err.text().then(function (text) {
-                            vm.$emit("repositoryRejected", text);
+
+                    this.editing = false
+
+                    promise
+                        .then(function (response) {
+                            if (response.status !== 200) {
+                                throw new Error(response.statusText);
+                            }
+                            vm.$emit("repositoryProcessed", response.json)
                         })
-                    });
+                        .catch(function (err) {
+                            err.text().then(function (text) {
+                                vm.$emit("repositoryRejected", text);
+                            })
+                        });
+
                 },
                 editRepository: function (uuid) {
                     const vm = this
@@ -106,9 +137,11 @@ var Git4CPredefinedRepositoryList = {
                     this.$emit("removeRepositoryRequest", uuid)
                 },
                 removeRepository: function (uuid) {
-                    this.$http.delete(restUrl + "/predefine/" + uuid).then(function () {
-                        this.getPredefinedList()
-                    })
+                    const vm = this
+                    Git4CApi.deletePredefinedRepository(uuid)
+                        .then(function () {
+                            vm.getPredefinedList()
+                        })
                 },
                 setTooltips: function () {
                     AJS.$("#add_repository-button-hint").tooltip({

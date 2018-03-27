@@ -18,12 +18,13 @@ import com.networkedassets.git4c.utils.error
 import com.networkedassets.git4c.utils.getLogger
 import com.networkedassets.git4c.utils.warn
 import org.apache.commons.lang3.StringUtils
-import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode
+import org.eclipse.jgit.api.CreateBranchCommand
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.ResetCommand
 import org.eclipse.jgit.api.TransportCommand
 import org.eclipse.jgit.api.errors.GitAPIException
 import org.eclipse.jgit.api.errors.NoHeadException
+import org.eclipse.jgit.api.errors.RefNotAdvertisedException
 import org.eclipse.jgit.errors.NoRemoteRepositoryException
 import org.eclipse.jgit.internal.JGitText
 import org.eclipse.jgit.lib.BatchingProgressMonitor
@@ -257,6 +258,10 @@ class DefaultGitClient() : GitClient {
         } catch (e: NoHeadException) {
             cache.removeCache(repository)
             cache.unlock(repository)
+            throw e
+        } catch (e: RefNotAdvertisedException) {
+            //TAG
+            cache.unlock(repository)
         } catch (e: Exception) {
             cache.removeCache(repository)
             cache.unlock(repository)
@@ -316,23 +321,39 @@ class DefaultGitClient() : GitClient {
         val git = dir.toGit()
         val trueBranch = getBranchOrDefault(branch)
 
-        val branchExists = git.repository.findRef(trueBranch) != null
-        if (!branchExists) {
-            log.debug({ "Branch does not exist on disk yet for RepositoryBranch=${branch}" })
-            git.branchCreate()
-                    .setName(trueBranch)
-                    .setUpstreamMode(SetupUpstreamMode.TRACK)
-                    .setStartPoint("origin/" + trueBranch)
-                    .setForce(true)
-                    .call()
+        val headsRef : Ref? = git.repository.findRef("refs/heads/$trueBranch")
+        val ref : Ref? = git.repository.findRef(trueBranch)
+
+        if (headsRef == null) {
+
+            if (ref?.name?.startsWith("refs/tags/") == true) {
+
+                log.debug { "Branch does not exist on disk yet for RepositoryTag=$branch" }
+                git.checkout()
+                        .setCreateBranch(true)
+                        .setName(trueBranch)
+                        .setStartPoint("refs/tags/$trueBranch")
+                        .call();
+
+            } else {
+
+                log.debug { "Branch does not exist on disk yet for RepositoryBranch=$branch" }
+                git.branchCreate()
+                        .setName(trueBranch)
+                        .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.TRACK)
+                        .setStartPoint("origin/$trueBranch")
+                        .setForce(true)
+                        .call()
+
+            }
         }
 
-        git.checkout().setName(trueBranch).call()
+        git.checkout().setName("refs/heads/$trueBranch").call()
         log.debug { "Changing of a branch has been done for ${dir}" }
         return git
     }
 
-    fun getBranchOrDefault(branch: String): String {
+    private fun getBranchOrDefault(branch: String): String {
         return if (StringUtils.isEmpty(branch)) "master" else branch
     }
 
@@ -350,14 +371,14 @@ class DefaultGitClient() : GitClient {
 
     private fun getAllBranches(refs: Collection<Ref>): List<String> {
         return refs
-                .map({ it.name })
+                .map { it.name }
                 .filter { ref -> ref.startsWith("refs/heads/") }
                 .map { ref -> StringUtils.removeStart(ref, "refs/heads/") }
     }
 
     private fun getAllTags(refs: Collection<Ref>): List<String> {
         return refs
-                .map({ it.name })
+                .map { it.name }
                 .filter { ref -> ref.startsWith("refs/tags/") }
                 .map { ref -> StringUtils.removeStart(ref, "refs/tags/") }
     }

@@ -39,11 +39,11 @@ class MacroView(val plugin: Plugin) : Macro {
             val space = SpaceToView(conversionContext.spaceKey)
             val macro = MacroToView(macroUuid, MacroType.MULTIFILE)
 
-            sendToExecution(plugin.components.dispatcher,
+            sendToExecution(plugin.components.dispatching.dispatcher,
                     ViewMacroCommand(macro, page, space)
             )
 
-            val content = sendToExecution(plugin.components.dispatcher,
+            val content = sendToExecution(plugin.components.dispatching.dispatcher,
                     GetDocumentationsMacroViewTemplateQuery("macroResources")
             )
 

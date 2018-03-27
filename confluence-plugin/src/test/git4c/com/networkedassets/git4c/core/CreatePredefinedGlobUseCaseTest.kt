@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 class CreatePredefinedGlobUseCaseTest : UseCaseTest<CreatePredefinedGlobUseCase>() {
 
     override fun getUseCase(plugin: PluginComponents): CreatePredefinedGlobUseCase {
-        return CreatePredefinedGlobUseCase(plugin.predefinedGlobsDatabase, plugin.idGenerator)
+        return CreatePredefinedGlobUseCase(plugin.bussines)
     }
 
     @Test
@@ -23,7 +23,7 @@ class CreatePredefinedGlobUseCaseTest : UseCaseTest<CreatePredefinedGlobUseCase>
 
         assertNull(answer.component2())
         assertNotNull(answer.component1())
-        assertTrue(components.predefinedGlobsDatabase.get(answer.get().uuid)!!.name.equals(globToCreate.name))
-        assertTrue(components.predefinedGlobsDatabase.get(answer.get().uuid)!!.glob.equals(globToCreate.glob))
+        assertTrue(components.database.predefinedGlobsDatabase.get(answer.get().uuid)!!.name.equals(globToCreate.name))
+        assertTrue(components.database.predefinedGlobsDatabase.get(answer.get().uuid)!!.glob.equals(globToCreate.glob))
     }
 }

@@ -6,6 +6,6 @@ data class TableOfContents(
         val children: List<TableOfContents>
 ) {
     companion object {
-        val EMPTYTOC = TableOfContents("", "", listOf())
+        val EMPTY = TableOfContents("", "", listOf())
     }
 }

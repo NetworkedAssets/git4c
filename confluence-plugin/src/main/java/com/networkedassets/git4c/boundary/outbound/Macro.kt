@@ -7,9 +7,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 
 //data class Macro(val url: String?, val type: Macro.MacroType?, val file: String?, val exists: Boolean = true)
 
-class MultiPageMacro(id: String, url: String): Macro(id, url)
+class MultiPageMacro(id: String, url: String) : Macro(id, url)
 
-class SinglePageMacro(id: String, url: String, val file: String): Macro(id, url)
+class SinglePageMacro(id: String, url: String, val file: String) : Macro(id, url)
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes(

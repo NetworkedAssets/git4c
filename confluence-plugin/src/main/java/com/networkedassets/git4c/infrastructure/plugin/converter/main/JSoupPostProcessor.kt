@@ -101,7 +101,7 @@ class JSoupPostProcessor(
                     val imageUrl = url
 
                     val imagePath: Path
-                    val imageType: String
+                    val imageType: String?
 
                     val path = baseFile.toPath()
 
@@ -110,7 +110,11 @@ class JSoupPostProcessor(
                         try {
                             val reader = SourceFileReader(f.toFile(), Files.createTempDirectory("temp").toFile(), FileFormatOption(FileFormat.SVG))
                             val images = reader.generatedImages
-                            imagePath = images[0].pngFile.toPath()
+                            if(images.isEmpty()) {
+                                it.remove()
+                                return@forEach
+                            }
+                            imagePath = images.first().pngFile.toPath()
                             imageType = "image/svg+xml"
                         } catch (e: IOException) {
                             log.error("Couldn't read puml $f", e)
@@ -121,25 +125,44 @@ class JSoupPostProcessor(
                         }
                     } else {
                         imagePath = Paths.get(path.parent.toUri().resolve(imageUrl))
-                        val fileName = imagePath.toString()
-                        imageType = if (fileName.endsWith(".svg")) {
-//                             URLConnection.guessContentTypeFromName doesn't like .svg files
-                            "image/svg+xml"
-                        } else {
-                            URLConnection.guessContentTypeFromName(imagePath.fileName.toString())
+                        imageType = getImageTypeForFile(imagePath.toFile().name)
+                    }
+
+                    if (imageType == null) {
+                        it.tagName("a")
+                        it.attr("href", imageUrl)
+                        it.text(it.attr("alt"))
+                        it.removeAttr("src")
+                        it.removeAttr("alt")
+                        it.removeAttr("class")
+                    } else {
+
+                        try {
+                            val base64 = String(Base64.getEncoder().encode(Files.readAllBytes(imagePath)))
+                            val src = "data:$imageType;base64,$base64"
+                            it.attr("src", src)
+                        } catch (e: Exception) {
+                            log.warn("Couldn't read image $imagePath - ${e.javaClass.simpleName}")
+                            // image file not found, leave it as is
                         }
                     }
 
-                    try {
-                        val base64 = String(Base64.getEncoder().encode(Files.readAllBytes(imagePath)))
-                        val src = "data:$imageType;base64,$base64"
-                        it.attr("src", src)
-                    } catch (e: Exception) {
-                        log.warn("Couldn't read image $imagePath - ${e.javaClass.simpleName}")
-                        // image file not found, leave it as is
-                    }
-
                 }
+    }
+
+    private fun getImageTypeForFile(fileName: String): String? {
+
+        return if (fileName.endsWith(".svg")) {
+            //URLConnection.guessContentTypeFromName doesn't like .svg files
+            "image/svg+xml"
+        } else {
+            try {
+                URLConnection.guessContentTypeFromName(fileName)
+            } catch (e: IllegalStateException) {
+                null
+            }
+        }
+
     }
 
     private fun addClassToTables(html: Document) {
@@ -202,7 +225,7 @@ class JSoupPostProcessor(
     }
 
     private fun isLocalUri(uri: String): Boolean {
-        return !uri.matches("^https?://.*".toRegex())
+        return !uri.matches("^(https?://|mailto:).*".toRegex())
     }
 
     fun parseLinks(html: String): String {

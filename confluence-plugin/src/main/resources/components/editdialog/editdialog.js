@@ -10,49 +10,49 @@ var Git4CEditDialog = {
             },
 
             template:
-            '        <!-- Render the dialog -->'+
-            '        <section ref="git4c_edit_file_dialog" role="dialog" id="' + uuid + '" class="aui-layer aui-dialog2 aui-dialog2-xlarge"'+
-            '                 aria-hidden="true">'+
-            '            <!-- Dialog header -->'+
-            '            <header class="aui-dialog2-header">'+
-            '                <!-- The dialog\'s title -->'+
-            '                <h2 class="aui-dialog2-header-main">Edit file</h2>'+
-            '                <!-- Actions to render on the right of the header -->'+
-            '                <!-- Close icon -->'+
-            '                <a class="aui-dialog2-header-close">'+
-            '                    <span class="aui-icon aui-icon-small aui-iconfont-close-dialog">Close</span>'+
-            '                </a>'+
-            '            </header>'+
-            '             <div ref="dialogcontent" class="aui-dialog2-content" style="padding: 0; min-height: 100%; display: flex">'+
-            '             <!-- Main dialog content -->'+
-            '                 <div v-show="!preview" style="height: 100%; width: 100%">'+
-            '                     <div v-show="!isMarkdown" ref="code_content">'+
-            '                         <pre ref="ace" class="git4c_ace_editor"></pre>'+
-            '                     </div>'+
-            '                     <div v-show="isMarkdown" ref="markdown_content" style="padding: 20px">'+
-            '                         <textarea ref="textarea" class="git4c_edit_file_textarea"></textarea>'+
-            '                     </div>'+
-            '                 </div>'+
-            '                 <div v-show="preview" style="width: 100%; height: 100%;">'+
-            '                     <preview :container="container" :file="content"></preview>'+
-            '                 </div>'+
-            '             </div>'+
+            '        <!-- Render the dialog -->' +
+            '        <section ref="git4c_edit_file_dialog" role="dialog" id="' + uuid + '" class="aui-layer aui-dialog2 aui-dialog2-xlarge"' +
+            '                 aria-hidden="true">' +
+            '            <!-- Dialog header -->' +
+            '            <header class="aui-dialog2-header">' +
+            '                <!-- The dialog\'s title -->' +
+            '                <h2 class="aui-dialog2-header-main">Edit file</h2>' +
+            '                <!-- Actions to render on the right of the header -->' +
+            '                <!-- Close icon -->' +
+            '                <a class="aui-dialog2-header-close">' +
+            '                    <span class="aui-icon aui-icon-small aui-iconfont-close-dialog">Close</span>' +
+            '                </a>' +
+            '            </header>' +
+            '             <div ref="dialogcontent" class="aui-dialog2-content" style="padding: 0; min-height: 100%; display: flex">' +
+            '             <!-- Main dialog content -->' +
+            '                 <div v-show="!preview" style="height: 100%; width: 100%">' +
+            '                     <div v-show="!isMarkdown" ref="code_content">' +
+            '                         <pre ref="ace" class="git4c_ace_editor"></pre>' +
+            '                     </div>' +
+            '                     <div v-show="isMarkdown" ref="markdown_content" style="padding: 20px">' +
+            '                         <textarea ref="textarea" class="git4c_edit_file_textarea"></textarea>' +
+            '                     </div>' +
+            '                 </div>' +
+            '                 <div v-show="preview" style="width: 100%; height: 100%;">' +
+            '                     <preview :container="container" :file="content"></preview>' +
+            '                 </div>' +
+            '             </div>' +
             '            <!-- Dialog footer -->' +
-            '            <footer class="aui-dialog2-footer">'+
+            '            <footer class="aui-dialog2-footer">' +
             '                <div class="aui-dialog2-footer-actions" style="height: 100%; display: flex; align-items: center">' +
-            '                    <div class="publish-spinner"></div>'+
+            '                    <div class="publish-spinner"></div>' +
             '                    <button :disabled="isAnonymous" id="git4c-edit-dialog-publish-button" @click="saveFile" class="aui-button" style="margin-left: 15px;">Publish</button>' +
             '                    <span v-show="isAnonymous" ref="publish_button_question_mark" style="margin-left: 10px" class="aui-icon aui-icon-small aui-iconfont-help">Anonymous</span>' +
             '                    <button class="aui-button aui-button-link" @click="close">Close</button>' +
             '                </div>' +
-            '                <div class="aui-dialog2-footer-actions" style="margin-right: 15px">'+
+            '                <div class="aui-dialog2-footer-actions" style="margin-right: 15px">' +
             '                    <form class="aui" action="#">' +
             '                        <input id="git4c_commit_message" v-model="commitMessage" class="text" placeholder="What did you change?">' +
             '                    </form>' +
             '                </div>' +
             '                <div v-if="commitMessageErrorMessage" class="aui-dialog2-footer-actions" style="color: red; height: 100%; display: flex; align-items: center; margin-right: 5px">' +
             '                    <div id="git4c-edit-file-dialog-error-message">' +
-            '                        {{ commitMessageErrorMessage }} '+
+            '                        {{ commitMessageErrorMessage }} ' +
             '                    </div>' +
             '                </div>' +
             '                <div class="aui-dialog2-footer-actions" style="height: 100%; display: flex; align-items: center; margin-right: 20px">' +
@@ -69,11 +69,11 @@ var Git4CEditDialog = {
             '                       <label for="checkBoxTwo">Create branch</label>' +
             '                   </div>' +
             '                   <span v-show="false" ref="branch_tooltip" style="margin-left: 10px" class="aui-icon aui-icon-small aui-iconfont-help">New branch</span>' +
-            '                   <div class="preview-spinner" style="margin-left: 20px"></div>'+
-            '                   <button id="togglePreviewButton" @click="togglePreview" class="aui-button" style="margin-left: 15px">{{previewButtonText}}</button>'+
+            '                   <div class="preview-spinner" style="margin-left: 20px"></div>' +
+            '                   <button id="togglePreviewButton" @click="togglePreview" class="aui-button" style="margin-left: 15px">{{previewButtonText}}</button>' +
             '                </div>' +
-            '           </footer>'+
-            '        </section>' ,
+            '           </footer>' +
+            '        </section>',
             data: function () {
                 return {
                     isAnonymous: !AJS.Data.get("remote-user"),
@@ -92,7 +92,7 @@ var Git4CEditDialog = {
                 }
             },
             computed: {
-                isMarkdown: function() {
+                isMarkdown: function () {
                     if (this.file) {
                         return this.file.endsWith("md")
                     } else {
@@ -123,7 +123,7 @@ var Git4CEditDialog = {
                     }
                 }
             },
-            mounted: function() {
+            mounted: function () {
                 AJS.$(this.$refs["branch_tooltip"]).tooltip({
                     title: function () {
                         return "This option allows you to create new branch for your edited file."
@@ -153,15 +153,9 @@ var Git4CEditDialog = {
 
                     const doc = vm.inter.getValue()
 
-                    const o = {
-                        file: vm.file,
-                        content: doc
-                    }
-
-                    Vue.http.post(
-                        UrlService.getRestUrl('documentation', vm.macroUuid, 'file', 'preview'), o)
+                    Git4CApi.generatePreviewForMacro(vm.macroUuid, vm.file, doc)
                         .then(function (response) {
-                            vm.content = response.data
+                            vm.content = response
                             AJS.$("#" + uuid + " .preview-spinner").spinStop()
                             $(vm.$el).find("#togglePreviewButton").removeAttr("disabled");
                             vm.preview = true
@@ -212,6 +206,7 @@ var Git4CEditDialog = {
                             simpleMde = new SimpleMDE({
                                 element: this.$refs.textarea,
                                 spellChecker: false,
+                                toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|", "guide"],
                                 shortcuts: {
                                     "toggleOrderedList": null
                                 }
@@ -247,7 +242,7 @@ var Git4CEditDialog = {
                                     return editor.getValue()
                                 },
                                 hide: function () {
-                                      editor.destroy()
+                                    editor.destroy()
                                 },
                                 resize: function () {
                                     const height = $(vm.$refs["dialogcontent"]).height()
@@ -272,7 +267,7 @@ var Git4CEditDialog = {
 
                         var hidden = false
 
-                        AJS.dialog2(dialogId).on("hide", function() {
+                        AJS.dialog2(dialogId).on("hide", function () {
                             inter.hide()
                             hidden = true
                             if (timeoutId) {
@@ -332,10 +327,6 @@ var Git4CEditDialog = {
                             AJS.$("#" + uuid + " .publish-spinner").spinStop()
                             $(vm.$el).find("#git4c-edit-dialog-publish-button").removeAttr("disabled");
 
-                            if (response.status !== 200) {
-                                throw new Error(response.statusText);
-                            }
-
                             AJSC.flag({
                                 type: 'success',
                                 close: "manual",
@@ -376,7 +367,7 @@ var Git4CEditDialog = {
                                     type: "error",
                                     title: "Uploading failed",
                                     close: "manual",
-                                    body: "Repository is read-only. Your changes were saved on local only branch: <b>" + branch + "</b> in following location: <b>" + repoLocation +"</b>. Please contact Confluence administrator."
+                                    body: "Repository is read-only. Your changes were saved on local only branch: <b>" + branch + "</b> in following location: <b>" + repoLocation + "</b>. Please contact Confluence administrator."
                                 })
 
                             } else if (err.data.type === "ANOTHER_BRANCH") {
@@ -415,39 +406,8 @@ var Git4CEditDialog = {
                 },
 
                 publishDocumentation: function (o) {
-
-                    const wait = function (requestId) {
-
-                        return Vue.http.get(
-                            UrlService.getRestUrl('documentation', 'request', 'publishFile', requestId))
-                            .then(function (response) {
-
-                                if (response.status === 202) {
-
-                                    return new Promise(function (resolve, reject) {
-                                        setTimeout(function () {
-                                            resolve(wait(requestId))
-                                        }, 1000)
-                                    })
-
-                                }
-
-                                return response
-
-                            })
-
-                    }
-
-                    return this.$http.post(
-                        UrlService.getRestUrl('documentation', this.macroUuid, 'file', 'publishFile'), o)
-                        .then(function (response) {
-                            return response.body.requestId
-                        })
-                        .then(function (requestId) {
-                            return wait(requestId)
-                        })
+                    return Git4CApi.updateFileForMacro(this.macroUuid, o)
                 }
-
             }
 
         }

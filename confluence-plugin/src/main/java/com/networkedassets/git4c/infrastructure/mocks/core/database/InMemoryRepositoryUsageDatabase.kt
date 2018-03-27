@@ -10,4 +10,7 @@ class InMemoryRepositoryUsageDatabase : InMemoryCache<RepositoryUsage>(), Reposi
         list.sortByDescending { it.date }
         return list
     }
+
+    override fun getByRepositoryUuid(repositoryUuid: String) = getAll().filter { it.repositoryUuid == repositoryUuid }
+
 }

@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit
 
 abstract class LongConfluenceCache<T : Any>(cacheFactory: CacheFactory, maxEntries: Int) : ConfluenceCache<T>(cacheFactory, CacheSettingsBuilder().expireAfterAccess(10, TimeUnit.DAYS).maxEntries(maxEntries).build())
 abstract class ShortConfluenceCache<T : Any>(cacheFactory: CacheFactory) : ConfluenceCache<T>(cacheFactory, CacheSettingsBuilder().expireAfterAccess(1, TimeUnit.HOURS).build())
-abstract class MinuteConfluenceCache<T : Any>(cacheFactory: CacheFactory) : ConfluenceCache<T>(cacheFactory, CacheSettingsBuilder().expireAfterWrite(1, TimeUnit.MINUTES).build())
 
 abstract class ConfluenceCache<T : Any>(cacheFactory: CacheFactory, expireAfter: CacheSettings) : Cache<T> {
 

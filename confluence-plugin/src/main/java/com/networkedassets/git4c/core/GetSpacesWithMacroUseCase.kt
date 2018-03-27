@@ -1,59 +1,42 @@
 package com.networkedassets.git4c.core
 
-import com.github.kittinunf.result.Result
+import com.networkedassets.git4c.application.BussinesPluginComponents
 import com.networkedassets.git4c.boundary.GetSpacesWithMacroQuery
+import com.networkedassets.git4c.boundary.GetSpacesWithMacroResultRequest
 import com.networkedassets.git4c.boundary.outbound.*
-import com.networkedassets.git4c.boundary.outbound.Page
-import com.networkedassets.git4c.boundary.outbound.Space
-import com.networkedassets.git4c.core.business.*
-import com.networkedassets.git4c.core.datastore.cache.SpacesWithMacroResultCache
+import com.networkedassets.git4c.core.business.ConfluenceQueryExecutorHolder
+import com.networkedassets.git4c.core.business.PageMacroExtractor
+import com.networkedassets.git4c.core.business.PageManager
+import com.networkedassets.git4c.core.business.SpaceManager
+import com.networkedassets.git4c.core.bussiness.ComputationCache
 import com.networkedassets.git4c.core.datastore.repositories.GlobForMacroDatabase
 import com.networkedassets.git4c.core.datastore.repositories.MacroLocationDatabase
 import com.networkedassets.git4c.core.datastore.repositories.MacroSettingsDatabase
 import com.networkedassets.git4c.core.datastore.repositories.RepositoryDatabase
+import com.networkedassets.git4c.core.usecase.async.ComputationResultUseCase
+import com.networkedassets.git4c.core.usecase.async.SingleInSystemAsyncUseCase
 import com.networkedassets.git4c.data.MacroLocation
 import com.networkedassets.git4c.data.MacroType
-import com.networkedassets.git4c.delivery.executor.execution.UseCase
 import com.networkedassets.git4c.utils.getLogger
-import com.networkedassets.git4c.utils.info
-import java.util.*
 
 class GetSpacesWithMacroUseCase(
-        private val spaceManager: SpaceManager,
-        private val pageManager: PageManager,
-        val macroSettingsDatabase: MacroSettingsDatabase,
-        val repositoryDatabase: RepositoryDatabase,
-        private val globForMacroDatabase: GlobForMacroDatabase,
-        private val pageMacroExtractor: PageMacroExtractor,
-        private val confluenceQueryExecutorHolder: ConfluenceQueryExecutorHolder,
-        val cache: SpacesWithMacroResultCache,
-        val macroLocationDatabase: MacroLocationDatabase
-) : UseCase<GetSpacesWithMacroQuery, RequestId> {
+        components: BussinesPluginComponents,
+        private val spaceManager: SpaceManager = components.utils.spaceManager,
+        private val pageManager: PageManager = components.utils.pageManager,
+        val macroSettingsDatabase: MacroSettingsDatabase = components.database.macroSettingsDatabase,
+        val repositoryDatabase: RepositoryDatabase = components.providers.repositoryProvider,
+        private val globForMacroDatabase: GlobForMacroDatabase = components.providers.globsForMacroProvider,
+        private val pageMacroExtractor: PageMacroExtractor = components.macro.pageMacroExtractor,
+        private val confluenceQueryExecutorHolder: ConfluenceQueryExecutorHolder = components.executors.confluenceQueryExecutor,
+        val macroLocationDatabase: MacroLocationDatabase = components.database.macroLocationDatabase,
+        computation: ComputationCache<Spaces> = components.async.spacesWithMacroComputationCache
+) : SingleInSystemAsyncUseCase<GetSpacesWithMacroQuery, Spaces>
+(components, computation, confluenceQueryExecutorHolder) {
 
     val log = getLogger()
 
-    override fun execute(request: GetSpacesWithMacroQuery): Result<RequestId, Exception> {
-
-
-        val currentElements = cache.getAll()
-        val existingResult = currentElements.find { computation ->
-            computation.state == Computation.ComputationState.RUNNING
-        }
-
-        if (existingResult != null) {
-            log.info { "There is another operation currently in progress, so you will receive result from that operation" }
-            return Result.of { RequestId(existingResult.id) }
-        }
-
-        log.info { "There is no another operation currently in progress, generating new process to gather data" }
-
-        val id = UUID.randomUUID().toString()
-        cache.put(id, Computation(id))
-
-        confluenceQueryExecutorHolder.getExecutor()
-                .execute { firstMakeACleanUp(id) }
-
-        return Result.of { RequestId(id) }
+    override fun executedAsync(requestId: String, request: GetSpacesWithMacroQuery) {
+        firstMakeACleanUp(requestId)
     }
 
     private fun firstMakeACleanUp(computationId: String) {
@@ -104,7 +87,7 @@ class GetSpacesWithMacroUseCase(
 
     private fun prepareDataForSpacesWithMacros(computationId: String) {
 
-        cache.put(computationId, Computation(computationId, Computation.ComputationState.RUNNING, data = Spaces(arrayListOf())))
+        temporal(computationId, Spaces(arrayListOf()))
 
         val spaces = macroLocationDatabase.getAll()
                 .asSequence()
@@ -130,7 +113,7 @@ class GetSpacesWithMacroUseCase(
 
     private fun calculateSpacesWithMacroOperation(computationId: String, spacesIterator: Iterator<Pair<String, List<Pair<String, String>>>>) {
         val spaces = spacesIterator.next()
-        val result = cache.get(computationId)
+        val result = data(computationId)
         val spaceId = spaces.first
         val space = spaceManager.getSpace(spaceId) ?: return confluenceQueryExecutorHolder.getExecutor()
                 .execute { calculateSpacesWithMacrosLoop(computationId, spacesIterator) }
@@ -138,7 +121,8 @@ class GetSpacesWithMacroUseCase(
         list.addAll(result!!.data!!.spaces)
         list.add(Space(space.name, space.url, listOf()))
         val spacesList = Spaces(list)
-        cache.put(computationId, Computation(computationId, Computation.ComputationState.RUNNING, data = spacesList))
+        temporal(computationId, spacesList)
+
         val pages = spaces.second
                 .asSequence()
                 .groupBy({ it.first }, { it.second })
@@ -158,7 +142,7 @@ class GetSpacesWithMacroUseCase(
     }
 
     private fun pagesForSpaceOperation(computationId: String, pages: Iterator<Pair<String, List<String>>>, spacesIterator: Iterator<Pair<String, List<Pair<String, String>>>>, spaceName: String, spaceUrl: String) {
-        val result = cache.get(computationId)
+        val result = data(computationId)
         val currentPages = result!!.data!!.spaces.find { it.name == spaceName && it.url == spaceUrl }!!.pages
         val page = pages.next()
         val pageId = page.first
@@ -192,21 +176,27 @@ class GetSpacesWithMacroUseCase(
         currentPagesList.addAll(currentPages)
         currentPagesList.add(pageToIndex)
         val spaceToIndex = Space(spaceName, spaceUrl, currentPagesList)
-        val existingSpace = result!!.data!!.spaces.find { it.name == spaceName && it.url == spaceUrl }
-        val existingSpaces = result!!.data!!.spaces
+        val existingSpace = result.data!!.spaces.find { it.name == spaceName && it.url == spaceUrl }
+        val existingSpaces = result.data!!.spaces
         val newSpaces = mutableListOf<Space>()
         newSpaces.addAll(existingSpaces)
         newSpaces.remove(existingSpace)
         newSpaces.add(spaceToIndex)
         val spacesList = Spaces(newSpaces)
-        cache.put(computationId, Computation(computationId, Computation.ComputationState.RUNNING, data = spacesList))
+        temporal(computationId, spacesList)
         confluenceQueryExecutorHolder.getExecutor()
                 .execute { pagesForSpaceLoop(computationId, pages, spaceName, spaceUrl, spacesIterator) }
     }
 
 
     private fun finishOperation(computationId: String) {
-        val result = cache.get(computationId)
-        cache.put(computationId, Computation(computationId, Computation.ComputationState.FINISHED, data = result!!.data))
+        val result = data(computationId)
+        success(computationId, result!!.data!!)
     }
 }
+
+class GetSpacesWithMacroResultUseCase(
+        components: BussinesPluginComponents,
+        computations: ComputationCache<Spaces> = components.async.spacesWithMacroComputationCache
+) : ComputationResultUseCase<GetSpacesWithMacroResultRequest, Spaces>
+(components, computations)

@@ -1,76 +1,67 @@
 package com.networkedassets.git4c.core
 
-import com.github.kittinunf.result.Result
+import com.networkedassets.git4c.application.BussinesPluginComponents
 import com.networkedassets.git4c.boundary.RefreshMacroLocationsCommand
-import com.networkedassets.git4c.boundary.outbound.RequestId
+import com.networkedassets.git4c.boundary.RefreshMacroLocationsResultCommand
 import com.networkedassets.git4c.core.business.*
-import com.networkedassets.git4c.core.datastore.cache.RefreshLocationUseCaseCache
+import com.networkedassets.git4c.core.bussiness.ComputationCache
 import com.networkedassets.git4c.core.datastore.repositories.MacroLocationDatabase
 import com.networkedassets.git4c.core.datastore.repositories.MacroSettingsDatabase
 import com.networkedassets.git4c.core.datastore.repositories.RepositoryDatabase
+import com.networkedassets.git4c.core.usecase.async.ComputationResultUseCase
+import com.networkedassets.git4c.core.usecase.async.SingleInSystemAsyncUseCase
 import com.networkedassets.git4c.data.MacroLocation
 import com.networkedassets.git4c.data.MacroType
-import com.networkedassets.git4c.delivery.executor.execution.UseCase
-import java.util.*
 
 class RefreshMacroLocationsUseCase(
-        val macroLocationDatabase: MacroLocationDatabase,
-        val macroSettingsDatabase: MacroSettingsDatabase,
-        val repositoryDatabase: RepositoryDatabase,
-        val spaceManager: SpaceManager,
-        val pageManager: PageManager,
-        val pageMacroExtractor: PageMacroExtractor,
-        val refreshLocationUseCaseCache: RefreshLocationUseCaseCache,
-        val confluenceQueryExecutorHolder: ConfluenceQueryExecutorHolder
-) : UseCase<RefreshMacroLocationsCommand, RequestId> {
+        components: BussinesPluginComponents,
+        val macroLocationDatabase: MacroLocationDatabase = components.database.macroLocationDatabase,
+        val macroSettingsDatabase: MacroSettingsDatabase = components.providers.macroSettingsProvider,
+        val repositoryDatabase: RepositoryDatabase = components.providers.repositoryProvider,
+        val spaceManager: SpaceManager = components.utils.spaceManager,
+        val pageManager: PageManager = components.utils.pageManager,
+        val pageMacroExtractor: PageMacroExtractor = components.macro.pageMacroExtractor,
+        computations: ComputationCache<Unit> = components.async.refreshLocationUseCaseCache,
+        confluenceQueryExecutorHolder: ConfluenceQueryExecutorHolder = components.executors.confluenceQueryExecutor
+) : SingleInSystemAsyncUseCase<RefreshMacroLocationsCommand, Unit>
+(components, computations, confluenceQueryExecutorHolder) {
 
-    override fun execute(request: RefreshMacroLocationsCommand): Result<RequestId, Exception> {
-
-        val anyExistingJobInProgress = refreshLocationUseCaseCache.getAll().find { it.state == Computation.ComputationState.RUNNING }
-        if (anyExistingJobInProgress != null) {
-            return Result.of { RequestId(anyExistingJobInProgress.id) }
-        }
-
-        val id = UUID.randomUUID().toString()
-        refreshLocationUseCaseCache.put(id, Computation(id))
-        confluenceQueryExecutorHolder.getExecutor()
-                .execute { refreshProcess(id) }
-        return Result.of { RequestId(id) }
+    override fun executedAsync(requestId: String, request: RefreshMacroLocationsCommand) {
+        refreshProcess(requestId)
     }
 
-
-    private fun refreshProcess(id: String) {
+    private fun refreshProcess(operationId: String) {
         macroLocationDatabase.removeAll()
         val spaceKeys = spaceManager.getAllSpaceKeys().asSequence().iterator()
-        confluenceQueryExecutorHolder.getExecutor()
-                .execute { searchForMacrosInSpaces(id, spaceKeys) }
+        executorHolder.getExecutor()
+                .execute { searchForMacrosInSpaces(operationId, spaceKeys) }
     }
 
     private fun searchForMacrosInSpaces(operationId: String, spaceKeys: Iterator<String>) {
         if (spaceKeys.hasNext()) {
             searchForMacrosInSpacesLoop(operationId, spaceKeys)
         } else {
-            finishProcess(operationId)
+            success(operationId, Unit)
         }
     }
 
     private fun searchForMacrosInSpacesLoop(operationId: String, spaceKeys: Iterator<String>) {
         val spaceKey = spaceKeys.next()
-        spaceManager.getSpace(spaceKey) ?: return confluenceQueryExecutorHolder.getExecutor()
+        spaceManager.getSpace(spaceKey) ?: return executorHolder.getExecutor()
                 .execute { searchForMacrosInSpaces(operationId, spaceKeys) }
-        confluenceQueryExecutorHolder.getExecutor()
+        executorHolder.getExecutor()
                 .execute { searchInPagesForSpace(operationId, spaceKey, spaceKeys) }
     }
 
     private fun searchInPagesForSpace(operationId: String, spaceKey: String, spaceKeys: Iterator<String>) {
         val pages = pageManager.getAllPagesKeysForSpace(spaceKey).asSequence().iterator()
-        confluenceQueryExecutorHolder.getExecutor()
+        executorHolder.getExecutor()
                 .execute { searchForMacrosOnPagesAtSpace(operationId, pages, spaceKeys, spaceKey) }
     }
 
     private fun searchForMacrosOnPagesAtSpace(operationId: String, pages: Iterator<Long>, spaceKeys: Iterator<String>, spaceKey: String) {
         if (pages.hasNext()) {
-            confluenceQueryExecutorHolder.getExecutor()
+            executorHolder.getExecutor()
                     .execute { searchMacroOnPageLoop(operationId, pages, spaceKeys, spaceKey) }
         } else {
             searchForMacrosInSpaces(operationId, spaceKeys)
@@ -79,7 +70,7 @@ class RefreshMacroLocationsUseCase(
 
     private fun searchMacroOnPageLoop(operationId: String, pages: Iterator<Long>, spaceKeys: Iterator<String>, spaceKey: String) {
         val pageId = pages.next()
-        val page = pageManager.getPage(pageId) ?: return confluenceQueryExecutorHolder.getExecutor()
+        val page = pageManager.getPage(pageId) ?: return executorHolder.getExecutor()
                 .execute { searchForMacrosOnPagesAtSpace(operationId, pages, spaceKeys, spaceKey) }
 
         pageMacroExtractor.extractMacro(page.content).forEach { macro ->
@@ -87,7 +78,7 @@ class RefreshMacroLocationsUseCase(
             updateMacroType(macro)
         }
 
-        confluenceQueryExecutorHolder.getExecutor()
+        executorHolder.getExecutor()
                 .execute { searchForMacrosOnPagesAtSpace(operationId, pages, spaceKeys, spaceKey) }
     }
 
@@ -97,8 +88,10 @@ class RefreshMacroLocationsUseCase(
             macroSettingsDatabase.put(macro.uuid, this)
         }
     }
-
-    private fun finishProcess(operationId: String) {
-        refreshLocationUseCaseCache.put(operationId, Computation(operationId, Computation.ComputationState.FINISHED, data = Unit))
-    }
 }
+
+class RefreshMacroLocationsResultUseCase(
+        components: BussinesPluginComponents,
+        computations: ComputationCache<Unit> = components.async.refreshLocationUseCaseCache
+) : ComputationResultUseCase<RefreshMacroLocationsResultCommand, Unit>
+(components, computations)

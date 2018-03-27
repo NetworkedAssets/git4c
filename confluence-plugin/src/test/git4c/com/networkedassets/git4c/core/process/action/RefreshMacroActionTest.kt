@@ -3,8 +3,8 @@ package com.networkedassets.git4c.core.process.action
 import com.jayway.awaitility.Awaitility.await
 import com.networkedassets.git4c.data.MacroSettings
 import com.networkedassets.git4c.data.RepositoryWithNoAuthorization
-import com.networkedassets.git4c.utils.genTransactionId
 import com.networkedassets.git4c.utils.InMemoryApplication.getComponents
+import com.networkedassets.git4c.utils.genTransactionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.util.concurrent.TimeUnit
@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 class RefreshMacroActionTest {
 
     val component = getComponents()
-    val action = component.refreshProcess
+    val action = component.processing.refreshProcess
 
     @Test
     fun `Fetch and convert from repository should be done in short time`() {
@@ -27,7 +27,7 @@ class RefreshMacroActionTest {
         // When
         for (i in 1..numberOfRefreshes) {
             Thread {
-                val repository = RepositoryWithNoAuthorization(genTransactionId(), "src/test/resources")
+                val repository = RepositoryWithNoAuthorization(genTransactionId(), "src/test/resources", false)
                 val settings = MacroSettings(genTransactionId(), repository.uuid, "master", "item", null, null)
                 action.macroSettingsDatabase.put(settings.uuid, settings)
                 action.repositoryDatabase.put(repository.uuid, repository)

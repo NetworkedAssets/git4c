@@ -55,13 +55,13 @@
         '         <div class="aui-item">'+
         '            <div class="field-group">'+
         '                <label for="doc_macro-predefined_repository">Repository</label>'+
-        '                <select class="select" v-show="(repositories && repositories.length!=0) || customRepository || (recentlyUsedRepositories && recentlyUsedRepositories.length!=0)" v-model="repository"  style="max-width: 50%">'+
-        '                   <optgroup v-if="customRepository" label="Choosen repository">'+
+        '                <select class="select" v-show="((repositories && repositories.length!=0) || customRepository || (recentlyUsedRepositories && recentlyUsedRepositories.length!=0)) && !loadingRepositories" v-model="repository"  style="max-width: 50%">'+
+        '                   <optgroup v-if="customRepository" label="Chosen repository">'+
         '                      <option v-bind:value="customRepository">'+
         '                         {{ customRepository.repositoryName }}'+
         '                      </option>'+
         '                   </optgroup>'+
-        '                   <optgroup label="Recently used repositories">'+
+        '                   <optgroup v-show="!forcedPredefined" label="Recently used repositories">'+
         '                       <option  v-for="repo in recentlyUsedRepositories" v-bind:value="repo">'+
         '                         {{ repo.repositoryName }}'+
         '                       </option>'+
@@ -72,11 +72,14 @@
         '                       </option>'+
         '                   </optgroup>'+
         '                </select>'+
-        '                <select class="select" v-show="(!repositories || repositories.length==0) && !customRepository && !(recentlyUsedRepositories && recentlyUsedRepositories.length!=0)" :disabled="true"  style="max-width: 50%">'+
+        '                <select class="select" v-show="((!repositories || repositories.length==0) && !customRepository && !(recentlyUsedRepositories && recentlyUsedRepositories.length!=0)) && !loadingRepositories" :disabled="true"  style="width: 50%">'+
         '                    <option>No Repositories Available</option>'+
         '                </select>'+
-        '                <button  v-bind:disabled="forcedPredefined" ref="custom_repository_button"  id="git4c-multi_file_dialog-add_repository-button" @click.prevent v-on:click="openCustomRepositoryDialog" class="aui-button aui-button-primary">'+
-        '                    <span class="aui-icon aui-icon-small aui-iconfont-add"/>'+
+        '                <select class="select" v-show="loadingRepositories" :disabled="true"  style="width: 50%">'+
+        '                     <option>Loading repositories</option>'+
+        '                </select>'+
+        '                <button v-bind:disabled="forcedPredefined || loadingRepositories" ref="custom_repository_button" id="git4c-multi_file_dialog-add_repository-button" @click.prevent v-on:click="openCustomRepositoryDialog" class="aui-button aui-button-primary">'+
+        '                     <span class="aui-icon aui-icon-small aui-iconfont-add"/>'+
         '                </button>'+
         '            </div>'+
         '            <div class="field-group">'+
@@ -181,9 +184,12 @@
                 currentError: undefined,
                 errors: errors,
 
+                loadingRepositories: true,
 
                 saving: false,
                 isFilled: false,
+
+                branchDownloadPromise: undefined
 
             }
 
@@ -215,11 +221,14 @@
                 data.repositories = undefined
                 data.uuid = uuid
 
+                data.loadingRepositories = undefined
+
                 data.downloadingFiles = undefined
 
                 data.fileTree = undefined
                 data.recentlyUsedRepositories = undefined
 
+                data.branchDownloadPromise = undefined
 
 
                 tinymce.confluence.macrobrowser.macroBrowserComplete({
@@ -294,18 +303,19 @@
                     },
                     processCustomRepository: function(repository){
                         const vm = this
-                        const response = Vue.http.post(restUrl + "/repository/verify", {sourceRepositoryUrl: repository.sourceRepositoryUrl, credentials: repository.credentials}).then(function(response) {
-                            if (response.data.ok == false) {
-                                throw Error("",[""],response.data.status);
-                            }
-                            vm.postProcessCustomRepository(repository)
-                        }, function(error) {
-                            error.text().then(function(text) {
-                                    vm.$refs.custom_repository_dialog.saving = false
-                                    vm.$refs.custom_repository_dialog.showError(text)
+                        Git4CApi.verifyRepository(repository.sourceRepositoryUrl, repository.credentials)
+                            .then(function(data) {
+                                if (data.ok === false) {
+                                    throw Error("",[""], data.status);
                                 }
-                            )
-                        })
+                                vm.postProcessCustomRepository(repository)
+                            }, function(error) {
+                                error.text().then(function(text) {
+                                        vm.$refs.custom_repository_dialog.saving = false
+                                        vm.$refs.custom_repository_dialog.showError(text)
+                                    }
+                                )
+                            })
 
                     },
                     postProcessCustomRepository: function (repository) {
@@ -325,55 +335,64 @@
                         const vm = this
                         this.downloadingBranches = true;
                         if(this.repository) {
+
+                            if (this.branchDownloadPromise) {
+                                this.branchDownloadPromise.stop()
+                            }
+
                             this.branches = undefined;
                             const isPredefined = this.isPredefined()
                             var promise = undefined
                             if (this.customRepository && this.customRepository.uuid && !isPredefined) {
                                 const uuid = this.customRepository.uuid
-                                promise = Vue.http.get(restUrl + "/repository/" + uuid + "/branches")
+                                promise = Git4CApi.getBranches.forCustomRepository(uuid)
                             } else {
                                 if (isPredefined) {
                                     const uuid = this.repository.uuid
-                                    promise = Vue.http.get(restUrl + "/predefine/" + uuid + "/branches")
-
+                                    promise = Git4CApi.getBranches.forPredefinedRepository(uuid)
                                 } else {
-                                    const repositoryForBranches = {
-                                        sourceRepositoryUrl: this.customRepository.sourceRepositoryUrl,
-                                        credentials: this.customRepository.credentials
+                                    const repositoryUrl = this.customRepository.sourceRepositoryUrl
+                                    const credentials = this.customRepository.credentials
+                                    if(repositoryUrl) {
+                                        promise = Git4CApi.getBranches.forRepository(repositoryUrl, credentials)
                                     }
-                                    if(repositoryForBranches.sourceRepositoryUrl)
-                                    promise = Vue.http.post(restUrl + "/repository/branches", repositoryForBranches)
                                 }
 
                             }
-                            if(promise) {
-                                promise.then(function(response) {
-                                    vm.downloadingBranches = false;
-                                    vm.branches = response.body.allBranches
 
-                                    const masterId = vm.branches.indexOf("master")
-                                    const developId = vm.branches.indexOf("develop")
-                                    const prevBranchId = vm.branches.indexOf(vm.prevBranch)
-                                    if (prevBranchId !== -1) {
-                                        vm.branch = vm.branches[prevBranchId]
-                                    } else {
-                                        if (masterId !== -1) {
-                                            vm.branch = vm.branches[masterId]
-                                        } else if (developId !== -1) {
-                                            vm.branch = vm.branches[developId]
+                            this.branchDownloadPromise = promise
+
+                            if(promise) {
+                                promise
+                                    .then(function(response) {
+                                        vm.downloadingBranches = false;
+                                        const branches = response.allBranches
+
+                                        const masterId = branches.indexOf("master")
+                                        const developId = branches.indexOf("develop")
+                                        const prevBranchId = branches.indexOf(vm.prevBranch)
+                                        if (prevBranchId !== -1) {
+                                            vm.branch = branches[prevBranchId]
                                         } else {
-                                            vm.branch = vm.branches[0]
+                                            if (masterId !== -1) {
+                                                vm.branch = branches[masterId]
+                                            } else if (developId !== -1) {
+                                                vm.branch = branches[developId]
+                                            } else {
+                                                vm.branch = branches[0]
+                                            }
+                                            vm.prevBranch = vm.branch
                                         }
-                                        vm.prevBranch = vm.branch
-                                    }
-                                }, function(error) {
-                                    error.text().then(function(text) {
-                                            vm.showError(text)
-                                            vm.currentError = text
-                                            vm.downloadingBranches = false
-                                        }
-                                    )
-                                })
+                                        vm.branches = branches
+                                    })
+                                    .catch(function(error) {
+                                        error.text().then(function(text) {
+                                                vm.showError(text)
+                                                vm.currentError = text
+                                                vm.downloadingBranches = false
+                                            }
+                                        )
+                                    })
                             }
                         }
 
@@ -385,40 +404,37 @@
                         if(this.repository) {
                             const isPredefined = this.isPredefined()
                             var promise
-                            const branch = {
-                                branch: this.branch
-                            }
+                            const branch = this.branch
                             if (this.customRepository && this.customRepository.uuid && !isPredefined) {
                                 const uuid = this.customRepository.uuid
-                                promise = Vue.http.post(restUrl + "/repository/" + uuid + "/files", branch)
+                                promise = Git4CApi.getFilesTree.forCustomRepository(uuid, branch)
                             } else {
                                 if (isPredefined) {
                                     const uuid = this.repository.uuid
-                                    promise = Vue.http.post(restUrl + "/predefine/" + uuid + "/files", branch)
-
+                                    promise = Git4CApi.getFilesTree.forPredefinedRepository(uuid, branch)
                                 } else {
-                                    const repositoryForFiles = {
-                                        sourceRepositoryUrl: this.customRepository.sourceRepositoryUrl,
-                                        credentials: this.customRepository.credentials,
-                                        branch: branch.branch
-                                    }
-                                    if (repositoryForFiles.sourceRepositoryUrl) {
-                                        promise = Vue.http.post(restUrl + "/repository/files", repositoryForFiles)
+                                    const repositoryUrl = this.customRepository.sourceRepositoryUrl
+                                    const credentials = this.customRepository.credentials
+
+                                    if (repositoryUrl) {
+                                        promise = Git4CApi.getFilesTree.forRepository(repositoryUrl, credentials, branch)
                                     }
                                 }
                             }
                             if(promise) {
-                                promise.then(function(response) {
-                                    var tree = response.data.tree
-                                    vm.fileTree = vm.filterFileTreeNodes(tree, function(node) {return node.type === "DIR"} )
-                                    vm.downloadingFiles = false
-                                    createFileTreeDialog(vm.fileTree, vm.processSelectedRootFilter, vm)
-                                }, function(error) {
-                                    vm.downloadingFiles = false
-                                    error.text().then(function(text) {
-                                        vm.showError(text)
-                                })
-                                })
+                                promise
+                                    .then(function(response) {
+                                        var tree = response.tree
+                                        vm.fileTree = vm.filterFileTreeNodes(tree, function(node) {return node.type === "DIR"} )
+                                        vm.downloadingFiles = false
+                                        createFileTreeDialog(vm.fileTree, vm.processSelectedRootFilter, vm)
+                                    })
+                                    .catch(function(error) {
+                                        vm.downloadingFiles = false
+                                        error.text().then(function(text) {
+                                            vm.showError(text)
+                                        })
+                                    })
                             }
                         }
                     },
@@ -431,7 +447,7 @@
                                 name: tree.name,
                                 type: tree.type,
                                 children: (tree.children.map(function(it) { return vm.filterFileTreeNodes(it, predicate) })).filter(function(it) {return it!== undefined})
-                                }
+                            }
                         }
                     },
 
@@ -490,89 +506,122 @@
                             }
                         }
 
+                        var rd
+
+                        if (this.rootDirectory) {
+                            rd = this.rootDirectory + "/**"
+                        } else {
+                            rd = null
+                        }
+
                         toSend = {
                             repositoryDetails: repositoryDetails,
                             repositoryName: repositoryName,
                             branch: this.branch,
                             glob:  globToSave,
                             defaultDocItem: defaultDocItemToSave,
-                            rootDirectory: this.rootDirectory
+                            rootDirectory: rd
                         }
-                        this.$http.post(restUrl, toSend, {}).then(function(response) {
-                            const uuid = response.body.uuid
-                            hide(uuid)
-                            vm.saving = false
-                        }, function(error) {
-                            vm.saving = false
-                            error.text().then(function(text) {
-                                vm.showError(text)
+
+                        Git4CApi.createMacro(toSend)
+                            .then(function(response) {
+                                const uuid = response.uuid
+                                hide(uuid)
+                                vm.saving = false
                             })
-                        })
+                            .catch(function(error) {
+                                vm.saving = false
+                                error.text().then(function(text) {
+                                    vm.showError(text)
+                                })
+                            })
 
                     },
                     getRepositoryList: function () {
                         const vm = this;
 
+                        var downloaded = 0
 
-                        vm.$http.get(restUrl + "/repository/usages", {}).then(function(response) {
-                            vm.recentlyUsedRepositories = response.body.usages.reverse()
-                        }, function(error) {
-                            error.text().then(function(text) {
-                                vm.showError(text)
+                        const registerDownload = function () {
+                            downloaded++
+                            if (downloaded === 2) {
+                                vm.loadingRepositories = false
+                            }
+                        }
+
+                        Git4CApi.getRepositoryUsages()
+                            .then(function (usages) {
+                                registerDownload()
+                                vm.recentlyUsedRepositories = usages.reverse()
                             })
-                        })
+                            .catch(function (error) {
+                                registerDownload()
+                                error.text().then(function(text) {
+                                    vm.showError(text)
+                                })
+                            })
 
-
-                        vm.$http.get(restUrl + "/predefine", {}).then(function(response) {
-                            vm.repositories = response.data
-                            if(vm.predefinedRepositoryUuid){
-                                var list = vm.repositories.filter( function(it) { return (it.uuid === vm.predefinedRepositoryUuid) } )
-                                if(list.length !== 0){
-                                    vm.repository = list[0]
-                                }else{
-                                    vm.predefinedRepositoryUuid = null
+                        Git4CApi.getPredefinedRepositories()
+                            .then(function(repositories) {
+                                registerDownload()
+                                if(vm.predefinedRepositoryUuid){
+                                    var list = repositories.filter( function(it) { return (it.uuid === vm.predefinedRepositoryUuid) } )
+                                    if(list.length !== 0){
+                                        vm.repository = list[0]
+                                    }else{
+                                        vm.predefinedRepositoryUuid = null
+                                    }
                                 }
-                            }
-                            if(!vm.repository && !vm.customRepositoryName) {
-                                vm.repository = vm.repositories[0]
-                            }
-                        }, function(error) {
-                            error.text().then(function(text) {
-                                vm.showError(text)
+                                vm.repositories = repositories
+                                if(!vm.repository && !vm.customRepositoryName) {
+                                    vm.repository = repositories[0]
+                                }
                             })
-                        })
-
+                            .catch(function(error) {
+                                registerDownload()
+                                error.text().then(function(text) {
+                                    vm.showError(text)
+                                })
+                            })
 
                     },
                     getGlobList: function () {
                         const vm = this;
 
-                        vm.$http.get(restUrl + "/glob", {}).then(function(response) {
-                            vm.globList = response.data.globs.map(function (data) {
-                                return {id: data.glob, text: data.glob + " (" + data.name + ")"}
-                            })
+                        Git4CApi.getGlobs()
+                            .then(function(globs) {
+                                const globList = globs.map(function (data) {
+                                    return {id: data.glob, text: data.glob + " (" + data.name + ")"}
+                                })
 
-                            const select2 = $(vm.$refs['doc_macro-glob'])
+                                const select2 = $(vm.$refs['doc_macro-glob'])
 
-                            select2.auiSelect2({
-                                tags: vm.globList,
-                                tokenSeparators: [",", " "]
-                            }).on('change', function (e) {
-                                if(e.val)
-                                vm.glob = e.val.join();
-                                else{
-                                    var value = $(this).val();
-                                    vm.glob = value;
+                                select2.auiSelect2({
+                                    tags: globList,
+                                    tokenSeparators: [",", " "]
+                                }).on('change', function (e) {
+                                    if (e.val)
+                                        vm.glob = e.val.join();
+                                    else {
+                                        const value = $(this).val();
+                                        vm.glob = value;
+                                    }
+                                });
+
+                                const currentGlobs = vm.glob
+
+                                if (currentGlobs) {
+                                    select2.auiSelect2("val", currentGlobs.split(","));
                                 }
-                            });
 
-                            select2.auiSelect2("val", vm.glob.split(","));
+                                vm.globList = globList
 
-                        }, function(error) {
-                            error.text().then(function(text) {
-                                vm.showError(text)
                             })
-                        })
+                            .catch(function(error) {
+                                error.text().then(function(text) {
+                                    vm.showError(text)
+                                })
+                            })
                     },
                     checkIfFilled: function () {
                         !this.repository ? this.isFilled = false : !this.branch ? this.isFilled = false : this.isFilled = true
@@ -596,20 +645,22 @@
                             vm.repository = vm.customRepository
                         }
 
-                        Vue.http.get(restUrl + "/settings/repository/predefine/force").then(function(response) {
-                            if(response.body.forced === true) {
-                                vm.forcedPredefined = true
-                                vm.$refs.custom_repository_button.title = "Administrator blocked custom repositories"
-                            }
-                            else {
-                                vm.forcedPredefined = false
-                            }
+                        Git4CApi.getPredefinedRepositoriesForceSetting()
+                            .then(function(response) {
+                                if(response.forced === true) {
+                                    vm.forcedPredefined = true
+                                    vm.$refs.custom_repository_button.title = "Administrator blocked custom repositories"
+                                }
+                                else {
+                                    vm.forcedPredefined = false
+                                }
 
-                        }, function(error) {
-                            error.text().then(function(text) {
-                                vm.showError(text)
                             })
-                        })
+                            .catch(function(error) {
+                                error.text().then(function(text) {
+                                    vm.showError(text)
+                                })
+                            })
 
                         if(data.uuid){
                             if(this.glob){
@@ -620,24 +671,26 @@
                                 }
                             }
 
-                            Vue.http.get(restUrl + "/" + data.uuid).then(function(response) {
-                                if(vm.customRepositoryName) {
-                                    vm.customRepository = {
-                                        uuid: response.body.repositoryUuid,
-                                        repositoryName: vm.customRepositoryName
+                            Git4CApi.getMacroInformation(data.uuid)
+                                .then(function(response) {
+                                    if(vm.customRepositoryName) {
+                                        vm.customRepository = {
+                                            uuid: response.repositoryUuid,
+                                            repositoryName: vm.customRepositoryName
+                                        }
+                                        vm.repository = vm.customRepository
                                     }
-                                    vm.repository = vm.customRepository
-                                }
-                            }, function(error) {
-                                if(error.statusText == "Not Found")
-                                {
-                                    vm.showError("REPOSITORY_REMOVED")
-                                }else {
-                                    error.text().then(function(text) {
-                                        vm.showError(text)
-                                    })
-                                }
-                            })
+                                })
+                                .catch(function(error) {
+                                    if(error.statusText == "Not Found")
+                                    {
+                                        vm.showError("REPOSITORY_REMOVED")
+                                    }else {
+                                        error.text().then(function(text) {
+                                            vm.showError(text)
+                                        })
+                                    }
+                                })
                             if(this.customRepositoryName && this.customRepositoryUrl) {
                                 const repoInfo = {
                                     name: this.customRepositoryName,
@@ -657,9 +710,8 @@
                         }
                     },
                     processSelectedRootFilter: function(file) {
-                        const rootGlob =  file + "/**"
                         if (file) {
-                            this.rootDirectory = rootGlob
+                            this.rootDirectory = file
                         }
                     }
 

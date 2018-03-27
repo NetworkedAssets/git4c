@@ -60,4 +60,4 @@ data class LineNumbers(
 
 data class Method(
         val method: String
-): ExtractorData()
+) : ExtractorData()

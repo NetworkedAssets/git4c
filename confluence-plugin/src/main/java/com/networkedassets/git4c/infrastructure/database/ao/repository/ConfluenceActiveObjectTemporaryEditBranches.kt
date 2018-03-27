@@ -28,7 +28,7 @@ class ConfluenceActiveObjectTemporaryEditBranches(val ao: ActiveObjects) : Tempo
     }
 
     override fun removeAll() {
-        ao.find(TemporaryEditBranchEntity::class.java).forEach { ao.delete(it) }
+        ao.find(TemporaryEditBranchEntity::class.java).forEach { remove(it.uuid) }
     }
 
     private fun getFromDatabase(uuid: String) = ao.findByUuid<TemporaryEditBranchEntity>(uuid)

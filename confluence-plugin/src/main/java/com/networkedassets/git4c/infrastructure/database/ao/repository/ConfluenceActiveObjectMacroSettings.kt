@@ -38,8 +38,9 @@ class ConfluenceActiveObjectMacroSettings(val ao: ActiveObjects) : MacroSettings
         getFromDatabase(uuid).firstOrNull()?.let { ao.delete(it) }
     }
 
-    override fun removeAll() = ao.find(MacroSettingsEntity::class.java).forEach { remove(it.uuid) }
-
+    override fun removeAll()  {
+        ao.deleteWithSQL(MacroSettingsEntity::class.java, "ID > ?", 0)
+    }
 
     private fun MacroSettingsEntity.convert(): MacroSettings {
         return MacroSettings(

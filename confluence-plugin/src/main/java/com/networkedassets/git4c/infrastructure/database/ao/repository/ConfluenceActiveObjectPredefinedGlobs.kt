@@ -29,8 +29,9 @@ class ConfluenceActiveObjectPredefinedGlobs(val ao: ActiveObjects) : PredefinedG
         getFromDatabase(uuid).firstOrNull()?.let { ao.delete(it) }
     }
 
-    override fun removeAll() = ao.find(PredefinedGlobEntity::class.java).forEach { remove(it.uuid) }
-
+    override fun removeAll()  {
+        ao.deleteWithSQL(PredefinedGlobEntity::class.java, "ID > ?", 0)
+    }
 
     private fun PredefinedGlobEntity.convert(): PredefinedGlob {
         return PredefinedGlob(

@@ -15,7 +15,8 @@ var TopBar = {
         '            Loading'+
         '        </div>'+
         '        <div v-show="document" style="padding-left: 20px;">'+
-        '            <span ref="pathholder" class="git4c-file">'+
+        '            <span ref="branch_tooltip" style="margin-right: 5px" v-bind:class="{ \'git4c-red-text\': editBranch }" class="aui-icon aui-icon-small aui-iconfont-devtools-branch-small"></span> ' +
+        '            <span ref="pathholder" v-bind:class="{ \'git4c-edited-red-text\': editBranch }" style="margin-right: 5px" class="git4c-file" >'+
         '                {{path}}'+
         '            </span>'+
         '            <span class="aui-lozenge" v-if="extractorData">{{ extractorData }}</span>'+
@@ -41,24 +42,29 @@ var TopBar = {
         '                <span class="expand-control-icon icon" v-bind:class="{ expanded: !collapsed }">&nbsp;</span>{{ collapsedButtonText }}'+
         '                </button> '+
         '            </div>'+
-        '            <button v-if="fileData && fileEditEnabled" id="git4c-toolbar-edit-button" title="Edit file" class="aui-button" v-on:click="editFile()" style="margin-left: 10px">' +
+        '            <button v-if="fileData && fileEditEnabled" id="git4c-toolbar-edit-button" title="Edit file" class="aui-button" ref="editfile" v-on:click="editFile()" style="margin-left: 10px">' +
         '                <span class="aui-icon aui-icon-small aui-iconfont-edit" style="margin-right: 1px">' +
         '                Edit file' +
         '                </span>' +
         '            </button>' +
         '            <div v-if="fileData">'+
-        '                <button ref="raw_file_button" class="aui-button raw-file-button" v-on:click="openDialog()" v-if="hasSource" style="margin-left: 10px">'+
+        '                <button ref="raw_file_button" class="aui-button raw-file-button" v-on:click="openSourceDialog()" v-if="hasSource" style="margin-left: 10px">'+
         '                    <span class="aui-icon aui-icon-small aui-iconfont-devtools-file">'+
         '                        Show raw markdown'+
         '                    </span>'+
         '                </button>'+
         '            </div>'+
         '            <div style="margin-left: 10px; display: flex; flex-direction: column; justify-content: center" v-if="document">'+
-        '                <commit-history ref="commit_history"></commit-history>'+
+        '                <commit-history macro-uuid="' + uuid  +'" :file="document.fullName" :branch="branchName" ref="commit_history"></commit-history>'+
         '            </div>'+
-        '            <div style="margin-left: 10px; display: flex; flex-direction: column; justify-content: center" v-show="editBranch">'+
-        '                <span title="You are currently on modified file" ref="edit_branch_icon" class="aui-icon aui-icon-small aui-iconfont-error">Insert meaningful text here for accessibility</span>'+
-        '            </div>'+
+        '            <button ref="macro_info_button" v-show="fileData" class="aui-button" v-on:click="openInfoDialog()" style="margin-left: 10px">'+
+        '                <span class="aui-icon aui-icon-small aui-iconfont-info">Info about macro</span>'+
+        '            </button>'+
+        '            <button ref="topbar_button" class="aui-button" v-on:click="toggleTopbar()" v-show="fileData && !collapsed" style="margin-left: 10px;  height: 30px; width: 38px">'+
+        '                 <span class="aui-icon aui-icon-small aui-iconfont-close-dialog">'+
+        '                    Hide topbar'+
+        '                 </span>'+
+        '            </button>'+
         '        </span>'+
         '    </div>'+
         '</div>',
@@ -78,6 +84,9 @@ var TopBar = {
             props: {
                 editBranch: {
                     type: Boolean
+                },
+                branchName: {
+                    type: String
                 }
             },
             components:{
@@ -91,12 +100,14 @@ var TopBar = {
                     return (this.lines ? "Hide" : "Show") + " line numbers"
                 },
                 path: function () {
+                    const vm = this
                     if (this.locationPath && this.locationPath.length > 0) {
                         if (this.locationPath.length === 1) {
                             const path = this.locationPath[0]
                             AJS.$(this.$refs.pathholder).tooltip({
                                 title: function () {
-                                    return path
+                                    const suffix = vm.editBranch ? " - file was edited." : ""
+                                    return path + suffix
                                 }
                             });
                             return path
@@ -104,7 +115,8 @@ var TopBar = {
                             const fullPath = this.locationPath.join("/");
                             AJS.$(this.$refs.pathholder).tooltip({
                                 title: function () {
-                                    return fullPath
+                                    const suffix = vm.editBranch ? " - file was edited." : ""
+                                    return fullPath + suffix
                                 }
                             });
                             return "../" + this.locationPath[this.locationPath.length - 1]
@@ -112,20 +124,35 @@ var TopBar = {
                     }
                 }
             },
+            watch: {
+                branchName: function () {
+                    this.updateBranchTooltip()
+                },
+                editBranch: function () {
+                    this.updateBranchTooltip()
+                }
+            },
             mounted: function () {
                 const vm = this
 
-                AJS.$(vm.$refs["edit_branch_icon"]).tooltip();
-
-                Vue.http.get(UrlService.getRestUrl('documentation', uuid, "extractorData")).then(function(extractorData) {
-                    if(extractorData.body.type === "METHOD") {
-                        vm.extractorData = extractorData.body.name
-                    }else if(extractorData.body.type === "LINES"){
-                        vm.extractorData = "Lines: " + extractorData.body.startLine + " - " + extractorData.body.endLine
-                    } else {
-                        vm.extractorData = null
+                AJS.$(vm.$refs["macro_info_button"]).tooltip({
+                    title: function () {
+                        return "Info about macro"
                     }
                 })
+
+                AJS.$(vm.$refs["edit_branch_icon"]).tooltip();
+
+                Git4CApi.getExtractorDataForMacro(uuid)
+                    .then(function (extractorData) {
+                        if (extractorData.type === "METHOD") {
+                            vm.extractorData = extractorData.name
+                        } else if (extractorData.type === "LINES") {
+                            vm.extractorData = "Lines: " + extractorData.startLine + " - " + extractorData.endLine
+                        } else {
+                            vm.extractorData = null
+                        }
+                    })
 
                 Events.$on("DocumentDownloaded", function(document) {
 
@@ -148,9 +175,25 @@ var TopBar = {
                     }
 
                     vm.$nextTick(function() {
+
+                        $(vm.$refs.editfile).tooltip({
+                            title: function(){
+                                if (vm.editBranch) {
+                                    return "Edit file (file has been modified)"
+                                } else {
+                                    return "Edit file"
+                                }
+                            }
+                        })
+
                         $(vm.$refs.raw_file_button).tooltip({
                             title: function(){
                                 return "View the full source of this file"
+                            }
+                        })
+                        $(vm.$refs.topbar_button).tooltip({
+                            title: function () {
+                                return "Hide toolbar"
                             }
                         })
                         $(vm.$refs.updatetime).tooltip('destroy')
@@ -166,55 +209,39 @@ var TopBar = {
                                 return vm.fileData.authorFullName + " <" + vm.fileData.authorEmail + ">"
                             }
                         });
-                        vm.updateCommitHistory()
                     })
 
                     // alert(document)
                 })
             },
             methods: {
-                openDialog: function () {
-                    const normalizedString = this.document.rawContent.replace(/\s+/g, '')
-
-                    //https://stackoverflow.com/a/6234804/2511670
-                    const escapeHtml = function(unsafe) {
-                        return unsafe
-                            .replace(/&/g, "&amp;")
-                            .replace(/</g, "&lt;")
-                            .replace(/>/g, "&gt;")
-                            .replace(/"/g, "&quot;")
-                            .replace(/'/g, "&#039;");
+                updateBranchTooltip: function() {
+                    const vm = this
+                    if (this.branchName) {
+                        AJS.$(this.$refs["branch_tooltip"]).tooltip({
+                            title: function () {
+                                const suffix = vm.editBranch ? " - file was edited" : ""
+                                return "Current branch: " + vm.branchName + suffix
+                            }
+                        })
                     }
-
-                    var dialogContent
-
-                    if (!normalizedString) {
-                        dialogContent =
-                                '<div class="aui-message aui-message-generic">'+
-                                    '<p class="title">'+
-                                        '<strong>This file is empty</strong>'+
-                                   '</p>'+
-                                '</div>'
-                    } else {
-                        const content = this.document.rawContent
-                        dialogContent =
-                                '<pre>'+
-                                '    <code id="git4c-dialog-code" class="git4c-code markdown">' + escapeHtml(content) + '</code>'+
-                                '</pre>'
-                    }
-
-                    DialogService.createDialog(dialogContent)
+                },
+                openSourceDialog: function () {
+                    Events.$emit("openSourceDialog")
                 },
                 toggleCollapsed: function () {
                     Events.$emit("setCollapse", !this.collapsed)
                     this.collapsed = !this.collapsed
                 },
+                toggleTopbar: function () {
+                    Events.$emit("toggleTopbar")
+                },
                 toggleLines: function () {
                     Events.$emit("setLines", !this.lines)
                     this.lines = !this.lines
                 },
-                updateCommitHistory: function(){
-                    this.$refs.commit_history.getInfoAndUpdate(uuid, this.document.fullName)
+                openInfoDialog: function () {
+                    Events.$emit("infoDialog")
                 },
                 editFile: function () {
                     Events.$emit("editFile")

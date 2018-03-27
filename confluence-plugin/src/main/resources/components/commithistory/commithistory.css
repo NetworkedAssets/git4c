@@ -1,0 +1,12 @@
+.git4c-commithistory-branch-holder {
+    height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.git4c-commithistory-spinner-holder {
+    margin-bottom: 5px;
+    margin-left: 15px;
+    display: inline-block;
+}

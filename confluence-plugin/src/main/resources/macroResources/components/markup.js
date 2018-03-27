@@ -50,7 +50,8 @@ var Markup = {
     components: {
         toc: Git4CToc.getComponent(Events),
         dynamiccontent: dynamiccontent,
-        commitHistory: commitHistory()
+        commitHistory: commitHistory(),
+        filesourcedialog: Git4CSourceDialog.getComponent()
     },
 
     data: function () {
@@ -70,7 +71,12 @@ var Markup = {
             sticky: false,
             nextAnchor: undefined,
             simpleMce: undefined,
-            fileTimeout: undefined
+            fileTimeout: undefined,
+
+            //Commit history data
+            macroUuid: undefined,
+            branch: undefined,
+            file: undefined
         };
     },
     watch: {
@@ -97,13 +103,11 @@ var Markup = {
             }
 
             if (fullName) {
-                const file = {
-                    file: fullName
-                }
                 Events.$emit("OverlayChange", false)
                 const vm = this
                 vm.content=''
-                MarkupService.getItem(file).then(function (docItem) {
+                MarkupService.getItem(fullName)
+                .then(function (docItem) {
                     //make sure content will be visible
                     $(vm.$el.parentElement).height("")
 
@@ -153,8 +157,10 @@ var Markup = {
                             }
 
                         });
-                        vm.$refs.commit_history.macroUuid = ParamsService.getUuid()
-                        vm.$refs.commit_history.update(vm.$route.query.branch, fullName)
+
+                        vm.macroUuid = ParamsService.getUuid()
+                        vm.branch = vm.$route.query.branch
+                        vm.file = fullName
 
                         vm.$nextTick(function() {
                             clearTimeout(vm.fileTimeout)
@@ -173,7 +179,8 @@ var Markup = {
                     })
 
 
-                }, function () {
+                })
+                .catch(function (err) {
                     clearTimeout(vm.fileTimeout)
                     Events.$emit("OverlayChange", false)
                     Events.$emit("FileLoading", false)
@@ -187,72 +194,8 @@ var Markup = {
             }
         },
         openDialog: function () {
-            // AJS.toInit(function () {
-            const normalizedString = this.rawContent.replace(/\s+/g, '')
-
-            //https://stackoverflow.com/a/6234804/2511670
-            const escapeHtml = function(unsafe) {
-                return unsafe
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#039;");
-            }
-
-            var dialogContent
-
-            if (!normalizedString) {
-                dialogContent =
-                '<div class="aui-message aui-message-generic">'+
-                '    <p class="title">'+
-                '        <strong>This file is empty</strong>'+
-                '    </p>'+
-                '</div>'
-            } else {
-                const content = this.rawContent
-                dialogContent =
-            '<pre>'+
-            '    <code id="git4c-dialog-code" class="git4c-code markdown ">' + escapeHtml(content) + '</code>'+
-            '</pre>'
-
-            }
-
-
-
-            $("#git4c-source-content").html(dialogContent)
-            $('#git4c-dialog-code').each(function (i, block) {
-                hljs.highlightBlock(block);
-            });
-
-            const dialogId = "#git4c-raw-markdown-dialog"
-
-            AJS.dialog2(dialogId).show();
-
-
+            this.$refs.sourcedialog.show(this.rawContent)
             $("#git4c-markdown-dialog-close-button").blur()
-
-        },
-        editFile: function () {
-
-            this.$refs.editdialog.show(ParamsService.getUuid(), this.locationPath.join("/"), this.rawContent)
-
-        },
-        closeEditDialog: function () {
-
-            const editorText = this.simpleMce.value()
-
-
-            MarkupService.updateFile(this.locationPath, editorText)
-                .then(function (res) {
-                    alert("Finished")
-                }, function (err) {
-                    alert("Error " + err)
-                })
-
-
-            // alert(editorText)
-
         },
         closeRawContentDialog: function(){
             AJS.dialog2(this.$refs.git4c_raw_file_dialog).hide()

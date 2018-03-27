@@ -2,6 +2,6 @@ package com.networkedassets.git4c.infrastructure.cache
 
 import com.atlassian.cache.CacheFactory
 import com.networkedassets.git4c.core.business.Computation
-import com.networkedassets.git4c.core.datastore.cache.PublishFileComputationCache
+import com.networkedassets.git4c.core.bussiness.ComputationCache
 
-class AtlassianComputationCache(cacheFactory: CacheFactory): ShortConfluenceCache<Computation<Unit>>(cacheFactory), PublishFileComputationCache
+class AtlassianComputationCache<R : Any>(cacheFactory: CacheFactory) : ShortConfluenceCache<Computation<R>>(cacheFactory), ComputationCache<R>

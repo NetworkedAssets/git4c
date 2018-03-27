@@ -19,11 +19,5 @@ class ConfluencePluginSettingsDatabase(val pluginSettings: PluginSettings): Plug
         return if (force == true) "TRUE" else "FALSE"
     }
 
-    override fun getFileEditingEnabled() = pluginSettings.get(FILE_EDITING_KEY)?.toBoolean() ?: false
-
-    override fun setFileEditingEnabled(enabled: Boolean) {
-        pluginSettings.put(FILE_EDITING_KEY, enabled.toString())
-    }
-
 }
 

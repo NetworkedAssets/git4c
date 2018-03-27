@@ -42,7 +42,7 @@ class GitSourcePluginPushTest {
 
         git = GitSourcePlugin(jGitClient)
 
-        repository = RepositoryWithSshKey("123", repositoryurl, File(keyLocation).readText())
+        repository = RepositoryWithSshKey("123", repositoryurl, false, File(keyLocation).readText())
 
         val repoDir = Files.createTempDir()
 
@@ -195,7 +195,7 @@ class GitSourcePluginPushTest {
         val git = GitSourcePlugin(DefaultGitClient())
         val repositoryUrl = "https://github.com/NetworkedAssets/git4c.git"
         val branch = "master"
-        val repository = RepositoryWithNoAuthorization("", repositoryUrl)
+        val repository = RepositoryWithNoAuthorization("", repositoryUrl, false)
 
         git.pull(repository, "master")
 
@@ -217,7 +217,7 @@ class GitSourcePluginPushTest {
         val git = GitSourcePlugin(DefaultGitClient())
         val repositoryUrl = "https://github.com/NetworkedAssets/git4c.git"
         val branch = "master"
-        val repository = RepositoryWithNoAuthorization("", repositoryUrl)
+        val repository = RepositoryWithNoAuthorization("", repositoryUrl, false)
 
         git.pull(repository, "master")
 

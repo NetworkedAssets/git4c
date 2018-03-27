@@ -1,22 +1,31 @@
 package com.networkedassets.git4c.core
 
 import com.atlassian.confluence.core.service.NotAuthorizedException
+import com.jayway.awaitility.Awaitility.await
 import com.networkedassets.git4c.application.PluginComponents
 import com.networkedassets.git4c.boundary.CreateDocumentationsMacroCommand
+import com.networkedassets.git4c.boundary.CreateDocumentationsMacroResultRequest
 import com.networkedassets.git4c.boundary.inbound.*
+import com.networkedassets.git4c.boundary.outbound.RequestId
+import com.networkedassets.git4c.boundary.outbound.SavedDocumentationsMacro
 import com.networkedassets.git4c.boundary.outbound.VerificationStatus
 import com.networkedassets.git4c.data.PredefinedRepository
 import com.networkedassets.git4c.data.RepositoryWithNoAuthorization
-import com.networkedassets.git4c.test.UseCaseTest
+import com.networkedassets.git4c.test.AsyncUseCaseTest
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class CreateDocumentationsMacroUseCaseTest : UseCaseTest<CreateDocumentationsMacroUseCase>() {
+class CreateDocumentationsMacroUseCaseTest : AsyncUseCaseTest<CreateDocumentationsMacroUseCase, CreateDocumentationsMacroResultUseCase>() {
+
+    override fun getAnswerUseCase(plugin: PluginComponents): CreateDocumentationsMacroResultUseCase {
+        return CreateDocumentationsMacroResultUseCase(plugin.bussines)
+    }
 
     override fun getUseCase(plugin: PluginComponents): CreateDocumentationsMacroUseCase {
-        return CreateDocumentationsMacroUseCase(plugin.macroSettingsDatabase, plugin.repositoryDatabase, plugin.globsForMacroDatabase, plugin.predefinedRepositoryDatabase, plugin.extractorDataDatabase, plugin.importer, plugin.converter, plugin.idGenerator, plugin.pluginSettings, plugin.repositoryUsageDatabase, plugin.createMacroProcess)
+        return CreateDocumentationsMacroUseCase(plugin.bussines)
     }
 
 
@@ -27,9 +36,16 @@ class CreateDocumentationsMacroUseCaseTest : UseCaseTest<CreateDocumentationsMac
         val macroToCreate = DocumentationMacro(repository, "testRepository", "master", listOf("glob"), "readme.me", null, null)
         val createMacroCommand = CreateDocumentationsMacroCommand(macroToCreate, "anonymous");
 
-        val answer = useCase.execute(createMacroCommand);
+        val request = useCase.execute(createMacroCommand);
+        assertThat(request.component1()).isInstanceOf(RequestId::class.java)
 
+        await().until {
+            assertThat(useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId)).component1()).isNotNull()
+        }
+
+        val answer = useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId))
         assertNotNull(answer.component1())
+        assertThat(answer.component1()).isInstanceOf(SavedDocumentationsMacro::class.java)
     }
 
     @Test
@@ -39,7 +55,14 @@ class CreateDocumentationsMacroUseCaseTest : UseCaseTest<CreateDocumentationsMac
         val macroToCreate = DocumentationMacro(repository, "testRepository", "master", listOf("glob"), "readme.me", null, null)
         val createMacroCommand = CreateDocumentationsMacroCommand(macroToCreate, "anonymous");
 
-        val answer = useCase.execute(createMacroCommand);
+        val request = useCase.execute(createMacroCommand);
+        assertThat(request.component1()).isInstanceOf(RequestId::class.java)
+
+        await().until {
+            assertThat(useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId)).component2()).isInstanceOf(IllegalArgumentException::class.java)
+        }
+
+        val answer = useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId))
 
         assertNull(answer.component1())
         assertNotNull(answer.component2())
@@ -48,27 +71,41 @@ class CreateDocumentationsMacroUseCaseTest : UseCaseTest<CreateDocumentationsMac
 
     @Test
     fun `Git4C Macro is created when proper Predefined Repository is used`() {
-        components.repositoryDatabase.put("1", RepositoryWithNoAuthorization("1", "src/test/resources"))
-        components.predefinedRepositoryDatabase.put("1", PredefinedRepository("1", "1", "name_predefine"))
+        components.providers.repositoryProvider.put("1", RepositoryWithNoAuthorization("1", "src/test/resources", false))
+        components.database.predefinedRepositoryDatabase.put("1", PredefinedRepository("1", "1", "name_predefine"))
         val repositoryToCreate = PredefinedRepositoryToCreate("1")
         val repository = RepositoryDetails(repositoryToCreate)
         val macroToCreate = DocumentationMacro(repository, "testRepository", "master", listOf("glob"), "readme.me", null, null)
         val createMacroCommand = CreateDocumentationsMacroCommand(macroToCreate, "anonymous");
 
-        val answer = useCase.execute(createMacroCommand);
+        val request = useCase.execute(createMacroCommand);
+        assertThat(request.component1()).isInstanceOf(RequestId::class.java)
 
+        await().until {
+            assertThat(useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId)).component1()).isNotNull()
+        }
+
+        val answer = useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId))
         assertNotNull(answer.component1())
+        assertThat(answer.component1()).isInstanceOf(SavedDocumentationsMacro::class.java)
     }
 
     @Test
     fun `Git4C Macro is not created when not existing Repository of Predefined Repository is used`() {
-        components.predefinedRepositoryDatabase.put("1", PredefinedRepository("1", "1", "name_predefine"))
+        components.database.predefinedRepositoryDatabase.put("1", PredefinedRepository("1", "1", "name_predefine"))
         val repositoryToCreate = PredefinedRepositoryToCreate("1")
         val repository = RepositoryDetails(repositoryToCreate)
         val macroToCreate = DocumentationMacro(repository, "testRepository", "master", listOf("glob"), "readme.me", null, null)
         val createMacroCommand = CreateDocumentationsMacroCommand(macroToCreate, "anonymous");
 
-        val answer = useCase.execute(createMacroCommand);
+        val request = useCase.execute(createMacroCommand);
+        assertThat(request.component1()).isInstanceOf(RequestId::class.java)
+
+        await().until {
+            assertThat(useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId)).component2()).isInstanceOf(IllegalArgumentException::class.java)
+        }
+
+        val answer = useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId))
 
         assertNull(answer.component1())
         assertNotNull(answer.component2())
@@ -77,13 +114,20 @@ class CreateDocumentationsMacroUseCaseTest : UseCaseTest<CreateDocumentationsMac
 
     @Test
     fun `Git4C Macro is not created when not existing Predefined Repository is used`() {
-        components.repositoryDatabase.put("1", RepositoryWithNoAuthorization("1", "src/test/resources"))
+        components.providers.repositoryProvider.put("1", RepositoryWithNoAuthorization("1", "src/test/resources", false))
         val repositoryToCreate = PredefinedRepositoryToCreate("1")
         val repository = RepositoryDetails(repositoryToCreate)
         val macroToCreate = DocumentationMacro(repository, "testRepository", "master", listOf("glob"), "readme.me", null, null)
         val createMacroCommand = CreateDocumentationsMacroCommand(macroToCreate, "anonymous");
 
-        val answer = useCase.execute(createMacroCommand);
+        val request = useCase.execute(createMacroCommand);
+        assertThat(request.component1()).isInstanceOf(RequestId::class.java)
+
+        await().until {
+            assertThat(useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId)).component2()).isInstanceOf(IllegalArgumentException::class.java)
+        }
+
+        val answer = useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId))
 
         assertNull(answer.component1())
         assertNotNull(answer.component2())
@@ -92,14 +136,21 @@ class CreateDocumentationsMacroUseCaseTest : UseCaseTest<CreateDocumentationsMac
 
     @Test
     fun `Git4C Macro is not created when not proper access data in existing Predefined Repository is used`() {
-        components.predefinedRepositoryDatabase.put("1", PredefinedRepository("1", "1", "name_predefine"))
-        components.repositoryDatabase.put("1", RepositoryWithNoAuthorization("1", ""))
+        components.database.predefinedRepositoryDatabase.put("1", PredefinedRepository("1", "1", "name_predefine"))
+        components.providers.repositoryProvider.put("1", RepositoryWithNoAuthorization("1", "", false))
         val repositoryToCreate = PredefinedRepositoryToCreate("1")
         val repository = RepositoryDetails(repositoryToCreate)
         val macroToCreate = DocumentationMacro(repository, "testRepository", "master", listOf("glob"), "readme.me", null, null)
         val createMacroCommand = CreateDocumentationsMacroCommand(macroToCreate, "anonymous");
 
-        val answer = useCase.execute(createMacroCommand);
+        val request = useCase.execute(createMacroCommand);
+        assertThat(request.component1()).isInstanceOf(RequestId::class.java)
+
+        await().until {
+            assertThat(useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId)).component2()).isInstanceOf(IllegalArgumentException::class.java)
+        }
+
+        val answer = useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId))
 
         assertNull(answer.component1())
         assertNotNull(answer.component2())
@@ -112,9 +163,16 @@ class CreateDocumentationsMacroUseCaseTest : UseCaseTest<CreateDocumentationsMac
         val repository = RepositoryDetails(repositoryToCreate)
         val macroToCreate = DocumentationMacro(repository, "testRepository", "master", listOf("glob"), "readme.me", null, null)
         val createMacroCommand = CreateDocumentationsMacroCommand(macroToCreate, "anonymous");
-        components.pluginSettings.setForcePredefinedRepositories(true)
+        components.database.pluginSettings.setForcePredefinedRepositories(true)
 
-        val answer = useCase.execute(createMacroCommand);
+        val request = useCase.execute(createMacroCommand);
+        assertThat(request.component1()).isInstanceOf(RequestId::class.java)
+
+        await().until {
+            assertThat(useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId)).component2()).isInstanceOf(NotAuthorizedException::class.java)
+        }
+
+        val answer = useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId))
 
         assertNull(answer.component1())
         assertNotNull(answer.component2())
@@ -123,17 +181,24 @@ class CreateDocumentationsMacroUseCaseTest : UseCaseTest<CreateDocumentationsMac
 
     @Test
     fun `Git4C Macro is created when Administrator forces users to use predefined repository and proper Predefined Repository is used`() {
-        components.repositoryDatabase.put("1", RepositoryWithNoAuthorization("1", "src/test/resources"))
-        components.predefinedRepositoryDatabase.put("1", PredefinedRepository("1", "1", "name_predefine"))
-        components.pluginSettings.setForcePredefinedRepositories(true)
+        components.providers.repositoryProvider.put("1", RepositoryWithNoAuthorization("1", "src/test/resources", false))
+        components.database.predefinedRepositoryDatabase.put("1", PredefinedRepository("1", "1", "name_predefine"))
+        components.database.pluginSettings.setForcePredefinedRepositories(true)
         val repositoryToCreate = PredefinedRepositoryToCreate("1")
         val repository = RepositoryDetails(repositoryToCreate)
         val macroToCreate = DocumentationMacro(repository, "testRepository", "master", listOf("glob"), "readme.me", null, null)
         val createMacroCommand = CreateDocumentationsMacroCommand(macroToCreate, "anonymous");
 
-        val answer = useCase.execute(createMacroCommand);
+        val request = useCase.execute(createMacroCommand);
+        assertThat(request.component1()).isInstanceOf(RequestId::class.java)
 
+        await().until {
+            assertThat(useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId)).component1()).isNotNull()
+        }
+
+        val answer = useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(request.get().requestId))
         assertNotNull(answer.component1())
+        assertThat(answer.component1()).isInstanceOf(SavedDocumentationsMacro::class.java)
     }
 
     @Test
@@ -156,18 +221,23 @@ class CreateDocumentationsMacroUseCaseTest : UseCaseTest<CreateDocumentationsMac
             }
         }
 
+        val list = mutableListOf<RequestId>()
         for (i in 0..10) {
             Thread.sleep(10)
-            useCase.execute(commandList.get(i % 4))
+            list.add(useCase.execute(commandList.get(i % 4)).get())
         }
 
+        await().until {
+            assertThat(list.size).isEqualTo(11)
+            for (i in 0..10) assertThat(useCaseWithAnswer.execute(CreateDocumentationsMacroResultRequest(list.get(i).requestId)).component1()).isNotNull()
+        }
 
         val usages = useCase.repositoryUsageDatabase.getByUsername("anonymous")
 
-        assertTrue(usages.size == 5)
+        assertThat(usages.size).isEqualTo(5)
 
-        assertTrue(usages.first().repositoryName == "testRepository2")
-        assertTrue { usages.last().repositoryName == "testRepository2" }
+        assertThat(usages.first().repositoryName).isEqualTo("testRepository2")
+        assertThat(usages.last().repositoryName).isEqualTo("testRepository2")
     }
 
 }

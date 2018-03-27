@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
 class GetRepositoryUsagesForUserUseCaseTest : UseCaseTest<GetRepositoryUsagesForUserUseCase>() {
 
     override fun getUseCase(plugin: PluginComponents): GetRepositoryUsagesForUserUseCase {
-        return GetRepositoryUsagesForUserUseCase(plugin.repositoryUsageDatabase)
+        return GetRepositoryUsagesForUserUseCase(plugin.bussines)
     }
 
     @Test

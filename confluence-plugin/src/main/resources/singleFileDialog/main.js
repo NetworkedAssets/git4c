@@ -58,13 +58,13 @@
         '                 <div class="aui-item">'+
         '                    <div class="field-group">'+
         '                        <label for="doc_macro-predefined_repository">Repository</label>'+
-        '                        <select class="select" v-show="(repositories && repositories.length!=0) || customRepository ||(recentlyUsedRepositories && recentlyUsedRepositories.length!=0)" v-model="repository"  style="max-width: 81%">'+
-        '                           <optgroup v-if="customRepository" label="Choosen repository">'+
+        '                        <select class="select" v-show="((repositories && repositories.length!=0) || customRepository ||(recentlyUsedRepositories && recentlyUsedRepositories.length!=0)) && !loadingRepositories" v-model="repository"  style="max-width: 81%">'+
+        '                           <optgroup v-if="customRepository" label="Chosen repository">'+
         '                              <option v-bind:value="customRepository">'+
         '                                 {{ customRepository.repositoryName }}'+
         '                              </option>'+
         '                           </optgroup>'+
-        '                           <optgroup label="Recently used repositories">'+
+        '                           <optgroup v-show="!forcedPredefined" label="Recently used repositories">'+
         '                               <option  v-for="repo in recentlyUsedRepositories" v-bind:value="repo">'+
         '                                 {{ repo.repositoryName }}'+
         '                               </option>'+
@@ -75,10 +75,13 @@
         '                               </option>'+
         '                           </optgroup>'+
         '                        </select>'+
-        '                        <select class="select" v-show="(!repositories || repositories.length==0) && !customRepository&& !(recentlyUsedRepositories && recentlyUsedRepositories.length!=0)" :disabled="true"  style="max-width: 64%">'+
+        '                        <select class="select" v-show="((!repositories || repositories.length==0) && !customRepository && !(recentlyUsedRepositories && recentlyUsedRepositories.length!=0)) && !loadingRepositories" :disabled="true"  style="max-width: 64%">'+
         '                            <option>No Repositories Available</option>'+
         '                        </select>'+
-        '                        <button v-bind:disabled="forcedPredefined" ref="custom_repository_button" @click.prevent id="git4c-single_file_dialog-add_repository-button" v-on:click="openCustomRepositoryDialog" class="aui-button aui-button-primary">'+
+        '                        <select class="select" v-show="loadingRepositories" :disabled="true"  style="width: 81%">'+
+        '                            <option>Loading repositories</option>'+
+        '                        </select>'+
+        '                        <button v-bind:disabled="forcedPredefined || loadingRepositories" ref="custom_repository_button" @click.prevent id="git4c-single_file_dialog-add_repository-button" v-on:click="openCustomRepositoryDialog" class="aui-button aui-button-primary">'+
         '                            <span class="aui-icon aui-icon-small aui-iconfont-add"/>'+
         '                        </button>'+
         '                    </div>'+
@@ -108,7 +111,7 @@
         '                       </span>'+
         '                    </div>'+
         '                    <div class="field-group" >'+
-        '                       <label>Show top bar</label>'+
+        '                       <label>Show top bar by default</label>'+
         '                       <div class="checkbox">'+
         '                          <input class="checkbox" type="checkbox" v-model="showTopBar">'+
         '                       </div>      '+
@@ -119,8 +122,8 @@
         '                          <input id="git4c_singlefiledialog_checkbox_toc" class="checkbox" type="checkbox" v-model="toc">'+
         '                       </div>      '+
         '                    </div>'+
-        '                    <div class="field-group" v-if="showTopBar">'+
-        '                       <label>Collapsible</label>'+
+        '                    <div class="field-group">'+
+        '                       <label>Collapsible document</label>'+
         '                       <div class="checkbox">'+
         '                          <input class="checkbox" type="checkbox" v-model="collapsible">'+
         '                       </div>      '+
@@ -171,8 +174,8 @@
         '                     <hr style="margin: 0px;" />'+
         '                     <div id="git4c_singlefiledialog_markup_toc" class="git4c-singlefile-toc" v-show="hasToc && toc && tocObject">' +
         '                         <toc container="#dialog-code-content" :data="tocObject"></toc></div>' +
-        '                     <div v-if="fileContent" class="git4c-any-content" id="git4c-single-dialog-code-holder"  v-html="fileContent" v-bind:class="{\'git4c-single-dialog-no-line-numbers\': haveLineNumbers && !showLineNumbers, \'git4c-single-dialog-code-holder-markdown\': !singleFile}"></div>'+
-        '                     <div v-else style="position: relative; top: 50%; ">'+
+        '                     <div v-show="fileContent" class="git4c-any-content" id="git4c-single-dialog-code-holder"  v-html="fileContent" v-bind:class="{\'git4c-single-dialog-no-line-numbers\': haveLineNumbers && !showLineNumbers, \'git4c-single-dialog-code-holder-markdown\': !singleFile}"></div>'+
+        '                     <div v-show="!fileContent" style="position: relative; top: 50%; ">'+
         '                        <overlay v-if="file && files"></overlay>'+
         '                     </div>'+
         '          </div>'+
@@ -262,6 +265,8 @@
                 showTopBar: true,
                 collapseByDefault: false,
 
+                loadingRepositories: true,
+
                 selectLineNumbers: undefined,
                 numberOfLines: 100,
                 lines: undefined,
@@ -278,6 +283,10 @@
             data.showTopBar = (typeof(data.showTopBar) === "boolean") ? data.showTopBar : (data.showTopBar === "true")
             data.showLineNumbers = (typeof(data.showLineNumbers) === "boolean") ? data.showLineNumbers : (data.showLineNumbers === "true")
             data.collapseByDefault = (typeof(data.collapseByDefault) === "boolean") ? data.collapseByDefault : (data.collapseByDefault === "true")
+
+            if (!data.showTopBar) {
+                data.collapseByDefault = false
+            }
 
             // AJS.dialog2(dialogInstance).on("show", function () {
             //     console.log("Dialog shown")
@@ -323,6 +332,7 @@
                 data.hasToc = undefined
                 data.tocObject = undefined
                 data.recentlyUsedRepositories = undefined
+                data.loadingRepositories = undefined
 
 
                 tinymce.confluence.macrobrowser.macroBrowserComplete({
@@ -357,6 +367,11 @@
                     overlay: Git4COverlay.getLoaderAlone(Bus)
                 },
                 watch: {
+                    showTopBar: function () {
+                        if(!this.showTopBar) {
+                            this.collapseByDefault = false
+                        }
+                    },
                     repository: function () {
                         if(this.isRecentlyUsed(this.repository)) {
                             this.customRepository = {
@@ -470,9 +485,9 @@
                         })
                     },
                     handleFileContentChange: function () {
+                        const vm = this
                         this.$nextTick(function () {
                             if(this.fileContent) {
-                                const vm = this
                                 vm.singleFile = false
 
                                 this.numberOfLines = this.fileContent.split("\n").length - 6
@@ -524,6 +539,7 @@
                     },
                     getBranches: function () {
 
+                        this.tocObject = undefined
                         this.branches = undefined;
                         this.files = undefined;
                         this.fileContent = undefined
@@ -537,6 +553,10 @@
 
                             const vm = this;
 
+                            if (vm.branchesReq) {
+                                vm.branchesReq.stop()
+                            }
+
                             vm.downloadingBranches = true
                             if(vm.currentError !== "REPOSITORY_REMOVED") {
                                 vm.currentError = undefined
@@ -547,69 +567,66 @@
 
                             var promise = undefined
 
-                            var before = {
-                                before: function(request) {
-                                    vm.branchesReq = request
-                                }
-                            }
-
                             if (this.customRepository && this.customRepository.uuid && !this.isPredefined()) {
                                 const uuid = this.customRepository.uuid
-                                promise = vm.$http.get(restUrl + "/repository/" + uuid + "/branches")
+                                promise = Git4CApi.getBranches.forCustomRepository(uuid)
                             } else {
                                 if (vm.isPredefined()) {
                                     const uuid = this.repository.uuid
-                                    promise = vm.$http.get(restUrl + "/predefine/" + uuid + "/branches", before)
+                                    promise = Git4CApi.getBranches.forPredefinedRepository(uuid)
                                 } else {
 
                                     const credentials = vm.getCredentials()
 
-                                    const toSend = {
-                                        sourceRepositoryUrl: this.repository.sourceRepositoryUrl,
-                                        credentials: credentials
-                                    };
+                                    const repositoryUrl = this.repository.sourceRepositoryUrl
 
-                                    if(toSend.sourceRepositoryUrl) {
-                                        promise = vm.$http.post(restUrl + "/repository/branches", toSend, before)
+                                    if(repositoryUrl) {
+                                        promise = Git4CApi.getBranches.forRepository(repositoryUrl, credentials)
                                     }
                                 }
                             }
 
-                            if(promise) {
-                                promise.then(function(response) {
-                                    const branches = response.body.allBranches
-                                    vm.branches = branches
+                            vm.branchesReq = promise
 
-                                    const masterId = branches.indexOf("master")
-                                    const developId = branches.indexOf("develop")
-                                    const prevBranchId = branches.indexOf(this.prevBranch)
-                                    if(prevBranchId !== -1){
-                                        vm.branch = branches[prevBranchId]
-                                    }else {
-                                        if (masterId !== -1) {
-                                            vm.branch = branches[masterId]
-                                        } else if (developId !== -1) {
-                                            vm.branch = branches[developId]
+                            if(promise) {
+                                promise
+                                    .then(function(response) {
+                                        const branches = response.allBranches
+                                        vm.branches = branches
+
+                                        const masterId = branches.indexOf("master")
+                                        const developId = branches.indexOf("develop")
+                                        const prevBranchId = branches.indexOf(vm.prevBranch)
+                                        if(prevBranchId !== -1){
+                                            vm.branch = branches[prevBranchId]
                                         } else {
-                                            vm.branch = branches[0]
+                                            if (masterId !== -1) {
+                                                vm.branch = branches[masterId]
+                                            } else if (developId !== -1) {
+                                                vm.branch = branches[developId]
+                                            } else {
+                                                vm.branch = branches[0]
+                                            }
+                                            vm.prevBranch = vm.branch
                                         }
-                                        vm.prevBranch = vm.branch
-                                    }
-                                    vm.downloadingBranches = false
-                                }, function(error) {
-                                    error.text().then(function(text) {
-                                        vm.showError(text)
-                                        // console.log(text)
-                                        vm.currentError = text
                                         vm.downloadingBranches = false
                                     })
-                                    // console.log(errorText)
-                                })
+                                    .catch(function(error) {
+                                        error.text().then(function(text) {
+                                            vm.showError(text)
+                                            // console.log(text)
+                                            vm.currentError = text
+                                            vm.downloadingBranches = false
+                                        })
+                                        // console.log(errorText)
+                                    })
                             }
                         },
                         200
                     ),
                     getFiles: function () {
+
+                        this.tocObject = undefined
 
                         if (!this.branch) {
                             return
@@ -628,62 +645,50 @@
 
                             const vm = this
 
-                            // console.log("Getfile debounce")
-
                             var promise = undefined
 
                             vm.downloadingFiles = true
                             if(vm.currentError !== "REPOSITORY_REMOVED") {
                                 vm.currentError = undefined
                             }
-                            const before = {
-                                before: function(request) {
-                                    vm.filesReq = request
-                                }
-                            }
                             if (this.customRepository && this.customRepository.uuid && !this.isPredefined()) {
                                 const uuid = this.customRepository.uuid
+                                const branch = vm.branch
 
-                                const toSend = {
-                                    branch: vm.branch
-                                };
+                                promise = Git4CApi.getFilesTree.forCustomRepository(uuid, branch)
 
-                                promise = vm.$http.post(restUrl + "/repository/" + uuid + "/files", toSend, before)
                             } else {
                                 if (this.isPredefined()) {
 
                                     const uuid = this.repository.uuid
+                                    const branch = vm.branch
 
-                                    const toSend = {
-                                        branch: vm.branch
-                                    };
-
-                                    promise = vm.$http.post(restUrl + "/predefine/" + uuid + "/files", toSend, before)
+                                    promise = Git4CApi.getFilesTree.forPredefinedRepository(uuid, branch)
                                 } else {
 
                                     const credentials = vm.getCredentials()
 
-                                    const toSend = {
-                                        sourceRepositoryUrl: this.repository.sourceRepositoryUrl,
-                                        credentials: credentials,
-                                        branch: vm.branch
-                                    };
-                                    if (toSend.sourceRepositoryUrl) {
-                                        promise = vm.$http.post(restUrl + "/repository/files", toSend, before)
+                                    const branch = vm.branch
+                                    const repositoryUrl = this.repository.sourceRepositoryUrl
+
+                                    if (repositoryUrl) {
+                                        promise = Git4CApi.getFilesTree.forRepository(repositoryUrl, credentials, branch)
                                     }
                                 }
                             }
 
+                            vm.filesReq = promise
+
                             if(promise) {
                                 promise.then(function(response) {
-                                    vm.files = response.body.files
-                                    vm.fileTree = response.body.tree
-                                    const prevFileId = response.body.files.indexOf(this.prevFile)
+                                    vm.files = response.files
+                                    vm.fileTree = response.tree
+                                    const prevFileId = response.files.indexOf(vm.prevFile)
 
                                     if(prevFileId !== -1){
-                                        vm.file = response.body.files[prevFileId]
+                                        vm.file = response.files[prevFileId]
                                     }else {
-                                        vm.file = response.body.files[0]
+                                        vm.file = response.files[0]
                                     }
 
                                     vm.downloadingFiles = false
@@ -698,7 +703,8 @@
                         200
                     ),
                     getFile: function () {
-                        // const file = vm.file
+
+                        this.tocObject = undefined
 
                         const vm = this
 
@@ -716,7 +722,6 @@
                             this.prevShowType = undefined
                         }
 
-
                         this.downloadingFile = true
 
                         this.$nextTick(function() {
@@ -726,6 +731,10 @@
                         this.hasToc = false
                         this.hasMethods = false
                         this.haveLineNumbers = false
+
+                        if (vm.fileReq) {
+                            vm.fileReq.stop()
+                        }
 
                         const before = {
                             before: function(request) {
@@ -742,49 +751,47 @@
                         if (this.customRepository && this.customRepository.uuid && !this.isPredefined()) {
                             const uuid = this.customRepository.uuid
 
-                            const toSend = {
-                                branch: this.branch,
-                                file: this.file
-                            };
+                            const branch = this.branch
+                            const file = this.file
 
-                            promise = this.$http.post(restUrl + "/repository/" + uuid + "/file", toSend, before)
+                            promise = Git4CApi.getFile.forCustomRepository(uuid, branch, file)
+
                         } else {
                             if (this.isPredefined()) {
 
                                 const uuid = this.repository.uuid
 
-                                const toSend = {
-                                    branch: this.branch,
-                                    file: this.file
-                                };
+                                const branch = this.branch
+                                const file = this.file
 
-                                promise = this.$http.post(restUrl + "/predefine/" + uuid + "/file", toSend, before)
+                                promise = Git4CApi.getFile.forPredefinedRepository(uuid, branch, file)
 
                             } else {
 
                                 const credentials = this.getCredentials()
 
-                                const toSend = {
-                                    sourceRepositoryUrl: this.repository.sourceRepositoryUrl,
-                                    credentials: credentials,
-                                    branch: this.branch,
-                                    file: this.file
-                                };
-                                if (toSend.sourceRepositoryUrl){
-                                    promise = this.$http.post(restUrl + "/repository/file", toSend, before)
+                                const branch = this.branch
+                                const file = this.file
+
+                                const repositoryUrl = this.repository.sourceRepositoryUrl
+
+                                if (repositoryUrl){
+                                    promise = Git4CApi.getFile.forRepository(repositoryUrl, credentials, branch, file)
                                 }
                             }
                         }
                         this.fileContent = undefined
 
+                        this.fileReq = promise
+
                         if(promise) {
                             promise.then(function(response) {
                                 vm.downloadingFile = false
-                                const content = response.body.content
-                                this.originalContent = content
+                                const content = response.content
+                                vm.originalContent = content
                                 if (content) {
                                     vm.fileContent = content
-                                    vm.tocObject = response.body.tableOfContents
+                                    vm.tocObject = response.tableOfContents
                                     vm.numberOfLines = content.split("\n").length - 6
                                     vm.$nextTick(function () {
                                         if(vm.startLine && vm.endLine){
@@ -799,7 +806,7 @@
                                 }
                                 if (vm.file.endsWith("feature") || vm.file.endsWith("java")) {
                                     vm.hasMethods = true
-                                    this.getMethods()
+                                    vm.getMethods()
                                 }
                                 if (vm.file.endsWith("md") || vm.file.endsWith("adoc")) {
                                     vm.hasToc = true
@@ -828,55 +835,53 @@
                         var promise
                         if (this.customRepository && this.customRepository.uuid && !this.isPredefined()) {
                             const uuid = this.customRepository.uuid
-                            const toSend = {
-                                branch: this.branch,
-                                file: this.file
-                            };
-                            promise = this.$http.post(restUrl + "/repository/" + uuid + "/methods", toSend, {})
+
+                            const branch = this.branch
+                            const file = this.file
+
+                            promise = Git4CApi.getMethods.forCustomRepository(uuid, branch, file)
+
                         } else {
                             if (this.isPredefined()) {
 
                                 const uuid = this.repository.uuid
 
-                                const toSend = {
-                                    branch: this.branch,
-                                    file: this.file
-                                };
+                                const branch = this.branch
+                                const file = this.file
 
-                                promise = this.$http.post(restUrl + "/predefine/" + uuid + "/methods", toSend, {})
-
+                                promise = Git4CApi.getMethods.forPredefinedRepository(uuid, branch, file)
 
                             } else {
 
                                 const credentials = this.getCredentials()
 
-                                const toSend = {
-                                    sourceRepositoryUrl: this.repository.sourceRepositoryUrl,
-                                    credentials: credentials,
-                                    branch: this.branch,
-                                    file: this.file
-                                };
-                                if (toSend.sourceRepositoryUrl) {
-                                    promise = this.$http.post(restUrl + "/repository/file/methods", toSend, {})
+                                const branch = this.branch
+                                const file = this.file
+
+                                const repositoryUrl = this.repository.sourceRepositoryUrl
+
+                                if (repositoryUrl) {
+                                    promise = Git4CApi.getMethods.forRepository(repositoryUrl, credentials, branch, file)
                                 }
                             }
                         }
-                        if(promise) {
-                            promise.then(function(response) {
-                                this.methods = response.body.methods
-                                const prevMethodId = this.methods.indexOf(this.prevMethod)
-                                if(prevMethodId !== -1){
-                                    this.method = this.methods[prevMethodId]
+                        if (promise) {
+                            promise.then(function (response) {
+                                const methods = response.methods
+                                vm.methods = methods
+                                const prevMethodId = methods.indexOf(vm.prevMethod)
+                                if (prevMethodId !== -1) {
+                                    vm.method = vm.methods[prevMethodId]
                                 }
                                 else {
-                                    this.method = "All"
+                                    vm.method = "All"
                                 }
                                 vm.downloadingMethods = false
-                            }, function(error) {
+                            }, function (error) {
                                 if (error.status === 0) {
                                     return
                                 }
-                                error.text().then(function(text) {
+                                error.text().then(function (text) {
                                     vm.showError(text)
                                 })
                             })
@@ -986,19 +991,23 @@
                                 this.clearCustomFields()
                             }
                         }
-                        this.$http.post(restUrl, toSend, {}).then(function(response) {
-                            const uuid = response.body.uuid
-                            hide(uuid)
-                            vm.saving = false
-                        }, function(error) {
-                            if (error.status === 0) {
-                                return
-                            }
-                            vm.saving = false
-                            error.text().then(function(text) {
-                                vm.showError(text)
+
+
+                        Git4CApi.createMacro(toSend)
+                            .then(function(response) {
+                                const uuid = response.uuid
+                                hide(uuid)
+                                vm.saving = false
                             })
-                        })
+                            .catch(function(error) {
+                                if (error.status === 0) {
+                                    return
+                                }
+                                vm.saving = false
+                                error.text().then(function(text) {
+                                    vm.showError(text)
+                                })
+                            })
 
                         // hide()
                         // console.log("Hide dialog")
@@ -1011,16 +1020,16 @@
                         // console.log("Hide dialog")
                         AJS.dialog2(dialogInstance).hide()
                     },
-                    setChoosenFile: function (file) {
+                    setChosenFile: function (file) {
                         if (file) {
                             this.file = file
                         }
                     },
                     showFileTree: function () {
 
-                        // const f = this.setChoosenFile()
+                        // const f = this.setChosenFile()
                         //
-                        createFileTreeDialog(this.fileTree, this.setChoosenFile, this.toc, this)
+                        createFileTreeDialog(this.fileTree, this.setChosenFile, this.toc, this)
 
                         // alert("SHOW DIALOG")
                     },
@@ -1037,18 +1046,23 @@
 
                         const vm = this
 
-                        const response = Vue.http.post(restUrl + "/repository/verify", {sourceRepositoryUrl: repository.sourceRepositoryUrl, credentials: repository.credentials}).then(function(response) {
-                            if (response.data.ok == false) {
-                                throw Error("",[""],response.data.status);
-                            }
-                            vm.postProcessCustomRepository(repository)
-                        }, function(error) {
-                            error.text().then(function(text) {
-                                    vm.$refs.custom_repository_dialog.saving = false
-                                    vm.$refs.custom_repository_dialog.showError(text)
+                        const credentials = repository.credentials
+                        const repositoryUrl = repository.sourceRepositoryUrl
+
+                        Git4CApi.verifyRepository(repositoryUrl, credentials)
+                            .then(function(data) {
+                                if (data.ok == false) {
+                                    throw Error("",[""],data.status);
                                 }
-                            )
-                        })
+                                vm.postProcessCustomRepository(repository)
+                            })
+                            .catch(function(error) {
+                                error.text().then(function(text) {
+                                        vm.$refs.custom_repository_dialog.saving = false
+                                        vm.$refs.custom_repository_dialog.showError(text)
+                                    }
+                                )
+                            })
 
                     },
                     postProcessCustomRepository: function (repository) {
@@ -1063,41 +1077,57 @@
                     getRepositoryList: function () {
                         const vm = this;
 
-                        vm.$http.get(restUrl + "/repository/usages", {}).then(function(response) {
-                            vm.recentlyUsedRepositories = response.body.usages.reverse()
-                        }, function(error) {
-                            error.text().then(function(text) {
-                                vm.showError(text)
-                            })
-                        })
+                        var downloaded = 0
 
-                        vm.$http.get(restUrl + "/predefine", {}).then(function(response) {
-                            const repos = response.data
-                            vm.repositories = repos
-                            vm.$nextTick(function() {
-                                if(this.predefinedRepositoryUuid)
-                                {
-                                    var list = vm.repositories.filter( function(it) { return (it.uuid === vm.predefinedRepositoryUuid) } )
-                                    if(list.length !== 0){
-                                        vm.repository = list[0]
-                                    }else{
-                                        vm.predefinedRepositoryUuid = null
+                        const registerDownload = function () {
+                            downloaded++
+                            if (downloaded === 2) {
+                                vm.loadingRepositories = false
+                            }
+                        }
+
+                        Git4CApi.getRepositoryUsages()
+                            .then(function(usages) {
+                                registerDownload()
+                                vm.recentlyUsedRepositories = usages.reverse()
+                            })
+                            .catch(function(error) {
+                                registerDownload()
+                                error.text().then(function(text) {
+                                    vm.showError(text)
+                                })
+                            })
+
+                        Git4CApi.getPredefinedRepositories()
+                            .then(function(repos) {
+                                registerDownload()
+                                vm.repositories = repos
+                                vm.$nextTick(function() {
+                                    if(this.predefinedRepositoryUuid)
+                                    {
+                                        var list = vm.repositories.filter( function(it) { return (it.uuid === vm.predefinedRepositoryUuid) } )
+                                        if(list.length !== 0){
+                                            vm.repository = list[0]
+                                        }else{
+                                            vm.predefinedRepositoryUuid = null
+                                        }
                                     }
-                                }
-                                if(!vm.repository && !vm.customRepositoryName) {
-                                    vm.repository = repos[0]
-                                }
+                                    if(!vm.repository && !vm.customRepositoryName) {
+                                        vm.repository = repos[0]
+                                    }
+                                })
                             })
-                        }, function(error) {
-                            error.text().then(function(text) {
-                                vm.showError(text)
+                            .catch(function(error) {
+                                registerDownload()
+                                error.text().then(function(text) {
+                                    vm.showError(text)
+                                })
                             })
-                        })
                     },
                     checkIfFilled: function () {
-                            if (this.branch && this.file && this.repository) {
-                                return true
-                            }
+                        if (this.branch && this.file && this.repository) {
+                            return true
+                        }
 
                         return false
                     },
@@ -1119,47 +1149,48 @@
                             vm.repository = vm.customRepository
                         }
 
+                        Git4CApi.getPredefinedRepositoriesForceSetting()
+                            .then(function(response) {
+                                if(response.forced === true) {
+                                    vm.forcedPredefined = true
+                                    vm.$refs.custom_repository_button.title = "Administrator blocked custom repositories"
 
-                        Vue.http.get(restUrl + "/settings/repository/predefine/force").then(function(response) {
-                            if(response.body.forced === true) {
-                                vm.forcedPredefined = true
-                                vm.$refs.custom_repository_button.title = "Administrator blocked custom repositories"
+                                }
+                                else {
+                                    vm.forcedPredefined = false
+                                }
 
-                            }
-                            else {
-                                vm.forcedPredefined = false
-                            }
-
-                        }, function(error) {
-                            error.text().then(function(text) {
-                                vm.showError(text)
+                            }, function(error) {
+                                error.text().then(function(text) {
+                                    vm.showError(text)
+                                })
                             })
-                        })
 
                         if(data.uuid){
                             if(vm.prevShowType){
                                 vm.showType = vm.prevShowType
                             }
 
-                            Vue.http.get(restUrl + "/" + data.uuid).then(function(response) {
-                                if(vm.customRepositoryName) {
-                                    vm.customRepository = {
-                                        uuid: response.body.repositoryUuid,
-                                        repositoryName: vm.customRepositoryName
+                            Git4CApi.getMacroInformation(data.uuid)
+                                .then(function(response) {
+                                    if(vm.customRepositoryName) {
+                                        vm.customRepository = {
+                                            uuid: response.repositoryUuid,
+                                            repositoryName: vm.customRepositoryName
+                                        }
+                                        vm.repository = vm.customRepository
+                                        vm.getBranches()
                                     }
-                                    vm.repository = vm.customRepository
-                                    vm.getBranches()
-                                }
-                            }, function(error) {
-                                if(error.statusText == "Not Found")
-                                {
-                                    vm.showError("REPOSITORY_REMOVED")
-                                }else {
-                                    error.text().then(function(text) {
-                                        vm.showError(text)
-                                    })
-                                }
-                            })
+                                }, function(error) {
+                                    if(error.statusText == "Not Found")
+                                    {
+                                        vm.showError("REPOSITORY_REMOVED")
+                                    }else {
+                                        error.text().then(function(text) {
+                                            vm.showError(text)
+                                        })
+                                    }
+                                })
                             if(this.customRepositoryName) {
                                 const repoInfo = {
                                     name: this.customRepositoryName,
@@ -1353,42 +1384,33 @@
                     if (originalData.customRepository && originalData.customRepository.uuid && !originalData.isPredefined()) {
                         const uuid = originalData.customRepository.uuid
 
-                        const toSend = {
-                            branch: originalData.branch,
-                            file: file
-                        };
+                        const branch = originalData.branch
 
-                        promise = this.$http.post(restUrl + "/repository/" + uuid + "/file", toSend, before)
+                        promise = Git4CApi.getFile.forCustomRepository(uuid, branch, file)
+
                     } else if (originalData.isPredefined()) {
 
                         const uuid = originalData.repository.uuid
 
-                        const toSend = {
-                            branch: originalData.branch,
-                            file: file
-                        };
+                        const branch = originalData.branch
 
-                        promise = this.$http.post(restUrl + "/predefine/" + uuid + "/file", toSend, before)
+                        promise = Git4CApi.getFile.forPredefinedRepository(uuid, branch, file)
 
                     } else {
 
                         const credentials = originalData.getCredentials()
 
-                        const toSend = {
-                            sourceRepositoryUrl: originalData.repository.sourceRepositoryUrl,
-                            credentials: credentials,
-                            branch: originalData.branch,
-                            file: file
-                        };
+                        const sourceRepositoryUrl = originalData.repository.sourceRepositoryUrl
+                        const branch = originalData.branch
 
-                        promise = this.$http.post(restUrl + "/repository/file", toSend, before)
+                        promise = Git4CApi.getFile.forRepository(sourceRepositoryUrl, credentials, branch, file)
 
                     }
 
                     promise.then(function(response) {
 
-                        vm.fileContent = response.body.content
-                        vm.tocObject = response.body.tableOfContents
+                        vm.fileContent = response.content
+                        vm.tocObject = response.tableOfContents
                         vm.$nextTick(function() {
 
                             vm.singleFile = false

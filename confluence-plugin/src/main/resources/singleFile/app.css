@@ -6,7 +6,7 @@
 }
 
 .git4c-singlefile-content {
-    min-height: 200px;
+    /*min-height: 200px;*/
 }
 
 .git4c-singlefile-topbar-outer {
@@ -48,6 +48,21 @@ pre[class*="language-"] {
     /* https://github.com/PrismJS/prism/issues/1132 */
     display: inline-block;
     max-width: 1px;
+}
+
+/* Breaks coloring */
+/*noinspection CssOptimizeSimilarProperties*/
+.git4c-wrap {
+    background-image: url("images/wrap_30x30.png") !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+}
+
+/*noinspection CssOptimizeSimilarProperties*/
+.git4c-unwrap {
+    background-image: url("images/unwrap_30x30.png") !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
 }
 
 pre.line-numbers {
@@ -94,4 +109,34 @@ pre.line-numbers {
 
 .git4c-singlefile-toc {
     padding: 20px 20px 0;
+}
+
+.git4c-edited {
+    color: #f5c16e !important;
+}
+
+.git4c-edited-red-text {
+    color: red;
+}
+
+.git4c-edited-background-color {
+    background: rgba(255,0,0,0.1);
+}
+
+.git4c-edited-background-color pre[class*="language-"] {
+    background: none;
+}
+
+.git4c-edited-background-color .token {
+    background: none;
+}
+
+.git4c-red-text {
+    color: #ff0000 !important;
+}
+
+.git4clogocage {
+    height: 0;
+    width: 0;
+    background-image: url(images/git4cLogo.png);
 }

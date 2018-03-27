@@ -32,18 +32,21 @@ class ConfluenceActiveObjectRepository(val ao: ActiveObjects) : EncryptedReposit
             is RepositoryWithNoAuthorization -> {
                 val no = ao.findByUuid(uuid) ?: ao.create(RepositoryWithNoAuthorizationEntity::class.java)
                 no.path = data.repository.repositoryPath
+                no.editable = data.repository.isEditable
                 no
             }
             is RepositoryWithUsernameAndPassword -> {
                 val uap = ao.findByUuid(uuid) ?: ao.create(RepositoryWithUsernameAndPasswordEntity::class.java)
                 uap.username = data.repository.username
                 uap.password = data.repository.password
+                uap.editable = data.repository.isEditable
                 uap.path = data.repository.repositoryPath
                 uap
             }
             is RepositoryWithSshKey -> {
                 val skc = ao.findByUuid(uuid) ?: ao.create(RepositoryWithSshKeyEntity::class.java)
                 skc.key = data.repository.sshKey
+                skc.editable = data.repository.isEditable
                 skc.path = data.repository.repositoryPath
                 skc
             }
@@ -66,10 +69,10 @@ class ConfluenceActiveObjectRepository(val ao: ActiveObjects) : EncryptedReposit
         getFromDatabase(uuid)?.let { ao.delete(it) }
     }
 
-    override fun removeAll() {
-        ao.find(RepositoryWithNoAuthorizationEntity::class.java).forEach { remove(it.uuid) }
-        ao.find(RepositoryWithUsernameAndPasswordEntity::class.java).forEach { remove(it.uuid) }
-        ao.find(RepositoryWithSshKeyEntity::class.java).forEach { remove(it.uuid) }
+    override fun removeAll()  {
+        ao.deleteWithSQL(RepositoryWithNoAuthorizationEntity::class.java, "ID > ?", 0)
+        ao.deleteWithSQL(RepositoryWithUsernameAndPasswordEntity::class.java, "ID > ?", 0)
+        ao.deleteWithSQL(RepositoryWithSshKeyEntity::class.java, "ID > ?", 0)
     }
 
     private fun RepositoryEntity.convert(): EncryptedRepository {
@@ -78,12 +81,13 @@ class ConfluenceActiveObjectRepository(val ao: ActiveObjects) : EncryptedReposit
                 RepositoryWithUsernameAndPassword(
                         uuidOfRepository = uuid,
                         path = path,
+                        isEditable_ = editable,
                         username = username,
                         password = password
                 )
             }
-            is RepositoryWithSshKeyEntity -> RepositoryWithSshKey(uuid, path, key)
-            is RepositoryWithNoAuthorizationEntity -> RepositoryWithNoAuthorization(uuid, path)
+            is RepositoryWithSshKeyEntity -> RepositoryWithSshKey(uuid, path, editable, key)
+            is RepositoryWithNoAuthorizationEntity -> RepositoryWithNoAuthorization(uuid, path, editable)
             else -> throw RuntimeException("All credential settings are null")
         }
         return EncryptedRepository(uuid, repository, securityKey)

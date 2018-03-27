@@ -4,5 +4,6 @@ data class PredefinedRepository(
         val uuid: String,
         val sourceRepositoryUrl: String,
         val authType: String,
-        val name : String
+        val name: String,
+        val editable: Boolean
 )

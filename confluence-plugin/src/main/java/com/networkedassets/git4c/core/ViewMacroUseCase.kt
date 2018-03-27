@@ -1,6 +1,7 @@
 package com.networkedassets.git4c.core
 
 import com.github.kittinunf.result.Result
+import com.networkedassets.git4c.application.BussinesPluginComponents
 import com.networkedassets.git4c.boundary.ViewMacroCommand
 import com.networkedassets.git4c.boundary.outbound.MacroView
 import com.networkedassets.git4c.core.datastore.repositories.MacroLocationDatabase
@@ -11,10 +12,12 @@ import com.networkedassets.git4c.data.MacroType
 import com.networkedassets.git4c.delivery.executor.execution.UseCase
 
 class ViewMacroUseCase(
-        val macroLocationDatabase: MacroLocationDatabase,
-        val macroViewProcess: MacroViewProcess,
-        val macroSettingsDatabase: MacroSettingsDatabase
-) : UseCase<ViewMacroCommand, MacroView> {
+        components: BussinesPluginComponents,
+        val macroLocationDatabase: MacroLocationDatabase = components.database.macroLocationDatabase,
+        val macroViewProcess: MacroViewProcess = components.processing.macroViewProcess,
+        val macroSettingsDatabase: MacroSettingsDatabase = components.providers.macroSettingsProvider
+) : UseCase<ViewMacroCommand, MacroView>
+(components) {
 
     override fun execute(request: ViewMacroCommand): Result<MacroView, Exception> {
 

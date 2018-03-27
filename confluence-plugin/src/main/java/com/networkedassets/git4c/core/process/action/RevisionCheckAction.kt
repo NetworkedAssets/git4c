@@ -100,7 +100,7 @@ class RevisionCheckAction(
     private fun revision(macroSettings: MacroSettings, repository: Repository, macroInCache: DocumentationsMacro, pullAction: Runnable, ready: Runnable, failed: Runnable) {
         try {
             log.info { "Checking revision at Macro=${macroSettings.uuid} for RepositoryPath=${repository.repositoryPath}" }
-            val changed = importer.revision(macroSettings, repository, true).use { it.revision } == macroInCache.revision
+            val changed = importer.revision(macroSettings, repository, true).use { it.revision } != macroInCache.revision
             revisionCache.putCached(repository.repositoryPath, macroSettings.branch)
             if (changed) {
                 log.info { "Repository with RepositoryPath=${repository.repositoryPath} has been changed, so pull is need" }

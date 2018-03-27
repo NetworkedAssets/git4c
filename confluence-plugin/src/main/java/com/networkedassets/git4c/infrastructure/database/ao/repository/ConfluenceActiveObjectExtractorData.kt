@@ -29,8 +29,10 @@ class ConfluenceActiveObjectExtractorData(val ao: ActiveObjects) : ExtractorData
         }
     }
 
-    override fun removeAll() = getAllFromDatabase().forEach { ao.delete(it) }
-
+    override fun removeAll()  {
+        ao.deleteWithSQL(ExtractorLineNumbersEntity::class.java, "ID > ?", 0)
+        ao.deleteWithSQL(ExtractorMethodEntity::class.java, "ID > ?", 0)
+    }
 
     private fun getFromDatabase(uuid: String): ExtractorEntity? {
         val lines: ExtractorLineNumbersEntity? = ao.findByUuid(uuid)

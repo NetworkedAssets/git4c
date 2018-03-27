@@ -3,7 +3,7 @@ package com.networkedassets.git4c.infrastructure.plugin.converter.plantuml
 import com.networkedassets.git4c.core.business.ExtractionResult
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
 import com.networkedassets.git4c.data.macro.documents.item.ConvertedDocumentsItem
-import com.networkedassets.git4c.data.macro.documents.item.TableOfContents
+import com.networkedassets.git4c.data.macro.documents.item.TableOfContents.Companion.EMPTY
 import com.networkedassets.git4c.infrastructure.plugin.converter.main.markdown.InternalConverterPlugin
 import net.sourceforge.plantuml.FileFormat
 import net.sourceforge.plantuml.FileFormatOption
@@ -18,21 +18,27 @@ class PUMLConverterPlugin : InternalConverterPlugin {
 
         val tempFile = Files.createTempFile(null, null).toFile()
 
-        tempFile.writeText(String(content))
+        tempFile.writeBytes(content)
 
         val reader = SourceFileReader(tempFile, Files.createTempDirectory("temp").toFile(), FileFormatOption(FileFormat.SVG))
         val images = reader.generatedImages
-        val imagePath = images[0].pngFile
+        val imagePath = images.firstOrNull()?.pngFile
 
-        val b64PumlImage = String(Base64.getEncoder().encode(imagePath.readBytes()))
+        val html = if (imagePath != null) {
 
-        val pageContent = """
-            <div>
-                <img src="data:image/svg+xml;base64,$b64PumlImage" class="git4c-image">
-            </div>
-        """
+            val b64PumlImage = String(Base64.getEncoder().encode(imagePath.readBytes()))
 
-        return ConvertedDocumentsItem(fileData.path, fileData.updateAuthorFullName, fileData.updateAuthorEmail, fileData.updateDate, String(content), pageContent, TableOfContents("", "", listOf()))
+            """
+                <div>
+                    <img src="data:image/svg+xml;base64,$b64PumlImage" class="git4c-image" />
+                </div>
+            """
+
+        } else {
+            "<div></div>"
+        }
+
+        return ConvertedDocumentsItem(fileData.path, fileData.updateAuthorFullName, fileData.updateAuthorEmail, fileData.updateDate, String(content), html, EMPTY)
     }
 
     override fun supportedExtensions() = listOf("puml")

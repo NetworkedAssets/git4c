@@ -1,8 +1,8 @@
 package com.networkedassets.git4c.boundary
 
 import com.networkedassets.git4c.boundary.outbound.Spaces
-import com.networkedassets.git4c.delivery.executor.result.BackendRequest
+import com.networkedassets.git4c.core.usecase.async.BackendRequestForAsyncResult
 
-data class GetSpacesWithMacroResultRequest(
-       val requestId: String
-): BackendRequest<Spaces>()
+class GetSpacesWithMacroResultRequest(
+        requestId: String
+) : BackendRequestForAsyncResult<Spaces>(requestId)

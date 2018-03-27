@@ -4,30 +4,30 @@
 
 Admin panel is located in General configuration → Administration → Git4C Admin.
 
-![](images/admin-panel-overview-updated.png)
+![](images/admin-panel-overview.png)
 
 1. List of Predefined repositories
 2. Button for adding predefined repository
-3. Button for editing a given predefined repository
-4. Remove given predefined repository button
-5. List of predefined filters
-6. Button for adding a predefined filter
-7. Remove given predefined filter button
-8. List of macros in system
-9. Button to show/hide list of macros
-10. Macro type indicator
-11. Macro healthcheck
-12. Remove all plugin data
+3. Indicator if files from this repository can be edited
+4. Button for editing a given predefined repository
+5. Remove given predefined repository button
+6. List of predefined filters
+7. Button for adding a predefined filter
+8. Remove given predefined filter button
+9. List of macros in system
+10. Button to show/hide list of macros
+11. Macro type indicator
+12. Macro healthcheck
 13. Remove all filters and restore default ones
 14. Clean all unused data
-15. Force users to use predefined repositories only
-16. Thread settings
+15. Remove all plugin data
+16. Force users to use predefined repositories only
+17. Thread settings
 
 # Cleaning data
-To remove all plugin click "Clean data" on the bottom of the page. To conflirm action click "Clean".
+To remove all plugin click "Clean data" on the bottom of the page. To confirm action click "Clean".
 
 ![](images/clean-data-warning.png)
-
 
 # Creating predefined repository
 You can create new predefined repository by clicking "Add Predefined Repository".

@@ -39,7 +39,7 @@ class CreateMacroProcess(
             }
         } catch (e: Exception) {
             macroViewCache.put(macroId, MacroView(macroId, MacroView.MacroViewStatus.FAILED))
-            log.warn("There was problem during importing repository: ${repository.repositoryPath} for MacroId=${macroId}")
+            log.warn("There was problem during importing repository: ${repository.repositoryPath} for MacroId=${macroId} - Error=${e.message}")
         }
 
     }

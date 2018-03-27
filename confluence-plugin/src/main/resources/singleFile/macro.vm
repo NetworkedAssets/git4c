@@ -5,8 +5,10 @@
 #requireResource("com.atlassian.auiplugin:aui-experimental-iconfont")
 #requireResource("com.atlassian.auiplugin:aui-experimental-tooltips")
 #requireResource("com.atlassian.auiplugin:aui-spinner")
-#requireResourcesForContext("com.networkedassets.git4c.ajscompat")
 #requireResourcesForContext("com.networkedassets.git4c.vuejs")
+#requireResourcesForContext("com.networkedassets.git4c.api")
+#requireResourcesForContext("com.networkedassets.git4c.ajscompat")
+#requireResourcesForContext("com.networkedassets.git4c.stickykit")
 #requireResourcesForContext("com.networkedassets.git4c.highlightjs")
 #requireResourcesForContext("com.networkedassets.git4c.prism")
 #requireResourcesForContext("com.networkedassets.git4c.filepreview")
@@ -14,24 +16,31 @@
 #requireResourcesForContext("com.networkedassets.git4c.components.markup")
 #requireResourcesForContext("com.networkedassets.git4c.components.overlay")
 #requireResourcesForContext("com.networkedassets.git4c.utils")
+#requireResourcesForContext("com.networkedassets.git4c.commithistory")
 #requireResourcesForContext("com.networkedassets.git4c.singleFileMacro")
 #requireResourcesForContext("com.networkedassets.git4c.components.toc")
+#requireResourcesForContext("com.networkedassets.git4c.sourcedialog")
 
 <div id="app-${UUID}-${RANDOM}" class="git4c-singlefile-app">
-    <topbar v-if="showTopBar" :edit-branch="editBranch"></topbar>
+    <topbar ref="topbar" v-show="showTopBar" :branch-name="branchName" :edit-branch="editBranch" style="z-index: 90"></topbar>
     <div v-show="!collapsed">
         <overlay>
-            <div class="git4c-singlefile-toc" v-show="showToc && toc && toc.children.length > 0">
-                <toc parent="#app-${UUID}-${RANDOM}" :data="toc"></toc>
-            </div>
-            <div class="git4c-singlefile-content git4c-any-content"
-                 v-bind:class="{ 'git4c-singlefile-content-markdown': markdown, 'git4c-single-dialog-no-line-numbers': !lines, 'git4c-singlefile-no-height': showsError }"
-                 v-show="!collapsed">
-                <filecontent :lines="lines" parent="#app-${UUID}-${RANDOM}" :template="content"></filecontent>
+            <topbartoggler v-show="!showTopBar" :edit-branch="editBranch" ref="topbartoggler" style="z-index: 90"></topbartoggler>
+            <div v-bind:class="{ 'git4c-edited-background-color': editBranch }">
+                <div class="git4c-singlefile-toc" v-show="showToc && toc && toc.children.length > 0">
+                    <toc parent="#app-${UUID}-${RANDOM}" :data="toc"></toc>
+                </div>
+                <div class="git4c-singlefile-content git4c-any-content"
+                     v-bind:class="{ 'git4c-singlefile-content-markdown': markdown, 'git4c-single-dialog-no-line-numbers': !lines, 'git4c-singlefile-no-height': showsError }"
+                     v-show="!collapsed">
+                    <filecontent :lines="lines" parent="#app-${UUID}-${RANDOM}" :template="content"></filecontent>
+                </div>
             </div>
         </overlay>
     </div>
-    <git4csourcefiledialog ref="editdialog"></git4csourcefiledialog>
+    <git4csourcedialog ref="sourcedialog"></git4csourcedialog>
+    <git4ceditdialog ref="editdialog"></git4ceditdialog>
+    <git4cinfodialog :edit-branch="editBranch" :original-branch-name="originalBranchName" :branch-name="branchName" :file-location="locationPath" :repository-name="repositoryName" ref="infodialog"></git4cinfodialog>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ace.js" integrity="sha256-U//RSeH3TR3773Rk+1lAufJnRjEaG5LcdbvGV72kHEM=" crossorigin="anonymous"></script>

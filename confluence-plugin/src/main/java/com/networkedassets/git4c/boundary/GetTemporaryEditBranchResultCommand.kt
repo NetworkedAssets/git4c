@@ -1,8 +1,8 @@
 package com.networkedassets.git4c.boundary
 
 import com.networkedassets.git4c.boundary.outbound.TemporaryBranch
-import com.networkedassets.git4c.delivery.executor.result.BackendRequest
+import com.networkedassets.git4c.core.usecase.async.BackendRequestForAsyncResult
 
 class GetTemporaryEditBranchResultCommand(
-        val requestId: String
-): BackendRequest<TemporaryBranch>()
+        requestId: String
+) : BackendRequestForAsyncResult<TemporaryBranch>(requestId)

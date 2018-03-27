@@ -21,19 +21,23 @@ class RepositoryDesEncryptor : RepositoryEncryptor {
                         uuidOfRepository = decrypted.uuid,
                         path = decrypted.repositoryPath,
                         username = decrypted.username,
-                        password = encryptor.encrypt(decrypted.password, key)
+                        password = encryptor.encrypt(decrypted.password, key),
+                        isEditable_ = decrypted.isEditable
                 )
             }
             is RepositoryWithSshKey -> {
                 RepositoryWithSshKey(
                         uuidOfRepository = decrypted.uuid,
                         path = decrypted.repositoryPath,
-                        sshKey = encryptor.encrypt(decrypted.sshKey, key))
+                        sshKey = encryptor.encrypt(decrypted.sshKey, key),
+                        isEditable_ = decrypted.isEditable
+                )
             }
             is RepositoryWithNoAuthorization -> {
                 RepositoryWithNoAuthorization(
                         uuidOfRepository = decrypted.uuid,
-                        path = decrypted.repositoryPath
+                        path = decrypted.repositoryPath,
+                        isEditable_ = decrypted.isEditable
                 )
             }
             else -> {
@@ -50,19 +54,23 @@ class RepositoryDesEncryptor : RepositoryEncryptor {
                         uuidOfRepository = encrypted.repository.uuid,
                         path = encrypted.repository.repositoryPath,
                         username = encrypted.repository.username,
-                        password = encryptor.decrypt(encrypted.repository.password, encrypted.securityKey)
+                        password = encryptor.decrypt(encrypted.repository.password, encrypted.securityKey),
+                        isEditable_ = encrypted.repository.isEditable
                 )
             }
             is RepositoryWithSshKey -> {
                 RepositoryWithSshKey(
                         uuidOfRepository = encrypted.uuid,
                         path = encrypted.repository.repositoryPath,
-                        sshKey = encryptor.decrypt(encrypted.repository.sshKey, encrypted.securityKey))
+                        sshKey = encryptor.decrypt(encrypted.repository.sshKey, encrypted.securityKey),
+                        isEditable_ = encrypted.repository.isEditable
+                )
             }
             is RepositoryWithNoAuthorization -> {
                 RepositoryWithNoAuthorization(
                         uuidOfRepository = encrypted.uuid,
-                        path = encrypted.repository.repositoryPath
+                        path = encrypted.repository.repositoryPath,
+                        isEditable_ = encrypted.repository.isEditable
                 )
             }
             else -> {

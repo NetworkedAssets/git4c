@@ -1,20 +1,24 @@
 package com.networkedassets.git4c.core
 
 import com.atlassian.confluence.core.service.NotAuthorizedException
-import com.github.kittinunf.result.Result
+import com.networkedassets.git4c.application.BussinesPluginComponents
 import com.networkedassets.git4c.boundary.CreateDocumentationsMacroCommand
+import com.networkedassets.git4c.boundary.CreateDocumentationsMacroResultRequest
 import com.networkedassets.git4c.boundary.inbound.*
 import com.networkedassets.git4c.boundary.outbound.SavedDocumentationsMacro
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
+import com.networkedassets.git4c.core.bussiness.ComputationCache
 import com.networkedassets.git4c.core.bussiness.ConverterPlugin
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
 import com.networkedassets.git4c.core.common.IdentifierGenerator
+import com.networkedassets.git4c.core.datastore.MacroSettingsProvider
 import com.networkedassets.git4c.core.datastore.extractors.LineNumbersExtractorData
 import com.networkedassets.git4c.core.datastore.extractors.MethodExtractorData
 import com.networkedassets.git4c.core.datastore.repositories.*
 import com.networkedassets.git4c.core.process.CreateMacroProcess
+import com.networkedassets.git4c.core.usecase.async.ComputationResultUseCase
+import com.networkedassets.git4c.core.usecase.async.MultiThreadAsyncUseCase
 import com.networkedassets.git4c.data.*
-import com.networkedassets.git4c.delivery.executor.execution.UseCase
 import java.util.*
 
 
@@ -23,26 +27,27 @@ typealias inSshKey = com.networkedassets.git4c.boundary.inbound.SshKeyAuthorizat
 typealias inNoAuth = com.networkedassets.git4c.boundary.inbound.NoAuth
 
 class CreateDocumentationsMacroUseCase(
-        val macroSettingsDatabase: MacroSettingsDatabase,
-        val repositoryDatabase: RepositoryDatabase,
-        val globForMacroDatabase: GlobForMacroDatabase,
-        val predefinedRepositoryDatabase: PredefinedRepositoryDatabase,
-        val extractorDataDatabase: ExtractorDataDatabase,
-        val importer: SourcePlugin,
-        val converter: ConverterPlugin,
-        val idGenerator: IdentifierGenerator,
-        val pluginSettings: PluginSettingsDatabase,
-        val repositoryUsageDatabase: RepositoryUsageDatabase,
-        val createMacroProcess: CreateMacroProcess
+        components: BussinesPluginComponents,
+        val macroSettingsDatabase: MacroSettingsProvider = components.providers.macroSettingsProvider,
+        val repositoryDatabase: RepositoryDatabase = components.providers.repositoryProvider,
+        val globForMacroDatabase: GlobForMacroDatabase = components.providers.globsForMacroProvider,
+        val predefinedRepositoryDatabase: PredefinedRepositoryDatabase = components.database.predefinedRepositoryDatabase,
+        val extractorDataDatabase: ExtractorDataDatabase = components.database.extractorDataDatabase,
+        val importer: SourcePlugin = components.macro.importer,
+        val converter: ConverterPlugin = components.macro.converter,
+        val idGenerator: IdentifierGenerator = components.utils.idGenerator,
+        val pluginSettings: PluginSettingsDatabase = components.database.pluginSettings,
+        val repositoryUsageDatabase: RepositoryUsageDatabase = components.database.repositoryUsageDatabase,
+        val createMacroProcess: CreateMacroProcess = components.processing.createMacroProcess,
+        computations: ComputationCache<SavedDocumentationsMacro> = components.async.createDocumentationMacroUseCaseCache
+) : MultiThreadAsyncUseCase<CreateDocumentationsMacroCommand, SavedDocumentationsMacro>
+(components, computations, 2) {
 
-) : UseCase<CreateDocumentationsMacroCommand, SavedDocumentationsMacro> {
-
-    override fun execute(request: CreateDocumentationsMacroCommand): Result<SavedDocumentationsMacro, Exception> {
+    override fun executedAsync(requestId: String, request: CreateDocumentationsMacroCommand) {
 
         val documentationMacroToCreate = request.documentMacroMacroToCreate
-
         if (!isAllowed(documentationMacroToCreate)) {
-            return Result.error(NotAuthorizedException(request.user))
+            return error(requestId, NotAuthorizedException(request.user))
         }
 
         val branch = documentationMacroToCreate.branch
@@ -55,15 +60,15 @@ class CreateDocumentationsMacroUseCase(
             if (isOk()) {
                 save(newMacroId, macroSettings, repository!!, extractorData, documentationMacroToCreate, request.user)
                 createMacroProcess.fetchDataFromSource(macroSettings, repository);
-                return@execute Result.of { SavedDocumentationsMacro(macroSettings.uuid) }
+                return success(requestId, SavedDocumentationsMacro(macroSettings.uuid))
             } else {
-                return@execute Result.error(IllegalArgumentException(status.name))
+                return error(requestId, IllegalArgumentException(status.name))
             }
         }
-        return Result.error(NotFoundException(request.transactionInfo, ""))
+        return error(requestId, NotFoundException(request.transactionInfo, ""))
     }
 
-    fun extractorConvert(extractor: ExtractorData?): com.networkedassets.git4c.core.datastore.extractors.ExtractorData? {
+    private fun extractorConvert(extractor: ExtractorData?): com.networkedassets.git4c.core.datastore.extractors.ExtractorData? {
 
         val uuid = idGenerator.generateNewIdentifier()
 
@@ -166,13 +171,15 @@ class CreateDocumentationsMacroUseCase(
             is inUserNamePassword -> return RepositoryWithUsernameAndPassword(
                     idGenerator.generateNewIdentifier(),
                     repository.url,
+                    false,
                     repository.credentials.username,
                     repository.credentials.password)
             is inSshKey -> return RepositoryWithSshKey(
                     idGenerator.generateNewIdentifier(),
                     repository.url,
+                    false,
                     repository.credentials.sshKey)
-            is inNoAuth -> return RepositoryWithNoAuthorization(idGenerator.generateNewIdentifier(), repository.url)
+            is inNoAuth -> return RepositoryWithNoAuthorization(idGenerator.generateNewIdentifier(), repository.url, false)
             else -> throw RuntimeException("Unknown auth type: ${repository.credentials.javaClass}")
 
         }
@@ -185,3 +192,7 @@ class CreateDocumentationsMacroUseCase(
     }
 }
 
+class CreateDocumentationsMacroResultUseCase(
+        components: BussinesPluginComponents,
+        computations: ComputationCache<SavedDocumentationsMacro> = components.async.createDocumentationMacroUseCaseCache
+) : ComputationResultUseCase<CreateDocumentationsMacroResultRequest, SavedDocumentationsMacro>(components, computations)

@@ -9,11 +9,16 @@ import net.java.ao.Query
 
 class ConfluenceActiveObjectRepositoryUsage(val ao: ActiveObjects) : RepositoryUsageDatabase {
 
+    override fun getByRepositoryUuid(repositoryUuid: String): List<RepositoryUsage> {
+        return ao.find(RepositoryUsageEntity::class.java, Query.select().where("REPOSITORY = ?", repositoryUuid))
+                .map { it.convert() }
+                .sortedByDescending { it.date }
+    }
+
     override fun getByUsername(username: String): List<RepositoryUsage> {
-        val list = ArrayList<RepositoryUsage>()
-        list.addAll(ao.find(RepositoryUsageEntity::class.java, Query.select().where("USERNAME = ?", username)).map { it.convert() })
-        list.sortByDescending { it.date }
-        return list
+        return ao.find(RepositoryUsageEntity::class.java, Query.select().where("USERNAME = ?", username))
+                .map { it.convert() }
+                .sortedByDescending { it.date }
     }
 
     override fun isAvailable(uuid: String) = getFromDatabase(uuid) != null
@@ -41,13 +46,12 @@ class ConfluenceActiveObjectRepositoryUsage(val ao: ActiveObjects) : RepositoryU
         getFromDatabase(uuid)?.let { ao.delete(it) }
     }
 
-    override fun removeAll() {
-        ao.find(RepositoryUsageEntity::class.java).forEach { remove(it.uuid) }
+    override fun removeAll()  {
+        ao.deleteWithSQL(RepositoryUsageEntity::class.java, "ID > ?", 0)
     }
 
     private fun getFromDatabase(uuid: String): RepositoryUsageEntity? {
-        val entity = ao.find(RepositoryUsageEntity::class.java, Query.select().where("UUID = ?", uuid)).firstOrNull()
-        return entity
+        return ao.find(RepositoryUsageEntity::class.java, Query.select().where("UUID = ?", uuid)).firstOrNull()
     }
 
     private fun RepositoryUsageEntity.convert(): RepositoryUsage {

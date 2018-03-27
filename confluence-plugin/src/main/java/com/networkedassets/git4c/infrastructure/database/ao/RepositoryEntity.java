@@ -19,4 +19,8 @@ public interface RepositoryEntity extends Entity {
     String getSecurityKey();
 
     void setSecurityKey(String securityKey);
+
+    boolean getEditable();
+
+    void setEditable(boolean editable);
 }

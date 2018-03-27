@@ -2,6 +2,7 @@ package com.networkedassets.git4c.core
 
 import com.atlassian.confluence.core.service.NotAuthorizedException
 import com.github.kittinunf.result.Result
+import com.networkedassets.git4c.application.BussinesPluginComponents
 import com.networkedassets.git4c.boundary.GetGlobsByDocumentationsMacroIdQuery
 import com.networkedassets.git4c.boundary.outbound.GlobForMacro
 import com.networkedassets.git4c.boundary.outbound.GlobsForMacro
@@ -11,10 +12,12 @@ import com.networkedassets.git4c.core.process.ICheckUserPermissionProcess
 import com.networkedassets.git4c.delivery.executor.execution.UseCase
 
 class GetGlobsByDocumentationsMacroIdUseCase(
-        val globsForMacroDatabase: GlobForMacroDatabase,
-        val predefinedGlobsDatabase: PredefinedGlobsDatabase,
-        val checkUserPermissionProcess: ICheckUserPermissionProcess
-) : UseCase<GetGlobsByDocumentationsMacroIdQuery, GlobsForMacro> {
+        components: BussinesPluginComponents,
+        val globsForMacroDatabase: GlobForMacroDatabase = components.providers.globsForMacroProvider,
+        val predefinedGlobsDatabase: PredefinedGlobsDatabase = components.database.predefinedGlobsDatabase,
+        val checkUserPermissionProcess: ICheckUserPermissionProcess = components.processing.checkUserPermissionProcess
+) : UseCase<GetGlobsByDocumentationsMacroIdQuery, GlobsForMacro>
+(components) {
 
     override fun execute(request: GetGlobsByDocumentationsMacroIdQuery): Result<GlobsForMacro, Exception> {
 

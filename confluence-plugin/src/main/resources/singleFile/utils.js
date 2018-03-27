@@ -2,131 +2,57 @@ var downloadFile = function (uuid2) {
 
     var uuid = uuid2
 
-    const getTemporaryEditBranch = function () {
-        return Vue.http.get(UrlService.getRestUrl('documentation', uuid, 'editBranch'))
-            .then(function (response) {
-                if (response.status !== 200) {
-                    return Promise.reject(response.statusText)
-                } else {
-                    return response.body.requestId
-                }
-            })
-            .then(function fun(requestId) {
-
-                return Vue.http.get(UrlService.getRestUrl('documentation', 'editBranch', requestId))
-                    .then(function (response) {
-                        if (response.status !== 200 && response.status !== 202) {
-                            return Promise.reject(response.statusText)
-                        }
-                        if (response.status === 200) {
-                            return response.body.branch
-                        }
-
-                        return new Promise(function (resolve) {
-                            setTimeout(function () {
-                                resolve(fun(requestId))
-                            }, 2000)
-                        })
-
-                    })
-
-            })
-    }
-
-    const getCorrectUuid = function () {
-
-        return getTemporaryEditBranch()
-            .then(function (branch) {
-
-                if (branch) {
-                    return Vue.http.post(UrlService.getRestUrl('documentation', uuid, 'temporary'), {branch: branch})
-                        .then(function (response) {
-                            uuid = response.body.id
-                        })
-
-                } else {
-                    return ""
-                }
-
-            })
-
-    }
-
-    const processResponseFromDoc = function (response) {
-        if (response.status !== 200 && response.status !== 202) {
-            return Promise.reject(response.statusText)
-        }
-        if (response.status === 202) {
-            return new Promise(function (resolve, reject) {
-                setTimeout(function () {
-                    resolve(Vue.http.get(UrlService.getRestUrl('documentation', uuid)).then(function (response) {
-                        return processResponseFromDoc(response)
-                    }));
-                }, 2000);
-            });
-        }
-        return Vue.http.get(UrlService.getRestUrl('documentation', uuid, 'tree'))
-    }
-
     console.log("Download file")
 
+    const getFileFromTree = function (tree) {
 
-    //Cache document
-    const getDocumentationWithFile = function () {
-        return Vue.http.get(UrlService.getRestUrl('documentation', uuid))
-            .then(function (response) {
-                return processResponseFromDoc(response)
-            })
-            .then(function (response) {
-                if (response.status !== 200) {
-                    return Promise.reject(response.statusText)
-                }
+        var file = tree
 
-                var file = response.body
+        while (file.type !== "DOCITEM") {
+            file = file.children[0]
+        }
 
-                while (file.type !== "DOCITEM") {
-                    file = file.children[0]
-                }
+        return file.fullName
 
-                const fullName = file.fullName
-
-                const toSend = {
-                    file: fullName
-                }
-
-                return Vue.http.post(UrlService.getRestUrl('documentation', uuid, 'doc-item'), toSend)
-            })
     }
 
+    return Git4CApi.getTemporaryEditBranchForMacroUuid(uuid)
+        .then(function (branch) {
 
-    const processResponseFromDocItem = function (response) {
-        if (response.status !== 200 && response.status !== 202) {
-            return Promise.reject(response.statusText)
-        }
-        if (response.status == 202) {
-            var promise = new Promise(function (resolve, reject) {
-                setTimeout(function () {
-                    resolve(getDocumentationWithFile().then(function (response) {
-                        return processResponseFromDocItem(response)
-                    }));
-                }, 2000);
-            });
-            return promise
-        }
-        return response
-    }
-
-
-    return getCorrectUuid()
-        .then(getDocumentationWithFile)
-        .then(function (response) {
-            return processResponseFromDocItem(response)
-        })
-        .then(function (response) {
-            if (response.status !== 200) {
-                return Promise.reject(response.statusText)
+            if (branch) {
+                return Git4CApi.createTemporaryMacroForMacroAndBranch(uuid, branch)
+            } else {
+                return Promise.resolve(uuid)
             }
 
-            return [uuid, response.body]
         })
+        .then(function (uuid) {
+
+            const p = Git4CApi.getMacroDocumentationTree(uuid)
+                .then(function (value) {
+                    return getFileFromTree(value)
+                })
+                .then(function (file) {
+                    return Git4CApi.getMacroDocumentationItem(uuid, file)
+                })
+
+
+            return Promise.all([
+                Promise.resolve(uuid),
+                p
+            ])
+
+        })
+        .then(function (promises) {
+            return promises
+        })
+
 };
+
+var getCurrentBranch = function(uuid) {
+    return Git4CApi.getCurrentBranchForMacroUuid(uuid)
+}
+
+var getRepositoryName = function (macroUuid) {
+    return Git4CApi.getRepositoryPathForMacroUuid(macroUuid)
+}

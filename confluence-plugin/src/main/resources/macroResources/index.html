@@ -150,7 +150,7 @@
                                         </span>
                                     </button>
                                     <div ref="commit_history_div" style="margin-right: 20px; display: flex; flex-direction: column; justify-content: center">
-                                        <commit-history ref="commit_history"></commit-history>
+                                        <commit-history :macro-uuid="macroUuid" :branch="branch" :file="file" ref="commit_history"></commit-history>
                                     </div>
                                 </div>
                             </div>
@@ -165,36 +165,7 @@
                         </div>
                     </div>
 
-                    <!-- Render the dialog -->
-                    <section ref="git4c_raw_file_dialog" role="dialog" id="git4c-raw-markdown-dialog" class="aui-layer aui-dialog2 aui-dialog2-xlarge"
-                             aria-hidden="true">
-                        <!-- Dialog header -->
-                        <header class="aui-dialog2-header">
-                            <!-- The dialog's title -->
-                            <h2 class="aui-dialog2-header-main">Raw markdown file</h2>
-                            <!-- Actions to render on the right of the header -->
-                            <!-- Close icon -->
-                            <a class="aui-dialog2-header-close">
-                                <span class="aui-icon aui-icon-small aui-iconfont-close-dialog">Close</span>
-                            </a>
-                        </header>
-                        <!-- Main dialog content -->
-                        <div class="aui-dialog2-content" id="git4c-source-content">
-                        <pre>
-                            <code id="git4c-dialog-code" class="git4c-code markdown">
-                            </code>
-                        </pre>
-                        </div>
-                        <!-- Dialog footer -->
-                        <footer class="aui-dialog2-footer">
-                            <div class="aui-dialog2-footer-actions">
-                                <button id="git4c-markdown-dialog-close-button" @click="closeRawContentDialog" class="aui-button">Close</button>
-                            </div>
-                        </footer>
-                    </section>
-
-                    <git4csourcefiledialog ref="editdialog"></git4csourcefiledialog>
-
+                    <filesourcedialog ref="sourcedialog"></filesourcedialog>
                 </div>
 
             </template>

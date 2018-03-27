@@ -1,20 +1,19 @@
 package com.networkedassets.git4c.utils
 
 import com.atlassian.cache.memory.MemoryCacheManager
-import com.networkedassets.git4c.application.PluginComponents
+import com.networkedassets.git4c.application.*
+import com.networkedassets.git4c.boundary.outbound.*
 import com.networkedassets.git4c.core.business.*
-import com.networkedassets.git4c.core.datastore.repositories.MacroSettingsDatabase
-import com.networkedassets.git4c.core.datastore.repositories.PredefinedGlobsDatabase
+import com.networkedassets.git4c.core.bussiness.SourcePlugin
+import com.networkedassets.git4c.core.common.PermissionChecker
 import com.networkedassets.git4c.delivery.executor.result.BackendRequest
-import com.networkedassets.git4c.infrastructure.ConfluencePluginSettingsDatabase
-import com.networkedassets.git4c.infrastructure.ConfluenceSpacesWithMacroResultCache
+import com.networkedassets.git4c.infrastructure.AtlassianPageMacroExtractor
+import com.networkedassets.git4c.infrastructure.HtmlErrorPageBuilder
 import com.networkedassets.git4c.infrastructure.RepositoryDesEncryptor
 import com.networkedassets.git4c.infrastructure.UuidIdentifierGenerator
 import com.networkedassets.git4c.infrastructure.cache.*
+import com.networkedassets.git4c.infrastructure.git.DefaultGitClient
 import com.networkedassets.git4c.infrastructure.mocks.core.DirectorySourcePlugin
-import com.networkedassets.git4c.infrastructure.mocks.core.SimpleScheduledExecutorHolder
-import com.networkedassets.git4c.infrastructure.mocks.core.cache.InMemoryRevisionCache
-import com.networkedassets.git4c.infrastructure.mocks.core.cache.InMemoryTemporaryEditBranchResultCache
 import com.networkedassets.git4c.infrastructure.mocks.core.database.*
 import com.networkedassets.git4c.infrastructure.plugin.converter.ConverterPluginList
 import com.networkedassets.git4c.infrastructure.plugin.converter.images.ImageConverterPlugin
@@ -26,113 +25,168 @@ import com.networkedassets.git4c.infrastructure.plugin.converter.plaintext.Plain
 import com.networkedassets.git4c.infrastructure.plugin.converter.plantuml.PUMLConverterPlugin
 import com.networkedassets.git4c.infrastructure.plugin.converter.prismjs.PrismJSConverterPlugin
 import com.networkedassets.git4c.infrastructure.plugin.parser.Parsers
-import com.nhaarman.mockito_kotlin.mock
+import com.networkedassets.git4c.infrastructure.plugin.source.git.GitSourcePlugin
 import org.mockito.Mockito
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
 
 object InMemoryApplication {
 
-    val application = getComponents()
+    var application = getComponents()
 
     fun <ANSWER : Any> execute(query: BackendRequest<ANSWER>): CompletableFuture<*> {
-        return sendToExecutionAsync(application.dispatcher, query)
+        return sendToExecutionAsync(application.dispatching.dispatcher, query)
     }
 
-    fun getComponents(): PluginComponents {
-        val cacheManager = MemoryCacheManager()
-        val macroSettingsDatabaseService = InMemoryMacroSettingsDatabaseService()
-        val predefinedRepositoryDatabaseService = InMemoryPredefinedRepositoryDatabaseService()
-        val repositoryDatabaseService = InMemoryRepositoryDatabaseService()
-        val globsForMacroDatabaseService = InMemoryGlobsForMacroDatabaseService()
-        val defaultGlobsDatabase = InMemoryDefaultGlobsDatabase()
-        val extractorDatabase = InMemoryExtractorDatabase()
-        val repositoryUsageDatabase = InMemoryRepositoryUsageDatabase()
-        val macroLocationDatabase = InMemoryMacroLocationDatabase()
-        val revisionCache = InMemoryRevisionCache()
-        val threadSettingsDatabase = InMemoryThreadSettingsDatabase()
-        val temporaryEditBranchesDatabase = InMemoryTemporaryEditBranchesDatabase()
-        val globForMacroCache = InMemoryGlobsForMacroCache()
-        val temporaryEditBranchResultCache = InMemoryTemporaryEditBranchResultCache()
+    fun reset() {
+        application = getComponents()
+        application.cache.revisionCache.setTime(15000)
+    }
 
-        return createPlugin(
-                macroSettingsDatabaseService,
-                cacheManager,
-                predefinedRepositoryDatabaseService,
-                repositoryDatabaseService,
-                globsForMacroDatabaseService,
-                defaultGlobsDatabase,
-                extractorDatabase,
-                repositoryUsageDatabase,
-                macroLocationDatabase,
-                revisionCache,
-                threadSettingsDatabase,
-                temporaryEditBranchesDatabase,
-                globForMacroCache,
-                temporaryEditBranchResultCache
+    fun switchToGit() {
+        application = getComponents(GitSourcePlugin(DefaultGitClient()))
+    }
+
+    fun getComponents(source: SourcePlugin = DirectorySourcePlugin()): PluginComponents {
+
+        val cacheManager = MemoryCacheManager()
+
+        val database: DatabasePluginComponents = getDatabaseComponenets()
+        val cache: CachePluginComponents = getCacheComponenets(cacheManager)
+        val async: ResultsCachePluginComponents = getAsyncComponents(cacheManager)
+        val utils: UtilitiesPluginComponents = getUtilsComponents()
+        val macro: MacroPluginComponents = getMacroComponents(utils, source)
+        val executors: ExecutorsPluginComponents = getExecutorsComponents(database)
+
+        return PluginComponents(
+                database,
+                cache,
+                async,
+                macro,
+                utils,
+                executors
+        )
+
+    }
+
+
+    private fun getExecutorsComponents(database: DatabasePluginComponents): ExecutorsPluginComponents {
+        val revisionCheckExecutor = RevisionCheckBaseExecutorHolder(database.threadSettingsDatabase.getRevisionCheckThreadNumber()) { Executors.newScheduledThreadPool(it) }
+        val repositoryExecutor = RepositoryPullBaseExecutorHolder(database.threadSettingsDatabase.getRepositoryExecutorThreadNumber()) { Executors.newScheduledThreadPool(it) }
+        val converterExecutor = ConverterBaseExecutorHolder(database.threadSettingsDatabase.getConverterExecutorThreadNumber()) { Executors.newScheduledThreadPool(it) }
+        val confluenceQueryExecutor = ConfluenceQueryBaseExecutorHolder(database.threadSettingsDatabase.getConfluenceQueryExecutorThreadNumber()) { Executors.newScheduledThreadPool(it) }
+        return ExecutorsPluginComponents(
+                revisionCheckExecutor,
+                repositoryExecutor,
+                converterExecutor,
+                confluenceQueryExecutor
         )
     }
 
-
-    private fun createPlugin(macroSettingsDatabase: MacroSettingsDatabase,
-                             cacheManager: MemoryCacheManager,
-                             predefinedRepositoryDatabase: InMemoryPredefinedRepositoryDatabaseService,
-                             encryptedRepositoryDatabase: InMemoryRepositoryDatabaseService,
-                             globsForMacroDatabase: InMemoryGlobsForMacroDatabaseService,
-                             defaultGlobsDatabase: PredefinedGlobsDatabase,
-                             extractorData: InMemoryExtractorDatabase,
-                             repositoryUsageDatabase: InMemoryRepositoryUsageDatabase,
-                             macroLocationDatabase: InMemoryMacroLocationDatabase,
-                             revisionCache: InMemoryRevisionCache,
-                             threadSettingsDatabase: InMemoryThreadSettingsDatabase,
-                             temporaryEditBranchesDatabase: InMemoryTemporaryEditBranchesDatabase,
-                             globForMacroCache: InMemoryGlobsForMacroCache,
-                             temporaryEditBranchResultCache: InMemoryTemporaryEditBranchResultCache
-    ): PluginComponents {
-
-        val temporaryIdCache = AtlassianTemporaryIdCache(cacheManager)
-        val documentsViewCache = AtlassianDocumentsViewCache(cacheManager)
-        val documentItemCache = AtlassianDocumentItemCache(cacheManager)
-        val macroSettingsCache = AtlassianMacroSettingsCache(cacheManager)
-        val macroViewCache = AtlassianMacroViewCache(cacheManager)
-        val pageAndSpacePermissionsForUserCache = AtlassianPageAndSpacePermissionsForUserCache(cacheManager)
-        val documentConvertionLock = AtlassianDocumentConvertionCache(cacheManager)
-        val publishFileComputationCache = AtlassianComputationCache(cacheManager)
-        val spacesWithMacroComputationCache = ConfluenceSpacesWithMacroResultCache(cacheManager)
-        val refreshLocationUseCaseCache = AtlassianRefreshLocationUseCaseCache(cacheManager)
-
-        // Important that it uses files from test!!!
-        val importer = DirectorySourcePlugin()
-
+    private fun getUtilsComponents(): UtilitiesPluginComponents {
         val identifierGenerator = UuidIdentifierGenerator()
+        val repositoryEncryptor = RepositoryDesEncryptor()
+        val git4cSpaceManager = Mockito.mock(SpaceManager::class.java)
+        val git4cPageManager = Mockito.mock(PageManager::class.java)
+        val git4cPermissionChecker = Mockito.mock(PermissionChecker::class.java)
+        val git4cUserManager = Mockito.mock(UserManager::class.java)
+        return UtilitiesPluginComponents(
+                repositoryEncryptor,
+                identifierGenerator,
+                git4cSpaceManager,
+                git4cPageManager,
+                git4cPermissionChecker,
+                git4cUserManager
+        )
+    }
 
-        val postProcessor = JSoupPostProcessor(identifierGenerator)
-
+    private fun getMacroComponents(utils: UtilitiesPluginComponents, sourcePlugin: SourcePlugin): MacroPluginComponents {
+        val importer = sourcePlugin
+        val postProcessor = JSoupPostProcessor(utils.idGenerator)
         val mainPlugins = MainConverterPluginList(listOf(AsciidocConverterPlugin(), MarkdownConverterPlugin()), postProcessor)
         val converterPlugins = listOf(mainPlugins, PrismJSConverterPlugin(), ImageConverterPlugin(), PUMLConverterPlugin())
         val converter = ConverterPluginList(converterPlugins, PlainTextConverterPlugin())
-
-        val encryptor = RepositoryDesEncryptor()
-
         val parser = Parsers()
-
-        val pluginSettingsDatabase = ConfluencePluginSettingsDatabase(object : PluginSettings {
-            val hashmap = HashMap<String, String>()
-            override fun put(key: String, setting: String) {
-                hashmap.put(key, setting)
-            }
-
-            override fun get(key: String): String? {
-                return hashmap.get(key)
-            }
-
-            override fun remove(key: String) {
-                hashmap.remove(key)
-            }
-        })
-
-        return PluginComponents(
+        val pageBuilder = HtmlErrorPageBuilder()
+        val pageMacroExtractor = AtlassianPageMacroExtractor()
+        return MacroPluginComponents(
                 importer,
                 converter,
+                parser,
+                pageBuilder,
+                pageMacroExtractor
+        )
+    }
+
+    private fun getAsyncComponents(cacheManager: MemoryCacheManager): ResultsCachePluginComponents {
+        val documentToBeConvertedLockCache = AtlassianDocumentConvertionCache(cacheManager)
+        val refreshLocationUseCaseCache = AtlassianComputationCache<Unit>(cacheManager)
+        val publishFileComputationCache = AtlassianComputationCache<Unit>(cacheManager)
+        val spacesWithMacroComputationCache = AtlassianComputationCache<Spaces>(cacheManager)
+        val temporaryEditBranchResultCache = AtlassianComputationCache<TemporaryBranch>(cacheManager)
+        val createDocumentationMacroUseCaseCache = AtlassianComputationCache<SavedDocumentationsMacro>(cacheManager)
+        val createPredefinedRepositoryUseCaseCache = AtlassianComputationCache<SavedPredefinedRepository>(cacheManager)
+        val generateFilePreviewUseCaseCache = AtlassianComputationCache<FileContent>(cacheManager)
+        val getBranchesByDocumentationsMacroIdUseCaseCache = AtlassianComputationCache<Branches>(cacheManager)
+        val getBranchesForRepositoryUseCaseCache = AtlassianComputationCache<Branches>(cacheManager)
+        val getCommitHistoryForFileByMacroIdUseCaseCache = AtlassianComputationCache<Commits>(cacheManager)
+        val getExistingRepositoryBranchesUseCaseCache = AtlassianComputationCache<Branches>(cacheManager)
+        val getFileContentForExistingRepositoryUseCaseCache = AtlassianComputationCache<FileContent>(cacheManager)
+        val getFileContentForPredefinedRepositoryUseCaseCache = AtlassianComputationCache<FileContent>(cacheManager)
+        val getFileContentForRepositoryUseCaseCache = AtlassianComputationCache<FileContent>(cacheManager)
+        val getFilesListForExistingRepositoryUseCaseCache = AtlassianComputationCache<FilesList>(cacheManager)
+        val getFilesListForPredefinedRepositoryUseCaseCache = AtlassianComputationCache<FilesList>(cacheManager)
+        val getFilesListForRepositoryUseCaseCache = AtlassianComputationCache<FilesList>(cacheManager)
+        val getLatestRevisionByDocumentationsMacroIdUseCaseCache = AtlassianComputationCache<Revision>(cacheManager)
+        val getMethodsForExistingRepositoryUseCaseCache = AtlassianComputationCache<Methods>(cacheManager)
+        val getMethodsForPredefinedRepositoryUseCaseCache = AtlassianComputationCache<Methods>(cacheManager)
+        val getMethodsForRepositoryUseCaseCache = AtlassianComputationCache<Methods>(cacheManager)
+        val getPredefinedRepositoryBranchesUseCaseCache = AtlassianComputationCache<Branches>(cacheManager)
+        val getPredefinedRepositoryUseCaseCache = AtlassianComputationCache<PredefinedRepository>(cacheManager)
+        val modifyPredefinedRepositoryUseCaseCache = AtlassianComputationCache<SavedPredefinedRepository>(cacheManager)
+        val verifyDocumentationMacroByDocumentationsMacroIdUseCaseCache = AtlassianComputationCache<String>(cacheManager)
+        val verifyRepositoryUseCaseCache = AtlassianComputationCache<VerificationInfo>(cacheManager)
+        return ResultsCachePluginComponents(
+                documentToBeConvertedLockCache,
+                refreshLocationUseCaseCache,
+                publishFileComputationCache,
+                spacesWithMacroComputationCache,
+                temporaryEditBranchResultCache,
+                createDocumentationMacroUseCaseCache,
+                createPredefinedRepositoryUseCaseCache,
+                generateFilePreviewUseCaseCache,
+                getBranchesByDocumentationsMacroIdUseCaseCache,
+                getBranchesForRepositoryUseCaseCache,
+                getCommitHistoryForFileByMacroIdUseCaseCache,
+                getExistingRepositoryBranchesUseCaseCache,
+                getFileContentForExistingRepositoryUseCaseCache,
+                getFileContentForPredefinedRepositoryUseCaseCache,
+                getFileContentForRepositoryUseCaseCache,
+                getFilesListForExistingRepositoryUseCaseCache,
+                getFilesListForPredefinedRepositoryUseCaseCache,
+                getFilesListForRepositoryUseCaseCache,
+                getLatestRevisionByDocumentationsMacroIdUseCaseCache,
+                getMethodsForExistingRepositoryUseCaseCache,
+                getMethodsForPredefinedRepositoryUseCaseCache,
+                getMethodsForRepositoryUseCaseCache,
+                getPredefinedRepositoryBranchesUseCaseCache,
+                getPredefinedRepositoryUseCaseCache,
+                modifyPredefinedRepositoryUseCaseCache,
+                verifyDocumentationMacroByDocumentationsMacroIdUseCaseCache,
+                verifyRepositoryUseCaseCache
+        )
+    }
+
+    private fun getCacheComponenets(cacheManager: MemoryCacheManager): CachePluginComponents {
+        val documentsViewCache = AtlassianDocumentsViewCache(cacheManager)
+        val documentItemCache = AtlassianDocumentItemCache(cacheManager)
+        val macroSettingsCache = AtlassianMacroSettingsCache(cacheManager)
+        val temporaryIdCache = AtlassianTemporaryIdCache(cacheManager)
+        val macroViewCache = AtlassianMacroViewCache(cacheManager)
+        val revisionCache = AtlassianRepositoryRevisionCache(cacheManager)
+        val pageAndSpacePermissionsForUserCache = AtlassianPageAndSpacePermissionsForUserCache(cacheManager)
+        val globForMacroCache = AtlassianGlobForMacroCache(cacheManager)
+        return CachePluginComponents(
                 documentsViewCache,
                 documentItemCache,
                 macroSettingsCache,
@@ -140,39 +194,24 @@ object InMemoryApplication {
                 macroViewCache,
                 revisionCache,
                 pageAndSpacePermissionsForUserCache,
-                documentConvertionLock,
-                refreshLocationUseCaseCache,
-                macroSettingsDatabase,
-                globsForMacroDatabase,
-                predefinedRepositoryDatabase,
-                encryptedRepositoryDatabase,
-                extractorData,
-                encryptor,
-                identifierGenerator,
-                defaultGlobsDatabase,
-                parser,
-                Mockito.mock(ErrorPageBuilder::class.java),
-                Mockito.mock(SpaceManager::class.java),
-                Mockito.mock(PageManager::class.java),
-                Mockito.mock(PageMacroExtractor::class.java),
-                mock(),
-                macroLocationDatabase,
-                mock(),
-                pluginSettingsDatabase,
-                repositoryUsageDatabase,
-                SimpleScheduledExecutorHolder(),
-                SimpleScheduledExecutorHolder(),
-                SimpleScheduledExecutorHolder(),
-                SimpleScheduledExecutorHolder(),
-                publishFileComputationCache,
-                threadSettingsDatabase,
-                spacesWithMacroComputationCache,
-                temporaryEditBranchesDatabase,
-                globForMacroCache,
-                temporaryEditBranchResultCache
+                globForMacroCache
         )
-
     }
 
+    private fun getDatabaseComponenets(): DatabasePluginComponents {
+        return DatabasePluginComponents(
+                InMemoryMacroSettingsDatabaseService(),
+                InMemoryGlobsForMacroDatabaseService(),
+                InMemoryPredefinedRepositoryDatabaseService(),
+                InMemoryRepositoryDatabaseService(),
+                InMemoryExtractorDatabase(),
+                InMemoryDefaultGlobsDatabase(),
+                InMemoryMacroLocationDatabase(),
+                InMemoryPluginSettingsDatabaseService(),
+                InMemoryRepositoryUsageDatabase(),
+                InMemoryThreadSettingsDatabase(),
+                InMemoryTemporaryEditBranchesDatabase()
+        )
+    }
 }
 

@@ -2,6 +2,7 @@ package com.networkedassets.git4c.core
 
 import com.atlassian.confluence.core.service.NotAuthorizedException
 import com.github.kittinunf.result.Result
+import com.networkedassets.git4c.application.BussinesPluginComponents
 import com.networkedassets.git4c.boundary.GetExtractionDataByDocumentationsMacroIdQuery
 import com.networkedassets.git4c.boundary.outbound.*
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
@@ -15,10 +16,12 @@ import com.networkedassets.git4c.core.process.ICheckUserPermissionProcess
 import com.networkedassets.git4c.delivery.executor.execution.UseCase
 
 class GetExtractionDataByDocumentationsMacroIdUseCase(
-        val macroSettingsDatabase: MacroSettingsDatabase,
-        val extractorDatabase: ExtractorDataDatabase,
-        val checkUserPermissionProcess: ICheckUserPermissionProcess
-) : UseCase<GetExtractionDataByDocumentationsMacroIdQuery, SimpleExtractorData> {
+        components: BussinesPluginComponents,
+        val macroSettingsDatabase: MacroSettingsDatabase = components.providers.macroSettingsProvider,
+        val extractorDatabase: ExtractorDataDatabase = components.database.extractorDataDatabase,
+        val checkUserPermissionProcess: ICheckUserPermissionProcess = components.processing.checkUserPermissionProcess
+) : UseCase<GetExtractionDataByDocumentationsMacroIdQuery, SimpleExtractorData>
+(components) {
 
     override fun execute(request: GetExtractionDataByDocumentationsMacroIdQuery): Result<SimpleExtractorData, Exception> {
         val macroId = request.macroId
@@ -28,8 +31,10 @@ class GetExtractionDataByDocumentationsMacroIdUseCase(
             return Result.error(NotAuthorizedException("User doesn't have permission to this space"))
         }
 
-        val macro = macroSettingsDatabase.get(macroId) ?: return Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
-        val extractorData = extractorDatabase.getNullable(macro.extractorDataUuid) ?: return Result.error(NotFoundException(request.transactionInfo, ""))
+        val macro = macroSettingsDatabase.get(macroId)
+                ?: return Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+        val extractorData = extractorDatabase.getNullable(macro.extractorDataUuid)
+                ?: return Result.error(NotFoundException(request.transactionInfo, ""))
 
         return Result.of { convertExtractorDataToOutbound(extractorData) }
 

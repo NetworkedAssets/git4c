@@ -5,8 +5,6 @@ const router = new VueRouter({
     ]
 });
 
-var Events = new Vue({});
-
 AJS.toInit(function () {
 
     var lastRevision = undefined;
@@ -19,11 +17,11 @@ AJS.toInit(function () {
         const checkRevision = function () {
             MarkupService.getLatestRevision().then(function (revision) {
                 if (!lastRevision) {
-                    lastRevision = revision.id
+                    lastRevision = revision
                     setTimeout(checkRevision, timeoutInterval)
                 } else {
-                    if (lastRevision !== revision.id) {
-                        lastRevision = revision.id;
+                    if (lastRevision !== revision) {
+                        lastRevision = revision;
                         if (!alertShown) {
                             NotifyService.persistent("Content of Git4C Macro is out of date. There is a new version of document available.",
                                 '<ul class="aui-nav-actions-list">' +
@@ -47,7 +45,7 @@ AJS.toInit(function () {
     ParamsService.initialize()
 
     var defaultFileName = "";
-    var vue = new Vue({
+    new Vue({
         router: router,
         el: "#app",
         data: {
@@ -192,8 +190,8 @@ AJS.toInit(function () {
 
                     const branches = branchesResponse.allBranches
 
-                    if ($.inArray(branch.branch, branches) === -1) {
-
+                    if ($.inArray(branch, branches) === -1) {
+                        console.log("Search for branch: "+branch)
                         console.log("Branch doesn't exist")
                         // NotifyService.error('Error', `Requested branch doesn't exist. Please select another one.`)
                         Events.$emit('branchDoesntExist');
@@ -246,8 +244,9 @@ AJS.toInit(function () {
                 vm.getTree();
             });
             Events.$on('branchChanged', function(id) {
-
-                ParamsService.setUuid(id.id);
+                console.log("Macro is: "+id)
+                ParamsService.setUuid(id);
+                console.log("Macro is: "+ParamsService.getUuid())
                 vm.getTree();
                 clearInterval(intervalId);
             });
@@ -289,32 +288,30 @@ AJS.toInit(function () {
                 vm.pushFileName(id)
             })
 
+            const branch = this.$route.query.branch
 
-            var branch = {
-                branch: this.$route.query.branch
-            }
             MarkupService.getDefaultBranch().then(function (promise) {
-                var defaultBranch = promise.body.currentBranch
-                if (!branch.branch || branch.branch === defaultBranch) {
+                var defaultBranch = promise.currentBranch
+                if (!branch || branch === defaultBranch) {
                     vm.pushBranch(defaultBranch)
                     vm.getDocumentation()
                 } else {
-                    vm.pushBranch(branch.branch)
+                    vm.pushBranch(branch)
                     vm.getTemporary(branch)
                 }
             })
 
-            MarkupService.getGlobs().then(function(promise) {
-                const globs = promise.globs.map(function (glob) {
+            MarkupService.getGlobs().then(function(globs) {
+                const globsName = globs.map(function (glob) {
                     return glob.prettyName
                 })
 
-                if (globs.length > 0) {
+                if (globsName.length > 0) {
 
                     AJS.$(vm.$refs.globtooltip)
                         .tooltip({
                             title: function () {
-                                return globs
+                                return globsName
                             }
                         })
 
@@ -327,6 +324,6 @@ AJS.toInit(function () {
         mounted: function () {
             //AJS.$(this.$el).find(".markup-action-buttons button").tooltip();
         }
-    }).$mount('#app');
+    })
 
 });

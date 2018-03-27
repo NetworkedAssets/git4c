@@ -75,13 +75,13 @@ First one specifies a filter for your files, you can choose any pattern that sat
 Filter Patterns can be specified by the Administrator, and will be displayed after you click on Filter Pattern input field. <br />
 You can also input your own pattern. For more information about how to define Glob Patterns Check: https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob
 
-Git4C offers you the posibility to select the root folder. Simply click on the root folder selection button next to the filter input filed, and the tree of files will apprear.
+Git4C offers you the posibility to select the root folder. Simply click on the root folder selection and the tree of files will appear.
 
 ![](images/chrome_2017-11-06_10-48-08.png)
 
-Then select desired root folder and apply it by clicking ok. The filter will be automatically generated and visible in the filter input field.
+Then select desired root folder and apply it by clicking "Select". Path will be automatically generated and visible in the root directory field.
 
-Second field specifies a path to the file, that will be displayed everytime you visit the page, i.e. "home/source/readme.md"
+"Default File" field specifies a path to the file, that will be displayed everytime you visit the page, i.e. `main/java/com/company/product/Main.java`
 
 After you're done, the **Save** button should be enabled, click it to save the macro. Save your page and enjoy Git4C. 
 
@@ -163,7 +163,7 @@ Last thing to do is to specify the options for displaying macro.
 
 - **Methods in file** this field allows you to choose one method that should be displayed in the macro view, you can also select "All" option to display the whole file.
 - **Table of Contents** this fields determines if table of contents will be shown in macro
-- **Show top bar** specifies if the bar with file information should be displayed
+- **Show top bar by default** specifies if the bar with file information should be expanded or collapsed by default
 - **Collapsible** lets you decide if user can collapse the Git4C Single File View. You can also check the **Collapse by default** option to  make Git4C Single File view collapsed every time user opens the page.
 - **Collapse by default** specifies if macro will be collapsed after entering page
 - **Show line numbers** option decides if enumeration of lines is visible.
@@ -174,23 +174,31 @@ Last thing to do is to specify the options for displaying macro.
 ![](images/1.2/singlefilemacro/overview.png)
 
 Macro consists of following elements:
-1. File name
-2. Information about file
-3. Button to collapse macro
-4. Button to show file source (only for .md, .svg and .puml)
-5. Button to show file commits
-6. File content
+1. Branch info
+2. File name
+3. Information about last change
+4. Button to collapse macro
+5. Button to edit file (if it's enabled for repository by administrator)
+6. Button to show file source (only for .md, .svg and .puml)
+7. Button to show file commits
+8. Button to show information about macro
+9. Button to toggle toolbar
+10. File content
 
 When file with code is shown macro contains following elements:
 
 ![](images/singlefilemacro/overview_code.png)
 
-1. File name
-2. Information about file
-3. Button to hide line numbers
-4. Button to collapse macro
-5. Button to show file commits
-6. File content
+1. Branch info
+2. File name
+3. Information about last change
+4. Button to hide line numbers
+5. Button to collapse macro
+6. Button to edit file (if it's enabled for repository by administrator)
+7. Button to show file commits
+8. Button to show information about macro
+9. Button to toggle toolbar
+10. File content
 
 ## PUML support
 
@@ -203,4 +211,28 @@ For example this Markdown file:
 
 With this [file](puml.puml) in the same directory will generate:
 
-![](images/image2017-7-5_15-27-11.png)
+![](images/puml.png)
+
+## File editor
+
+In version 1.5 administrator can set predefined repositories to be "editable". When its enabled every single file macro for given predefined repository will have "edit" button in toolbar. After clicking on it editor will be shown
+
+For Markdown:
+
+![](images/editor_markdown.png)
+
+For Code:
+
+![](images/editor_code.png)
+
+
+After making your edits input description of your changes and press "Publish button". The file will be uploaded to remote repository. There can be 3 results:
+
+1. File is uploaded successfully. Green notification is shown and page is restarted.
+
+    ![](images/editor_upload_success.png)
+
+2. File cannot be uploaded on branch, but can be uploaded on another branch (i.e file is being uploaded to protected master branch). In that case temporary branch is created, green notification is shown and page is refreshed. After refreshing macro will be showing file from modified branch.
+3. File cannot be uploaded on any branch (read-only repository). In that case error with temporary branch and repository location on disc in shown. Contact your administrator to retrieve your change.
+
+    ![](images/editor_upload_failed.png)

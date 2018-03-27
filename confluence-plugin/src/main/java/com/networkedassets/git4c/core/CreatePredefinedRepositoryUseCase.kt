@@ -1,29 +1,34 @@
 package com.networkedassets.git4c.core
 
-import com.github.kittinunf.result.Result
+import com.networkedassets.git4c.application.BussinesPluginComponents
 import com.networkedassets.git4c.boundary.CreatePredefinedRepositoryCommand
+import com.networkedassets.git4c.boundary.CreatePredefinedRepositoryResultRequest
 import com.networkedassets.git4c.boundary.inbound.PredefinedRepository
 import com.networkedassets.git4c.boundary.outbound.SavedPredefinedRepository
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
+import com.networkedassets.git4c.core.bussiness.ComputationCache
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
 import com.networkedassets.git4c.core.common.IdentifierGenerator
 import com.networkedassets.git4c.core.datastore.repositories.PredefinedRepositoryDatabase
 import com.networkedassets.git4c.core.datastore.repositories.RepositoryDatabase
+import com.networkedassets.git4c.core.usecase.async.ComputationResultUseCase
+import com.networkedassets.git4c.core.usecase.async.MultiThreadAsyncUseCase
 import com.networkedassets.git4c.data.Repository
 import com.networkedassets.git4c.data.RepositoryWithNoAuthorization
 import com.networkedassets.git4c.data.RepositoryWithSshKey
 import com.networkedassets.git4c.data.RepositoryWithUsernameAndPassword
-import com.networkedassets.git4c.delivery.executor.execution.UseCase
 
 class CreatePredefinedRepositoryUseCase(
-        val predefinedRepositoryDatabase: PredefinedRepositoryDatabase,
-        val repositoryDatabase: RepositoryDatabase,
-        val importer: SourcePlugin,
-        val idGenerator: IdentifierGenerator
-) : UseCase<CreatePredefinedRepositoryCommand, SavedPredefinedRepository> {
+        components: BussinesPluginComponents,
+        val predefinedRepositoryDatabase: PredefinedRepositoryDatabase = components.database.predefinedRepositoryDatabase,
+        val repositoryDatabase: RepositoryDatabase = components.providers.repositoryProvider,
+        val importer: SourcePlugin = components.macro.importer,
+        val idGenerator: IdentifierGenerator = components.utils.idGenerator,
+        computations: ComputationCache<SavedPredefinedRepository> = components.async.createPredefinedRepositoryUseCaseCache
+) : MultiThreadAsyncUseCase<CreatePredefinedRepositoryCommand, SavedPredefinedRepository>
+(components, computations, 1) {
 
-    override fun execute(request: CreatePredefinedRepositoryCommand): Result<SavedPredefinedRepository, Exception> {
-
+    override fun executedAsync(requestId: String, request: CreatePredefinedRepositoryCommand) {
         val repository = detectRepository(request.predefinedRepositoryToCreate)
         val predefinedRepository = com.networkedassets.git4c.data.PredefinedRepository(idGenerator.generateNewIdentifier(), repository.uuid, request.predefinedRepositoryToCreate.repositoryName)
 
@@ -31,12 +36,12 @@ class CreatePredefinedRepositoryUseCase(
             if (isOk()) {
                 predefinedRepositoryDatabase.put(predefinedRepository.uuid, predefinedRepository)
                 repositoryDatabase.put(repository.uuid, repository)
-                return@execute Result.of { SavedPredefinedRepository(predefinedRepository.uuid) }
+                return success(requestId, SavedPredefinedRepository(predefinedRepository.uuid))
             } else {
-                return@execute Result.error(IllegalArgumentException(status.name))
+                return error(requestId, IllegalArgumentException(status.name))
             }
         }
-        return Result.error(NotFoundException(request.transactionInfo, ""))
+        return error(requestId, NotFoundException(request.transactionInfo, ""))
     }
 
 
@@ -45,15 +50,18 @@ class CreatePredefinedRepositoryUseCase(
             is inUserNamePassword -> return RepositoryWithUsernameAndPassword(
                     idGenerator.generateNewIdentifier(),
                     repositoryToCreate.sourceRepositoryUrl,
+                    repositoryToCreate.editable,
                     repositoryToCreate.credentials.username,
                     repositoryToCreate.credentials.password)
             is inSshKey -> return RepositoryWithSshKey(
                     idGenerator.generateNewIdentifier(),
                     repositoryToCreate.sourceRepositoryUrl,
+                    repositoryToCreate.editable,
                     repositoryToCreate.credentials.sshKey)
             is inNoAuth -> return RepositoryWithNoAuthorization(
                     idGenerator.generateNewIdentifier(),
-                    repositoryToCreate.sourceRepositoryUrl
+                    repositoryToCreate.sourceRepositoryUrl,
+                    repositoryToCreate.editable
             )
             else -> throw RuntimeException("Unknown auth type: ${repositoryToCreate.credentials.javaClass}")
 
@@ -61,3 +69,8 @@ class CreatePredefinedRepositoryUseCase(
     }
 
 }
+
+class CreatePredefinedRepositoryResultUseCase(
+        components: BussinesPluginComponents,
+        computations: ComputationCache<SavedPredefinedRepository> = components.async.createPredefinedRepositoryUseCaseCache
+) : ComputationResultUseCase<CreatePredefinedRepositoryResultRequest, SavedPredefinedRepository>(components, computations)

@@ -1,6 +1,7 @@
 package com.networkedassets.git4c.core
 
 import com.github.kittinunf.result.Result
+import com.networkedassets.git4c.application.BussinesPluginComponents
 import com.networkedassets.git4c.boundary.RestoreDefaultPredefinedGlobsCommand
 import com.networkedassets.git4c.boundary.outbound.PredefinedGlobData
 import com.networkedassets.git4c.boundary.outbound.PredefinedGlobsData
@@ -11,9 +12,11 @@ import com.networkedassets.git4c.data.PredefinedGlob
 import com.networkedassets.git4c.delivery.executor.execution.UseCase
 
 class RestorePredefinedGlobsUseCase(
-        val predefinedGlobsDatabase: PredefinedGlobsDatabase,
-        val idGenerator: IdentifierGenerator
-) : UseCase<RestoreDefaultPredefinedGlobsCommand, PredefinedGlobsData> {
+        components: BussinesPluginComponents,
+        val predefinedGlobsDatabase: PredefinedGlobsDatabase = components.database.predefinedGlobsDatabase,
+        val idGenerator: IdentifierGenerator = components.utils.idGenerator
+) : UseCase<RestoreDefaultPredefinedGlobsCommand, PredefinedGlobsData>
+(components) {
 
     val globsMap = DefaultGlobsMap().defaultGlobs
 

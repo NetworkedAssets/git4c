@@ -5,4 +5,4 @@ import com.networkedassets.git4c.delivery.executor.result.BackendRequest
 
 
 class GetForceUsersToUsePredefinedRepositoriesSettingQuery(
-): BackendRequest<isForcedPredefined>()
+) : BackendRequest<isForcedPredefined>()

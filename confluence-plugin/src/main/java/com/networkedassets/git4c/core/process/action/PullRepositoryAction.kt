@@ -4,6 +4,7 @@ import com.networkedassets.git4c.core.business.RepositoryPullExecutorHolder
 import com.networkedassets.git4c.core.bussiness.ImportedFiles
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
 import com.networkedassets.git4c.core.datastore.cache.DocumentsViewCache
+import com.networkedassets.git4c.core.datastore.cache.RepositoryRevisionCache
 import com.networkedassets.git4c.core.datastore.extractors.ExtractorData
 import com.networkedassets.git4c.core.datastore.repositories.ExtractorDataDatabase
 import com.networkedassets.git4c.core.datastore.repositories.GlobForMacroDatabase
@@ -31,7 +32,8 @@ class PullRepositoryAction(
         val extractorDataDatabase: ExtractorDataDatabase,
         val importer: SourcePlugin,
         val indexDocumentsAction: IndexDocumentsAction,
-        val documentsViewCache: DocumentsViewCache
+        val documentsViewCache: DocumentsViewCache,
+        val revisionCache: RepositoryRevisionCache
 ) : FinishedConvertionProcess {
 
     val finishedExecutor = Executors.newScheduledThreadPool(1);
@@ -139,8 +141,9 @@ class PullRepositoryAction(
         })
     }
 
-    private fun updateRevisionAndCloseOperation(macroSettings: MacroSettings, repository: Repository?, convertedFilesIndex: Sequence<DocumentsFileIndex>, globs: List<GlobForMacro>, macroId: String, ready: Runnable, pullResult: ImportedFiles) {
+    private fun updateRevisionAndCloseOperation(macroSettings: MacroSettings, repository: Repository, convertedFilesIndex: Sequence<DocumentsFileIndex>, globs: List<GlobForMacro>, macroId: String, ready: Runnable, pullResult: ImportedFiles) {
         val revision = importer.revision(macroSettings, repository, true).revision
+        revisionCache.putCached(repository.repositoryPath, macroSettings.branch)
         val macro = DocumentationsMacro(macroSettings, revision, convertedFilesIndex.toList(), globs)
         documentsViewCache.put(macroId, macro)
         log.debug { "Informing all upstream processes about success operation" }

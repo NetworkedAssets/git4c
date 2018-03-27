@@ -28,7 +28,9 @@ var Git4CAdminPanel = {
                 '     <pagesWithMacroList></pagesWithMacroList>'+
                 '    <otherOptions ref="other_options" id="other_options" @refreshRequest="refresh" @cleanDataRequest="openCleanDataWarning" @restoreDefaultGlobsRequest="openRestoreDefaultGlobsWarning" @forcePredefinedRepositoriesRequest="openForcePredefinedRepositoriesWarning" @cleanUnusedDataRequest="openCleanUnusedDataWarning"></otherOptions>'+
                 '    <hr style="margin-top: 80px"/>'+
-                '        <executorThreadNumbersSettings style="margin-top: 20px"></executorThreadNumbersSettings>'+
+                '    <advancedSettings>'+
+                '        <tunablesSettings style="margin-top: 20px"></tunablesSettings>'+
+                '    </advancedSettings>'+
                 '    <hr style="margin-top: 80px"/>'+
                 '    <div id="custom_repository-dialog-div">'+
                 '        <customRepositoryDialog id="custom_repository-dialog" ref="custom_repository_dialog" @closeCustomRepositoryDialog="closeCustomRepositoryDialog()" @repositoryDefined="forwardNewRepository($event)"></customRepositoryDialog>'+
@@ -47,7 +49,7 @@ var Git4CAdminPanel = {
                 '</div>'
                 ,
             components: {
-                customRepositoryDialog: Git4CCustomRepositoryDialog.getComponent(Events),
+                customRepositoryDialog: Git4CCustomRepositoryDialog.getComponent(Events, true),
                 customGlobDialog: Git4CCustomGlobDialog.getComponent(Events),
 
                 predefinedRepositoryList: Git4CPredefinedRepositoryList.getComponent(Events),
@@ -65,7 +67,9 @@ var Git4CAdminPanel = {
 
                 forcePredefinedRepositoriesWarning: Git4CForcePredefinedRepositoriesWarning.getComponent(Events),
 
-                executorThreadNumbersSettings: Git4CThreadNumberSettings.getComponent(Events)
+                tunablesSettings: Git4CTunablesSettings.getComponent(Events),
+
+                advancedSettings: Git4CAdvancedSettings.getComponent(Events)
             },
             methods: {
 

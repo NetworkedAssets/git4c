@@ -4,7 +4,7 @@ Vue.component('treeview', {
             '<div class="treeview">'+
             '    <div class="node-data" v-for="(node,index) in model">'+
             '        <!--<div class="node" v-bind:class="{active: isSelectedFile(index)}" @click.prevent="select(index, node[valuename])">-->'+
-            '        <div v-bind:title="node.name" class="node" v-bind:class="{active: node.fullName === selectedFile}">'+
+            '        <div ref="filename" v-bind:title="node.name" class="node" v-bind:class="{active: node.fullName === selectedFile}">'+
             '            <i @click.prevent="select(index)" class="aui-icon aui-icon-small" '+
             '                v-bind:class="{'+
             '                    \'aui-iconfont-expanded\': isDirectory(node) && isExpanded[index],'+
@@ -39,11 +39,15 @@ Vue.component('treeview', {
             default: function () {
                 return [];
             }
-        },
+        }
     },
 
     mounted: function () {
         const vm = this
+
+        this.$nextTick(function () {
+            vm.invalidateTooltips()
+        })
 
         Events.$on('navCollapse', function () {
             $("#content-nav").removeClass("expanded").addClass("collapsed");
@@ -73,6 +77,12 @@ Vue.component('treeview', {
     watch: {
         '$route.params.fullName': function(){
             this.invalidate()
+        },
+        model: function () {
+            const vm = this
+            vm.$nextTick(function () {
+                vm.invalidateTooltips()
+            })
         }
     },
 
@@ -88,6 +98,18 @@ Vue.component('treeview', {
                     vm.expandSelect(index)
                 }
             })
+        },
+
+        invalidateTooltips: function () {
+
+            const elementsToTooltip = this.$refs["filename"]
+
+            if (elementsToTooltip) {
+                elementsToTooltip.forEach(function (el) {
+                    AJS.$(el).tooltip({gravity: 'e'});
+                })
+            }
+
         },
 
         expandSelect: function (index) {

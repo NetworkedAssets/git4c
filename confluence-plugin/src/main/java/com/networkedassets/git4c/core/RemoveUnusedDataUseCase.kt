@@ -1,19 +1,23 @@
 package com.networkedassets.git4c.core
 
 import com.github.kittinunf.result.Result
+import com.networkedassets.git4c.application.BussinesPluginComponents
 import com.networkedassets.git4c.boundary.RemoveUnusedDataCommand
 import com.networkedassets.git4c.core.datastore.repositories.*
 import com.networkedassets.git4c.core.process.IGetAllMacrosInSystem
 import com.networkedassets.git4c.delivery.executor.execution.UseCase
 
 class RemoveUnusedDataUseCase(
-        val macroSettingsDatabase: MacroSettingsDatabase,
-        val repositoryDatabase: RepositoryDatabase,
-        val predefinedRepositoryDatabase: PredefinedRepositoryDatabase,
-        val globsDatabase: GlobForMacroDatabase,
-        val extractorDataDatabase: ExtractorDataDatabase,
-        val getAllMacrosInSystemProcess: IGetAllMacrosInSystem
-) : UseCase<RemoveUnusedDataCommand, Unit> {
+        components: BussinesPluginComponents,
+        val macroSettingsDatabase: MacroSettingsDatabase = components.providers.macroSettingsProvider,
+        val repositoryDatabase: RepositoryDatabase = components.providers.repositoryProvider,
+        val predefinedRepositoryDatabase: PredefinedRepositoryDatabase = components.database.predefinedRepositoryDatabase,
+        val globsDatabase: GlobForMacroDatabase = components.providers.globsForMacroProvider,
+        val extractorDataDatabase: ExtractorDataDatabase = components.database.extractorDataDatabase,
+        val getAllMacrosInSystemProcess: IGetAllMacrosInSystem = components.processing.getAllMacrosInSystemProcess
+) : UseCase<RemoveUnusedDataCommand, Unit>
+(components) {
+
     override fun execute(request: RemoveUnusedDataCommand): Result<Unit, Exception> {
 
         // TODO: Async! This operation is killer for confluence!
@@ -53,6 +57,6 @@ class RemoveUnusedDataUseCase(
         (existingExtractors - extractorsToKeep)
                 .forEach { extractorDataDatabase.remove(it) }
 
-        return Result.of {  }
+        return Result.of { }
     }
 }

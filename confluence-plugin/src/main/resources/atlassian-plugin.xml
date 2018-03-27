@@ -26,10 +26,35 @@
         <context>com.networkedassets.git4c.ace</context>
     </web-resource>
 
+    <web-resource key="git4c-api-${timestamp}" name="Git4C API">
+        <dependency>com.networkedassets.git4c.confluence-plugin:vuejs-${timestamp}</dependency>
+        <resource type="download" name="services/url-service.js"
+                  location="macroResources/services/url-service.js"/>
+        <resource type="download" name="asyncrequest.js" location="js/async-request.js"/>
+        <resource type="download" name="cancelablerequest.js" location="js/cancelable-request.js"/>
+        <resource type="download" name="api.js" location="js/api.js"/>
+        <context>com.networkedassets.git4c.api</context>
+    </web-resource>
+
     <web-resource key="simplemde-${timestamp}" name="SimpleMDE">
         <resource type="download" name="simplemde.css" location="lib/simplemde/simplemde.min.css"/>
         <resource type="download" name="simplemde.js" location="lib/simplemde/simplemde.min.js"/>
         <context>com.networkedassets.git4c.simplemde</context>
+    </web-resource>
+
+    <web-resource key="components-sourcedialog-${timestamp}" name="Source dialog">
+        <dependency>com.networkedassets.git4c.confluence-plugin:vuejs-${timestamp}</dependency>
+        <resource type="download" name="sourcedialog.js" location="components/sourcedialog/sourcedialog.js"/>
+        <resource type="download" name="sourcedialog.css" location="components/sourcedialog/sourcedialog.css"/>
+        <context>com.networkedassets.git4c.sourcedialog</context>
+    </web-resource>
+
+    <web-resource key="components-commithistory-${timestamp}" name="Commit history">
+        <dependency>com.networkedassets.git4c.confluence-plugin:git4c-api-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:vuejs-${timestamp}</dependency>
+        <resource type="download" name="commithistory.js" location="components/commithistory/commithistory.js"/>
+        <resource type="download" name="commithistory.css" location="components/commithistory/commithistory.css"/>
+        <context>com.networkedassets.git4c.commithistory</context>
     </web-resource>
 
     <web-resource key="components-filepreview-${timestamp}" name="File preview">
@@ -127,6 +152,7 @@
     <web-resource key="admin-resources-${timestamp}" name="Admin resources">
         <dependency>com.atlassian.auiplugin:aui-experimental-table-sortable</dependency>
         <dependency>com.atlassian.auiplugin:aui-experimental-tooltips</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:git4c-api-${timestamp}</dependency>
 
         <resource name="polyfill.js" type="download" location="js/polyfill.js"/>
 
@@ -144,7 +170,7 @@
 
         <resource type="download" name="pagesWithMacroList.js" location="adminPanel/components/pagesWithMacroList.js"/>
 
-        <resource type="download" name="threadNumberSettings.js" location="adminPanel/components/threadNumberSettings.js"/>
+        <resource type="download" name="tunablesSettings.js" location="adminPanel/components/tunablesSettings.js"/>
 
         <resource type="download" name="predefinedGlobList.js" location="adminPanel/components/predefinedGlobList.js"/>
         <resource type="download" name="cleanUnusedDataWarning.js"
@@ -154,6 +180,9 @@
 
         <resource type="download" name="forcePredefinedRepositoriesWarning.js"
                   location="adminPanel/components/forcePredefinedRepositoriesWarning.js"/>
+
+        <resource type="download" name="advancedSettings.js"
+                  location="adminPanel/components/advancedSettings.js"/>
 
         <resource type="download" name="toggleButton.css" location="adminPanel/components/toggleButton.css"/>
 
@@ -170,6 +199,7 @@
     <web-resource key="multi-file-dialog-${timestamp}" name="DoC macro parameter autocompletion">
         <dependency>com.atlassian.auiplugin:aui-experimental-tooltips</dependency>
         <dependency>com.atlassian.auiplugin:aui-select2</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:git4c-api-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:select2single-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:custom-repository-dialog-${timestamp}</dependency>
         <dependency>confluence.editor.actions:editor-macro-browser</dependency>
@@ -182,6 +212,7 @@
     <web-resource key="single-file-dialog-${timestamp}" name="Create Single file dialog">
         <dependency>com.atlassian.auiplugin:aui-experimental-iconfont</dependency>
         <dependency>confluence.editor.actions:editor-macro-browser</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:git4c-api-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:nouislider-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:vuejs-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:highlightjs-${timestamp}</dependency>
@@ -217,8 +248,8 @@
                   location="macroResources/css/markup.css"/>
         <resource type="download" name="css/fakeLoader.css"
                   location="macroResources/css/fakeLoader.css"/>
-        <resource type="download" name="components/commit-history.js"
-                  location="macroResources/components/commit-history.js"/>
+        <resource type="download" name="components/events.js"
+                  location="macroResources/components/events.js"/>
         <resource type="download" name="components/markup.js"
                   location="macroResources/components/markup.js"/>
         <resource type="download" name="components/globs.js"
@@ -264,18 +295,17 @@
 
     <web-resource key="single-file-macro-resources-${timestamp}" name="Single file macro web resources">
         <dependency>com.atlassian.auiplugin:aui-experimental-tooltips</dependency>
+        <resource type="download" name="images/" location="/images"/>
         <resource name="polyfill.js" type="download" location="js/polyfill.js"/>
         <resource type="download" name="singleFile/" location="/singleFile/"/>
         <resource type="download" name="utils.js"
                   location="singleFile/utils.js"/>
-        <resource type="download" name="services/source-dialog.js"
-                  location="singleFile/services/source-dialog.js"/>
         <resource type="download" name="services/url-service.js"
                   location="singleFile/services/url-service.js"/>
+        <resource type="download" name="topbartoggler.js" location="singleFile/components/topbartoggler.js"/>
         <resource type="download" name="topbar.js" location="singleFile/components/topbar.js"/>
         <resource type="download" name="filecontent.js" location="singleFile/components/filecontent.js"/>
-        <resource type="download" name="components/commit-history.js"
-                  location="macroResources/components/commit-history.js"/>
+        <resource type="download" name="infodialog.js" location="singleFile/components/infodialog.js"/>
         <resource type="download" name="app.css" location="singleFile/app.css"/>
         <resource type="download" name="app.js" location="singleFile/app.js"/>
         <context>com.networkedassets.git4c.singleFileMacro</context>
@@ -442,6 +472,8 @@
         <upgradeTask>com.networkedassets.git4c.infrastructure.database.ao.upgrade.v8.PredefinedRepositoryUpgradeTask008
         </upgradeTask>
         <upgradeTask>com.networkedassets.git4c.infrastructure.database.ao.upgrade.v9.MacroSettingsUpgradeTask009
+        </upgradeTask>
+        <upgradeTask>com.networkedassets.git4c.infrastructure.database.ao.upgrade.v10.MacroSettingsUpgradeTask010
         </upgradeTask>
     </ao>
 

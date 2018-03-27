@@ -2,6 +2,7 @@ package com.networkedassets.git4c.core
 
 import com.atlassian.confluence.core.service.NotAuthorizedException
 import com.github.kittinunf.result.Result
+import com.networkedassets.git4c.application.BussinesPluginComponents
 import com.networkedassets.git4c.boundary.GetDocumentItemInDocumentationsMacroQuery
 import com.networkedassets.git4c.boundary.outbound.DocItem
 import com.networkedassets.git4c.boundary.outbound.VerificationStatus
@@ -25,16 +26,18 @@ import com.networkedassets.git4c.utils.getLogger
 
 
 class GetDocumentItemInDocumentationsMacroUseCase(
-        val cache: DocumentsViewCache,
-        val checkUserPermissionProcess: ICheckUserPermissionProcess,
-        val documentItemCache: DocumentItemCache,
-        val macroViewProcess: MacroViewProcess,
-        val macroViewCache: MacroToBeViewedPrepareLockCache,
-        val macroSettingsDatabase: MacroSettingsDatabase,
-        val repositoryDatabase: RepositoryDatabase,
-        val documentToBeConvertedLockCache: DocumentToBeConvertedLockCache,
-        val converter: ConvertDocumentItemAction
-) : UseCase<GetDocumentItemInDocumentationsMacroQuery, DocItem> {
+        components: BussinesPluginComponents,
+        val documentsViewCache: DocumentsViewCache = components.cache.documentsViewCache,
+        val checkUserPermissionProcess: ICheckUserPermissionProcess = components.processing.checkUserPermissionProcess,
+        val documentItemCache: DocumentItemCache = components.cache.documentItemCache,
+        val macroViewProcess: MacroViewProcess = components.processing.macroViewProcess,
+        val macroViewCache: MacroToBeViewedPrepareLockCache = components.cache.macroViewCache,
+        val macroSettingsDatabase: MacroSettingsDatabase = components.providers.macroSettingsProvider,
+        val repositoryDatabase: RepositoryDatabase = components.providers.repositoryProvider,
+        val documentToBeConvertedLockCache: DocumentToBeConvertedLockCache = components.async.documentToBeConvertedLockCache,
+        val converter: ConvertDocumentItemAction = components.processing.converterAction
+) : UseCase<GetDocumentItemInDocumentationsMacroQuery, DocItem>
+(components) {
 
     val log = getLogger()
 
@@ -61,14 +64,15 @@ class GetDocumentItemInDocumentationsMacroUseCase(
         }
 
 
-        val cachedMacro = cache.get(searchedMacroId)
+        val cachedMacro = documentsViewCache.get(searchedMacroId)
         if (cachedMacro == null) {
             macroViewProcess.prepareMacroToBeViewed(request.macroId);
             log.debug { "Macro=${request.macroId} is not in cache, it will be refreshed" }
             return@execute Result.error(NotReadyException())
         }
 
-        val fileToSearch = cachedMacro.files.filter { it.index == searchedDocumentId }.firstOrNull() ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+        val fileToSearch = cachedMacro.files.filter { it.index == searchedDocumentId }.firstOrNull()
+                ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
 
         val macroSettings = macroSettingsDatabase.get(request.macroId)
         if (macroSettings == null) {
@@ -92,8 +96,6 @@ class GetDocumentItemInDocumentationsMacroUseCase(
         val extractorUuid = macroSettings.extractorDataUuid
 
         val idOfDocumentInConvertion = idOfConvertedDocument(repositoryPath, repositoryBranch, fileToSearch.path, extractorUuid)
-//
-//        val idOfDocumentInConvertion = "${repositoryPath}_${repositoryBranch}_${fileToSearch.path}_${extractorUuid ?: "0"}"
 
         val conversionInProgress = documentToBeConvertedLockCache.get(idOfDocumentInConvertion)
 
@@ -122,7 +124,6 @@ class GetDocumentItemInDocumentationsMacroUseCase(
         documentToBeConvertedLockCache.put(idOfDocumentInConvertion, DocumentView(idOfDocumentInConvertion, DocumentView.MacroViewStatus.TO_CONVERT))
         documentItemCache.remove(idOfDocumentInConvertion)
         converter.planConvertion(macroId, documentPath, repositoryPath, repositoryBranch, extractorUuid)
-
         return Result.error(NotReadyException())
     }
 }

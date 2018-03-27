@@ -1,27 +1,29 @@
 package com.networkedassets.git4c.core
 
 import com.atlassian.confluence.core.service.NotAuthorizedException
+import com.jayway.awaitility.Awaitility.await
 import com.networkedassets.git4c.application.PluginComponents
 import com.networkedassets.git4c.boundary.PublishFileCommand
+import com.networkedassets.git4c.boundary.PublishFileResultRequest
 import com.networkedassets.git4c.boundary.inbound.FileToSave
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
-import com.networkedassets.git4c.core.business.Commit
-import com.networkedassets.git4c.core.business.Computation
 import com.networkedassets.git4c.core.business.User
+import com.networkedassets.git4c.data.MacroLocation
 import com.networkedassets.git4c.data.MacroSettings
 import com.networkedassets.git4c.data.RepositoryWithNoAuthorization
-import com.networkedassets.git4c.test.UseCaseTest
-import com.networkedassets.git4c.utils.InMemoryApplication.application
-import com.nhaarman.mockito_kotlin.verify
+import com.networkedassets.git4c.test.AsyncUseCaseTest
 import com.nhaarman.mockito_kotlin.whenever
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Ignore
 import org.junit.Test
 
-class PublishFileUseCaseTest : UseCaseTest<PublishFileUseCase>() {
+class PublishFileUseCaseTest : AsyncUseCaseTest<PublishFileUseCase, PublishFileResultUseCase>() {
+
+    override fun getAnswerUseCase(plugin: PluginComponents): PublishFileResultUseCase {
+        return PublishFileResultUseCase(plugin.bussines)
+    }
 
     override fun getUseCase(plugin: PluginComponents): PublishFileUseCase {
-        return PublishFileUseCase(plugin.importer, plugin.documentsViewCache, plugin.macroSettingsDatabase, plugin.repositoryDatabase, plugin.userManager, plugin.publishFileComputationCache, plugin.converterExecutor, plugin.temporaryEditBranchesDatabase, plugin.macroLocationDatabase)
+        return PublishFileUseCase(plugin.bussines)
     }
 
     @Test
@@ -36,41 +38,72 @@ class PublishFileUseCaseTest : UseCaseTest<PublishFileUseCase>() {
     @Test
     fun `When macro doesn't exists exception is thrown`() {
         val macroSettingsId = "msId"
-        application.macroSettingsDatabase.remove(macroSettingsId)
+        components.providers.macroSettingsProvider.remove(macroSettingsId)
+        val requestId = useCase.execute(PublishFileCommand("user", macroSettingsId, FileToSave("myfile.txt", "this is content", "", null)))
 
-        val result = useCase.execute(PublishFileCommand("user", macroSettingsId, FileToSave("myfile.txt", "this is content", "", null)))
+        await().until {
+            assertThat(useCaseWithAnswer.execute(PublishFileResultRequest(requestId.get().requestId)).component2()).isOfAnyClassIn(NotFoundException::class.java)
+        }
+
+        val result = useCaseWithAnswer.execute(PublishFileResultRequest(requestId.get().requestId))
         assertThat(result.component1()).isNull()
         assertThat(result.component2()).isNotNull().isOfAnyClassIn(NotFoundException::class.java)
     }
 
     @Test
-    @Ignore
     fun `When macro and repository exists file is published`() {
 
         val macroSettingsId = "msId"
         val repositoryId = "rId"
         val macroSettings = MacroSettings(macroSettingsId, repositoryId, "branch", "", null, null)
-        val repositorySettings = RepositoryWithNoAuthorization(repositoryId, "path")
+        val repositorySettings = RepositoryWithNoAuthorization(repositoryId, "path", true)
         val fileToSave = FileToSave("file.txt", "old content\nnew content", "Edit file.txt", null)
+        val location = MacroLocation(macroSettingsId, "page_1", "space_2")
 
-        application.macroSettingsDatabase.put(macroSettingsId, macroSettings)
-        application.repositoryDatabase.put(repositoryId, repositorySettings)
+        components.providers.macroSettingsProvider.put(macroSettingsId, macroSettings)
+        components.providers.repositoryProvider.put(repositoryId, repositorySettings)
+        components.database.macroLocationDatabase.put(location.uuid, location)
 
         // TODO: Don't use mockito!!! Use mocked interfaces imlementation!
-        whenever(application.userManager.getUser("user")).thenReturn(User("User", "user@user.com"))
+        whenever(components.utils.userManager.getUser("user")).thenReturn(User("User", "user@user.com"))
 
-        val result = useCase.execute(PublishFileCommand("user", macroSettingsId, fileToSave))
+        val requestId = useCase.execute(PublishFileCommand("user", macroSettingsId, fileToSave))
+
+        await().until {
+            assertThat(useCaseWithAnswer.execute(PublishFileResultRequest(requestId.get().requestId)).component1()).isNotNull()
+        }
+
+        val result = useCaseWithAnswer.execute(PublishFileResultRequest(requestId.get().requestId))
 
         assertThat(result.component1()).isNotNull()
         assertThat(result.component2()).isNull()
-        verify(application.importer).updateFile(repositorySettings, "branch", "file.txt", "old content\nnew content", Commit("User", "user@user.com", "Edit file.txt"))
-        verify(application.importer).pushLocalBranch(repositorySettings, "branch")
+    }
 
-        val transactionId = result.component1()!!.requestId
-        val transaction = application.publishFileComputationCache .get(transactionId)
+    @Test
+    fun `When repository is not editable error is returned`() {
 
-        assertThat(transaction).isNotNull()
-        assertThat(transaction!!.state).isEqualTo(Computation.ComputationState.FINISHED)
+        val macroSettingsId = "msId"
+        val repositoryId = "rId"
+        val macroSettings = MacroSettings(macroSettingsId, repositoryId, "branch", "", null, null)
+        val repositorySettings = RepositoryWithNoAuthorization(repositoryId, "path", false)
+        val fileToSave = FileToSave("file.txt", "old content\nnew content", "Edit file.txt", null)
+
+        components.providers.macroSettingsProvider.put(macroSettingsId, macroSettings)
+        components.providers.repositoryProvider.put(repositoryId, repositorySettings)
+
+        whenever(components.utils.userManager.getUser("user")).thenReturn(User("User", "user@user.com"))
+
+        val requestId = useCase.execute(PublishFileCommand("user", macroSettingsId, fileToSave))
+
+        await().until {
+            assertThat(useCaseWithAnswer.execute(PublishFileResultRequest(requestId.get().requestId)).component2()).isInstanceOf(NotFoundException::class.java)
+        }
+
+        val result = useCaseWithAnswer.execute(PublishFileResultRequest(requestId.get().requestId))
+
+        assertThat(result.component1()).isNull()
+        assertThat(result.component2()).isNotNull()
+
     }
 
     /**

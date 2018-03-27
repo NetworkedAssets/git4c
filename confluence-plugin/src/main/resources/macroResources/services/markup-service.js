@@ -1,173 +1,105 @@
-var MarkupService = (function () {
-    return {
+var MarkupService = {
 
-        getTree: function () {
-            return this.getDocumentation().then(function () {
-                return Vue.http.get(
-                    UrlService.getRestUrl('documentation', ParamsService.getUuid(), 'tree'))
-                    .then(function (response) {
-                        if (response.status !== 200) {
-                            throw new Error(response.statusText)
-                        }
-                        return response.json();
-                    }).catch(function (err) {
-                    console.log("MarkupService.getTree", err);
-                    return Promise.reject(err);
-                });
-            });
-        },
-        getItem: function (file) {
-            return Vue.http.post(
-                UrlService.getRestUrl('documentation', ParamsService.getUuid(), 'doc-item'), file)
-                .then(function (response) {
-                    if (response.status !== 200 && response.status !== 202) {
-                        throw new Error(response.statusText);
-                    }
-                    if (response.status === 202){
-                        var promise =  new Promise(function(resolve, reject) {
-                            setTimeout(function() {
-                                resolve(MarkupService.getItem(file));
-                            }, 3000);
-                        });
-                        return promise
-                    }
-                    return response.json();
-                }).catch(function (err) {
-                    console.log("MarkupService.getItem", err);
-                    return Promise.reject(err);
-                });
-        },
-        getDocumentation: function () {
-            return Vue.http.get(
-                UrlService.getRestUrl('documentation', ParamsService.getUuid()))
-                .then(function (response) {
-                    if (response.status !== 200 && response.status!=202) {
-                        throw new Error(response.statusText);
-                    }
-                    if (response.status==202){
-                        var promise =  new Promise(function(resolve, reject) {
-                            setTimeout(function() {
-                                resolve(MarkupService.getDocumentation());
-                            }, 3000);
-                        });
-                        return promise
-                    }
-                    return response.json();
-                }).catch(function(err){
+    getTree: function () {
+        console.log("Macro is: "+ParamsService.getUuid())
+
+        return Git4CApi.getMacroDocumentationTree(ParamsService.getUuid())
+            .catch(function (err) {
+                console.log("MarkupService.getTree", err);
+                return Promise.reject(err);
+            })
+    },
+
+    getItemPromise: undefined,
+    getItem: function (file) {
+        if (this.getItemPromise) {
+            this.getItemPromise.cancel()
+        }
+
+        const promise = Git4CApi.getMacroDocumentationItem(ParamsService.getUuid(), file)
+
+        this.getItemPromise = promise
+
+        return promise
+            .catch(function (err) {
+                console.log("MarkupService.getItem", err);
+                return Promise.reject(err);
+            })
+
+    },
+    getDocumentation: function () {
+
+        return Git4CApi.getMacroInformation(ParamsService.getUuid())
+            .catch(function (err) {
                 console.log("MarkupService.getDocumentation", err);
                 return Promise.reject(err);
-                }) ;
-        },
+            })
+    },
 
-        getLatestRevision: function () {
-            return Vue.http.get(
-                UrlService.getRestUrl('documentation', ParamsService.getUuid(), "latestRevision"))
-                .then(function (response) {
-                    if (response.status !== 200) {
-                        throw new Error(response.statusText);
-                    }
-
-                    return response.json();
-                }).catch(function (err) {
-                    console.log("MarkupService.getDocumentation", err);
-                    return Promise.reject(err);
-                });
-        },
-
-        updateDocumentation: function () {
-            return Vue.http.post(
-                UrlService.getRestUrl('documentation', ParamsService.getUuid(), 'refresh')).then(function (response) {
-                if (response.status !== 200 && response.status!=202) {
-                    throw new Error(response.statusText);
-                }
-                if (response.status==202){
-                    var promise =  new Promise(function(resolve, reject) {
-                        setTimeout(function() {
-                            resolve(MarkupService.updateDocumentation());
-                        }, 2000);
-                    });
-                    return promise
-                }
-                return Promise.resolve(response);
-            }).catch(function (err) {
-                console.log("MarkupService.updateDocumentation", err);
+    getLatestRevision: function () {
+        return Git4CApi.getLatestRevisionForMacro(ParamsService.getUuid())
+            .catch(function (err) {
+                console.log("MarkupService.getDocumentation", err);
                 return Promise.reject(err);
             });
-        },
+    },
 
-        getBranches: function () {
-            return Vue.http.get(
-                UrlService.getRestUrl('documentation', ParamsService.getUuid(), 'branches'))
-                .then(function (response) {
-                    if (response.status !== 200) {
-                        throw new Error(response.statusText);
-                    }
-                    return response.json();
-                }).catch(function (err) {
-                    console.log("MarkupService.getDocumentation", err);
-                    return Promise.reject(err);
+    updateDocumentation: function () {
+        return Vue.http.post(
+            UrlService.getRestUrl('documentation', ParamsService.getUuid(), 'refresh')).then(function (response) {
+            if (response.status !== 200 && response.status!=202) {
+                throw new Error(response.statusText);
+            }
+            if (response.status==202){
+                var promise =  new Promise(function(resolve, reject) {
+                    setTimeout(function() {
+                        resolve(MarkupService.updateDocumentation());
+                    }, 2000);
                 });
-        },
+                return promise
+            }
+            return Promise.resolve(response);
+        }).catch(function (err) {
+            console.log("MarkupService.updateDocumentation", err);
+            return Promise.reject(err);
+        });
+    },
 
-        temporary: function (branch) {
-            return Vue.http.post(
-                UrlService.getRestUrl('documentation', ParamsService.getInitialUuid(), 'temporary'), branch)
-                .then(function (response) {
-                    if (response.status !== 200) {
-                        throw new Error(response.statusText);
-                    }
-                    return response.json();
-                }).catch(function (err) {
-                    console.log("MarkupService.temporary", err);
-                    return Promise.reject(err);
-                });
-        },
-        getDefaultBranch: function () {
-            return Vue.http.get(
-                UrlService.getRestUrl('documentation', ParamsService.getInitialUuid(), "defaultBranch"))
-                .then(function (response) {
-                    if (response.status !== 200) {
-                        throw new Error(response.statusText);
-                    }
-                    return Promise.resolve(response);
-                }).catch(function (err) {
-                    console.log("MarkupService.temporary", err);
-                    return Promise.reject(err);
-                });
-        },
+    getBranches: function () {
+        return Git4CApi.getBranchesForMacro(ParamsService.getUuid())
+            .catch(function (err) {
+                console.log("MarkupService.getBranches", err);
+                return Promise.reject(err);
+            });
+    },
 
-        getGlobs: function () {
-            return Vue.http.get(
-                UrlService.getRestUrl('documentation', ParamsService.getUuid(), 'globs'))
-                .then(function (response) {
-                    if (response.status !== 200) {
-                        throw new Error(response.statusText);
-                    }
-                    return response.json();
-                }).catch(function (err) {
-                    console.log("MarkupService.getGlobs", err);
-                    return Promise.reject(err);
-                });
-        },
+    temporary: function (branch) {
 
-        updateFile: function (file, content) {
+        return Git4CApi.createTemporaryMacroForMacroAndBranch(ParamsService.getInitialUuid(), branch)
+            .catch(function (err) {
+                console.log("MarkupService.temporary", err);
+                return Promise.reject(err);
+            })
+    },
 
-            const o = JSON.stringify({
-                file: file.join("/"),
-                content: content
+    getDefaultBranch: function () {
+
+        return Git4CApi.getDefaultBranchForMacro(ParamsService.getInitialUuid())
+            .catch(function (err) {
+                console.log("MarkupService.temporary", err);
+                return Promise.reject(err);
             });
 
-            return Vue.http.post(
-                UrlService.getRestUrl('documentation', ParamsService.getUuid(), 'updateFile'), o)
-                .then(function (response) {
-                    if (response.status !== 200) {
-                        throw new Error(response.statusText);
-                    }
-                    return response.json();
-                }).catch(function (err) {
-                    console.log("MarkupService.updateFile", err)
-                    return Promise.reject(err)
-                })
-        }
+    },
+
+    getGlobs: function () {
+
+        return Git4CApi.getGlobsForMacro(ParamsService.getUuid())
+            .catch(function (err) {
+                console.log("MarkupService.getGlobs", err);
+                return Promise.reject(err);
+            });
+
     }
-})();
+
+}

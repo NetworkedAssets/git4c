@@ -1,5 +1,5 @@
 var Git4CCustomRepositoryDialog = {
-    getComponent: function (Events) {
+    getComponent: function (Events, isEditableOptionAvailable) {
 
         const Error = function (id, serverError, text) {
             return {
@@ -63,7 +63,9 @@ var Git4CCustomRepositoryDialog = {
                     isFilled: false,
                     saving: false,
                     errors: errors,
-                    currentError: undefined
+                    currentError: undefined,
+                    editable: false,
+                    editableOptionAvailable: isEditableOptionAvailable
                 }
             },
             watch: {
@@ -144,7 +146,8 @@ var Git4CCustomRepositoryDialog = {
                             const repository = {
                                 repositoryName: this.name,
                                 sourceRepositoryUrl: this.url,
-                                credentials: new NoAuthCredentials()
+                                credentials: new NoAuthCredentials(),
+                                editable: this.editableOptionAvailable && this.editable
                             };
                             if (Events) {
                                 Events.$emit("repositoryDefined", repository)
@@ -156,7 +159,8 @@ var Git4CCustomRepositoryDialog = {
                             const repository = {
                                 repositoryName: this.name,
                                 sourceRepositoryUrl: this.url,
-                                credentials: new UsernamePasswordCredentials(this.username, this.password)
+                                credentials: new UsernamePasswordCredentials(this.username, this.password),
+                                editable: this.editableOptionAvailable && this.editable
                             };
                             if (Events) {
                                 Events.$emit("repositoryDefined", repository)
@@ -168,7 +172,8 @@ var Git4CCustomRepositoryDialog = {
                             const repository = {
                                 repositoryName: this.name,
                                 sourceRepositoryUrl: this.url,
-                                credentials: new SSHKeyCredentials(this.sshKey)
+                                credentials: new SSHKeyCredentials(this.sshKey),
+                                editable: this.editableOptionAvailable && this.editable
                             };
                             if (Events) {
                                 Events.$emit("repositoryDefined", repository)
@@ -196,6 +201,7 @@ var Git4CCustomRepositoryDialog = {
                     this.sshKey = undefined
                     this.urlType = "EMPTY"
                     this.authType = "USERNAMEPASSWORD"
+                    this.editable = false
                     this.isFilled = false
                     this.saving = false
                     this.currentError = undefined
@@ -204,6 +210,7 @@ var Git4CCustomRepositoryDialog = {
                     this.name = repositoryInfo.name
                     this.url = repositoryInfo.sourceRepositoryUrl
                     this.authType = repositoryInfo.authType
+                    this.editable = repositoryInfo.editable
                 }
 
             },
@@ -262,6 +269,13 @@ var Git4CCustomRepositoryDialog = {
                     '               <label for="doc_macro-sshkey">SSH key</label>'+
                     '               <textarea id="doc_macro-sshkey" v-model="sshKey" class="text" style="height: auto" rows="10" placeholder="key" />'+
                     '               <div class="description">Please paste your SSH key</div>'+
+                    '             </div>'+
+                    '             <div class="field-group" v-if="editableOptionAvailable">'+
+                    '                  <label for="iseditable">Editable</label>'+
+                    '                  <div class="checkbox"> ' +
+                    '                      <input id="iseditable" class="checkbox" type="checkbox" v-model="editable" />'+
+                    '                      <div class="description">Define if files can be edited in this repository via Git4C macro</div> ' +
+                    '                  </div>'+
                     '             </div>'+
                     '      </div>'+
                     '      </div>'+

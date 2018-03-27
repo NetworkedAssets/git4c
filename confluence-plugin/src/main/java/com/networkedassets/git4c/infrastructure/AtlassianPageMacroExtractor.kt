@@ -7,7 +7,6 @@ import org.jsoup.Jsoup
 class AtlassianPageMacroExtractor : PageMacroExtractor {
 
     override fun extractMacro(pageContent: String): List<Macro> {
-
         val normalMacro = "Git4C"
         val singlePageMacro = "Git4C Single File"
 

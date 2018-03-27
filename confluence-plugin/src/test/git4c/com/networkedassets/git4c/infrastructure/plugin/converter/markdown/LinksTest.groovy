@@ -21,7 +21,7 @@ class LinksTest extends Specification {
     def "Relative links should be replaced with anchors"() {
 
         given:
-        def webPage = getMarkdown("linksTest/relative")
+        def webPage = getMarkdown("linksTest/relative").content
 
         when:
         def xml = new XmlSlurper().parseText("""<span xmlns:v-on="http://www.w3.org/1999/xhtml">${webPage}</span>""")
@@ -40,6 +40,20 @@ class LinksTest extends Specification {
         a2.@"v-on:click" == "moveToFile('subfolder%2Ffile2.txt', 'secondparagraph')"
         a3.@href == "javascript:void(0)"
         a3.@"v-on:click" == "moveToFile('subfolder%2Ffile%20with%20spaces.txt', '')"
+    }
+
+    def "Mailto links are not replaced with anchors"() {
+
+        given:
+        def webPage = getMarkdown("mailtoTest").content
+
+        when:
+        def xml = new XmlSlurper().parseText(webPage)
+        def a = xml.p.a
+
+        then:
+        a.@href=="mailto:admin@email.com"
+
     }
 
 }

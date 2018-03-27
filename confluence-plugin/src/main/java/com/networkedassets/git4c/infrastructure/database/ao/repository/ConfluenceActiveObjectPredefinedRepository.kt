@@ -30,8 +30,9 @@ class ConfluenceActiveObjectPredefinedRepository(val ao: ActiveObjects) : Predef
         getFromDatabase(uuid).firstOrNull()?.let { ao.delete(it) }
     }
 
-    override fun removeAll() = ao.find(PredefinedRepositoryEntity::class.java).forEach { remove(it.uuid) }
-
+    override fun removeAll()  {
+        ao.deleteWithSQL(PredefinedRepositoryEntity::class.java, "ID > ?", 0)
+    }
 
     private fun PredefinedRepositoryEntity.convert(): PredefinedRepository {
         return PredefinedRepository(

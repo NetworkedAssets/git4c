@@ -1,6 +1,7 @@
 package com.networkedassets.git4c.core
 
 import com.github.kittinunf.result.Result
+import com.networkedassets.git4c.application.BussinesPluginComponents
 import com.networkedassets.git4c.boundary.RefreshDocumentationsMacroCommand
 import com.networkedassets.git4c.boundary.outbound.DocumentationsMacro
 import com.networkedassets.git4c.boundary.outbound.VerificationStatus
@@ -20,15 +21,17 @@ import com.networkedassets.git4c.delivery.executor.execution.UseCase
 
 
 class RefreshDocumentationsMacroUseCase(
-        val extractorDataDatabase: ExtractorDataDatabase,
-        val checkUserPermissionProcess: ICheckUserPermissionProcess,
-        val macroSettingsDatabase: MacroSettingsDatabase,
-        val repositoryDatabase: RepositoryDatabase,
-        val cache: DocumentsViewCache,
-        val macroViewProcess: MacroViewProcess,
-        val macroViewCache: MacroToBeViewedPrepareLockCache,
-        val importer: SourcePlugin
-) : UseCase<RefreshDocumentationsMacroCommand, DocumentationsMacro> {
+        components: BussinesPluginComponents,
+        val extractorDataDatabase: ExtractorDataDatabase = components.database.extractorDataDatabase,
+        val checkUserPermissionProcess: ICheckUserPermissionProcess = components.processing.checkUserPermissionProcess,
+        val macroSettingsDatabase: MacroSettingsDatabase = components.providers.macroSettingsProvider,
+        val repositoryDatabase: RepositoryDatabase = components.providers.repositoryProvider,
+        val documentsViewCache: DocumentsViewCache = components.cache.documentsViewCache,
+        val macroViewProcess: MacroViewProcess = components.processing.macroViewProcess,
+        val macroViewCache: MacroToBeViewedPrepareLockCache = components.cache.macroViewCache,
+        val importer: SourcePlugin = components.macro.importer
+) : UseCase<RefreshDocumentationsMacroCommand, DocumentationsMacro>
+(components) {
 
     override fun execute(request: RefreshDocumentationsMacroCommand): Result<DocumentationsMacro, Exception> {
 
@@ -38,9 +41,12 @@ class RefreshDocumentationsMacroUseCase(
         val macroViewStatus = macroViewCache.get(request.macroId)?.macroViewStatus ?: MacroView.MacroViewStatus.FAILED
 
         if (macroViewStatus == MacroView.MacroViewStatus.FAILED) {
-            val macroSettings = macroSettingsDatabase.get(request.macroId) ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+            val macroSettings = macroSettingsDatabase.get(request.macroId)
+                    ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
             if (macroSettings.repositoryUuid == null) return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
-            val repository = repositoryDatabase.get(macroSettings.repositoryUuid) ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+            val repository = repositoryDatabase.get(macroSettings.repositoryUuid)
+                    ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+            // TODO: Think of how to do this part in separate async
             return@execute Result.error(VerificationException(importer.verify(repository)))
         }
 
@@ -52,15 +58,17 @@ class RefreshDocumentationsMacroUseCase(
             return@execute Result.error(com.atlassian.plugins.whitelist.NotAuthorizedException("User: ${user} doesn't have permission to space or site"))
         }
 
-        val data = cache.get(request.macroId)
+        val data = documentsViewCache.get(request.macroId)
         if (data == null) {
             macroViewProcess.prepareMacroToBeViewed(request.macroId);
             return@execute Result.error(NotReadyException())
         }
 
-        val macroSettings = macroSettingsDatabase.get(searchedMacroId) ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+        val macroSettings = macroSettingsDatabase.get(searchedMacroId)
+                ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
         if (macroSettings.repositoryUuid == null) return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
-        val repository = repositoryDatabase.get(macroSettings.repositoryUuid) ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
+        val repository = repositoryDatabase.get(macroSettings.repositoryUuid)
+                ?: return@execute Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
 
         try {
             return@execute Result.of {

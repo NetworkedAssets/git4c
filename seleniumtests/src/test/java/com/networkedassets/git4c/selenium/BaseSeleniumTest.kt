@@ -116,7 +116,6 @@ open class BaseSeleniumTest : SharedUtils {
             return object : Statement() {
                 @Throws(Throwable::class)
                 override fun evaluate() {
-                    var caughtThrowable: Throwable? = null
                     val retryCount = 5
 
                     for (i in 0 until retryCount) {
@@ -124,22 +123,19 @@ open class BaseSeleniumTest : SharedUtils {
                             base.evaluate()
                             driver.close()
                             break
-                        } catch (t: Throwable) {
-                            caughtThrowable = t
+                        } catch (error: Throwable) {
                             captureScreenshot(description.displayName, i)
                             if (i != retryCount - 1) {
                                 System.err.println("${description.displayName}: run ${i + 1} failed")
-                                t.printStackTrace(System.err)
+                                error.printStackTrace(System.err)
                             } else {
                                 System.err.println("${description.displayName}: giving up after $retryCount failures")
                                 driver.close()
-                                throw caughtThrowable
-
+                                throw error
                             }
                         }
                         driver.close()
                     }
-
                 }
 
                 fun captureScreenshot(fileName: String, tryNr: Int) {

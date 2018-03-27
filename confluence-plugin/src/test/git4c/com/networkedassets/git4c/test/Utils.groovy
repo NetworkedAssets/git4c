@@ -11,7 +11,7 @@ class Utils {
 
     static Collection<ImportedFileData> getDataFromDirectory(Path path) {
         def settings = new MacroSettings("macro", "repository", "master", "", "", null)
-        def repository = new RepositoryWithNoAuthorization("repository", path.toFile().absolutePath)
+        def repository = new RepositoryWithNoAuthorization("repository", path.toFile().absolutePath, false)
         return new DirectorySourcePlugin().pull(repository, settings.branch, false).imported
     }
 

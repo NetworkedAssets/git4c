@@ -64,14 +64,7 @@ object TestJGitServer {
     @Throws(IOException::class, GitAPIException::class)
     private fun populateRepository(repository: Repository) {
         Git(repository).use { git ->
-            val myfile = File(repository.getDirectory().getParent(), "testfile")
-            if (!myfile.createNewFile()) {
-                throw IOException("Could not create file " + myfile)
-            }
-
-            git.add().addFilepattern("testfile").call()
-
-            git.commit().setMessage("Test-Checkin").call()
+            git.commit().setMessage("Test-Checkin").setAllowEmpty(true).call()
         }
     }
 

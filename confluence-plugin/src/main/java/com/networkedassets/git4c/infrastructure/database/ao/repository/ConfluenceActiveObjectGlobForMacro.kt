@@ -33,8 +33,9 @@ class ConfluenceActiveObjectGlobForMacro(val ao: ActiveObjects) : GlobForMacroDa
         getFromDatabase(uuid).firstOrNull()?.let { ao.delete(it) }
     }
 
-    override fun removeAll() = ao.find(GlobEntity::class.java).forEach { remove(it.uuid) }
-
+    override fun removeAll()  {
+        ao.deleteWithSQL(GlobEntity::class.java, "ID > ?", 0)
+    }
 
     private fun GlobEntity.convert(): GlobForMacro {
         return GlobForMacro(

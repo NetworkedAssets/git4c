@@ -2,7 +2,7 @@ var Git4COverlay = {
     getComponent: function (Events) {
         return {
             template:
-            ' <div style="position: relative; flex: 1; align-content: stretch;">' +
+            ' <div style="position: relative; flex: 1; align-content: stretch;" v-bind:class="{ \'git4c-component-overlay-loading\': loading }">' +
             '    <div v-if="loading" class="git4c-component-overlay">' +
             '        <div style="transform:translate(-50%,-50%);position: absolute; top:50%; left: 50%; width: 100%;">' +
             '            <div id="spinner1" class="spinner6" style="width:60px; margin: 0 auto;">' +
@@ -53,7 +53,7 @@ var Git4COverlay = {
             methods: {
                 returnToDefaultBranch: function () {
                     MarkupService.getDefaultBranch().then(function (promise) {
-                        Events.$emit("branchChangeRequest", promise.body.currentBranch)
+                        Events.$emit("branchChangeRequest", promise.currentBranch)
                     })
                 },
                 detectError: function (error) {

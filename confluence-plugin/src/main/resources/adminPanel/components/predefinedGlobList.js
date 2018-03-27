@@ -7,13 +7,14 @@ var Git4CPredefinedGlobList = {
         return {
             data: function () {
                 return {
-                    globsList: undefined
+                    globsList: undefined,
+                    loading: true
                 }
             },
             template:
                 '<div>'+
                 '    <div id="manage_globs-div" style="margin-top: 30px;">'+
-                '        <div id="add_globs-div ">'+
+                '        <div id="add_globs-div">'+
                 '            <h3>Predefined filters'+
                 '                <button id="add_glob-button" v-on:click="openCustomDialog" class="aui-button" style="float:right; margin-bottom:10px">Add predefined filter</button>'+
                 '                <a id="add_glob-button-hint" style="margin-right: 10px; padding-top:13px; float:right;"'+
@@ -21,7 +22,7 @@ var Git4CPredefinedGlobList = {
                 '            </h3>'+
                 '        </div>'+
                 '    </div>'+
-                '    <table id="globs_repo_table" class="aui">'+
+                '    <table v-show="listAvailable" id="globs_repo_table" class="aui">'+
                 '        <thead>'+
                 '        <tr>'+
                 '            <th id="globs_table-url">Name</th>'+
@@ -43,50 +44,60 @@ var Git4CPredefinedGlobList = {
                 '        </tr>'+
                 '    </tbody>'+
                 '    </table>'+
+                '    <div v-show="!loading && !listAvailable" class="aui-message aui-message-info">' +
+                '        <p class="title">' +
+                '            <strong>No items</strong>' +
+                '        </p>' +
+                '    </div>' +
                 '</div>'
             ,
-
+            computed: {
+                listAvailable: function(){
+                    return this.globsList && this.globsList.length
+                }
+            },
             methods:{
                 openCustomDialog: function() {
                     this.$emit("openCustomGlobDialog")
                 },
                 getPredefinedList: function() {
 
-                    this.$http.get(restUrl + "/glob?timestamp="+$.now())
-                        .then(function(response) {
-                            if (response.status !== 200) {
-                                throw new Error(response.statusText)
-                            }
-                            this.globsList = response.data.globs
-                            this.$nextTick(function () {
-                                this.setTooltips()
+                    const vm = this
+
+                    Git4CApi.getGlobs()
+                        .then(function(globs) {
+                            vm.loading = false
+                            vm.globsList = globs
+                            vm.$nextTick(function () {
+                                vm.setTooltips()
                             })
-                        }).catch(function (err) {
-                        return Promise.reject(err);
-                    });
+                        })
                 },
                 processGlob: function (glob){
                     const vm = this
-                    var url = restUrl + "/glob"
-                    const response = this.$http.post(url, glob).then(function (response) {
-                        if (response.status !== 200) {
-                            throw new Error(response.statusText);
-                        }
-                        this.$emit("globProcessed", response.json)
-                    }).catch(function (err) {
-                        err.bodyText().then(function (text) {
-                            vm.$emit("globRejected", text);
+
+                    Git4CApi.createGlob(glob)
+                        .then(function (response) {
+                            if (response.status !== 200) {
+                                throw new Error(response.statusText);
+                            }
+                            vm.$emit("globProcessed", response.json)
                         })
-                    });
+                        .catch(function (err) {
+                            err.bodyText().then(function (text) {
+                                vm.$emit("globRejected", text);
+                            })
+                        });
                 },
                 removeGlobRequest: function(uuid){
                     this.$emit("removeGlobRequest", uuid)
                 },
                 removeGlob: function(uuid){
                     const vm = this
-                    this.$http.delete(restUrl + "/glob/" + uuid).then(function() {
-                        vm.getPredefinedList()
-                    })
+                    Git4CApi.deleteGlob(uuid)
+                        .then(function() {
+                            vm.getPredefinedList()
+                        })
                 },
                 setTooltips: function(){
                     AJS.$("#add_glob-button-hint").tooltip({
@@ -95,14 +106,14 @@ var Git4CPredefinedGlobList = {
                         }
                     });
                     if(this.globsList){
-                    this.globsList.forEach( function(it) {
-                        AJS.$("#glob-list_remove_button-" + it.uuid).tooltip({
-                            title: function () {
-                                return "click here to remove this filter";
-                            }
-                        });
-                    })
-                }}
+                        this.globsList.forEach( function(it) {
+                            AJS.$("#glob-list_remove_button-" + it.uuid).tooltip({
+                                title: function () {
+                                    return "click here to remove this filter";
+                                }
+                            });
+                        })
+                    }}
             },
             mounted: function(){
                 this.setTooltips()

@@ -74,12 +74,13 @@ class ConfluenceActiveObjectRepository(val ao: ActiveObjects) : EncryptedReposit
                 RepositoryWithUsernameAndPassword(
                         uuidOfRepository = uuid,
                         path = path,
+                        isEditable_ = false,
                         username = username,
                         password = password
                 )
             }
-            is RepositoryWithSshKeyEntity -> RepositoryWithSshKey(uuid, path, key)
-            is RepositoryWithNoAuthorizationEntity -> RepositoryWithNoAuthorization(uuid, path)
+            is RepositoryWithSshKeyEntity -> RepositoryWithSshKey(uuid, path, false, key)
+            is RepositoryWithNoAuthorizationEntity -> RepositoryWithNoAuthorization(uuid, path, false)
             else -> throw RuntimeException("All credential settings are null")
         }
         return EncryptedRepository(uuid, repository, securityKey)

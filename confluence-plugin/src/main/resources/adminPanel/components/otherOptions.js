@@ -57,14 +57,34 @@ var Git4COtherOptions = {
                     this.$emit("cleanUnusedDataRequest")
                 },
                 cleanData: function () {
-                    this.$http.delete(restUrl).then(function () {
-                        this.$emit("refreshRequest")
-                    })
+                    const vm = this
+                    Git4CApi.cleanData()
+                        .then(function () {
+                            AJSC.flag({
+                                type: 'success',
+                                title: "Removal successful",
+                                close: 'auto',
+                                persistent: false,
+                                body: '<p>Cleaning data was finished successfully</p>'
+                            });
+                            vm.$emit("refreshRequest")
+                        })
+                        .catch(function () {
+                            AJSC.flag({
+                                type: 'error',
+                                title: "Error",
+                                close: 'auto',
+                                persistent: false,
+                                body: '<p>Error occurred during cleaning data</p>'
+                            });
+                        })
                 },
                 restoreDefaultGlobs: function () {
-                    this.$http.head(restUrl + "/glob").then(function () {
-                        this.$emit("refreshRequest")
-                    })
+                    const vm = this
+                    Git4CApi.restoreDefaultGlobs()
+                        .then(function () {
+                            vm.$emit("refreshRequest")
+                        })
                 },
 
                 toggleForcePredefinedRepositoriesRequest: function () {
@@ -80,37 +100,39 @@ var Git4COtherOptions = {
                     }
                 },
                 toggleForcePredefinedRepositories: function () {
-                    var toSend = {
-                        toForce: this.forcePredefinedUiState
-                    };
-                    var state = this.forcePredefinedUiState;
+                    const vm = this;
 
-                    var dis = this;
-                    this.$http.post(restUrl + "/settings/repository/predefine/force", toSend).then(function () {
-                        dis.forcePredefinedServerState = state;
-                    })
+                    const state = this.forcePredefinedUiState;
+
+                    Git4CApi.setPredefinedRepositoriesForceSetting(state)
+                        .then(function () {
+                            vm.forcePredefinedServerState = state;
+                        })
+
                 },
                 toggleForcePredefinedRepositoriesCanceled: function () {
                     this.forcePredefinedUiState = this.forcePredefinedServerState;
                 },
                 cleanUnusedData: function () {
-                    Vue.http.delete(restUrl + "/unused").then(function () {
-                        AJSC.flag({
-                            type: 'success',
-                            title: "Removal successful",
-                            close: 'auto',
-                            persistent: false,
-                            body: '<p>Cleaning unused data was finished successfully</p>'
-                        });
-                    }, function () {
-                        AJSC.flag({
-                            type: 'error',
-                            title: "Error",
-                            close: 'auto',
-                            persistent: false,
-                            body: '<p>Error occurred during cleaning unused data</p>'
-                        });
-                    })
+                    Git4CApi.cleanUnusedData()
+                        .then(function () {
+                            AJSC.flag({
+                                type: 'success',
+                                title: "Removal successful",
+                                close: 'auto',
+                                persistent: false,
+                                body: '<p>Cleaning unused data was finished successfully</p>'
+                            });
+                        })
+                        .catch(function () {
+                            AJSC.flag({
+                                type: 'error',
+                                title: "Error",
+                                close: 'auto',
+                                persistent: false,
+                                body: '<p>Error occurred during cleaning unused data</p>'
+                            });
+                        })
                 },
                 setTooltips: function () {
                     AJS.$("#remove_data-button-hint").tooltip({
@@ -130,10 +152,12 @@ var Git4COtherOptions = {
                     });
                 },
                 setToggleForcedPredefined: function () {
-                    this.$http.get(restUrl + "/settings/repository/predefine/force").then(function (response) {
-                        this.forcePredefinedServerState = response.body.forced;
-                        this.forcePredefinedUiState = response.body.forced;
-                    })
+                    const vm = this
+                    Git4CApi.getPredefinedRepositoriesForceSetting()
+                        .then(function (response) {
+                            vm.forcePredefinedServerState = response.forced;
+                            vm.forcePredefinedUiState = response.forced;
+                        })
                 }
             },
             mounted: function () {

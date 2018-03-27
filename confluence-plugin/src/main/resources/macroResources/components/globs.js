@@ -21,8 +21,8 @@ Vue.component("globs", {
         }
     },
     mounted: function () {
-        MarkupService.getGlobs().then(function (response) {
-            this.globs = response.globs
+        MarkupService.getGlobs().then(function (globs) {
+            this.globs = globs
         })
     }
 })

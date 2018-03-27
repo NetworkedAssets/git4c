@@ -2,6 +2,7 @@ package com.networkedassets.git4c.core.process
 
 import com.networkedassets.git4c.data.RepositoryWithNoAuthorization
 import com.networkedassets.git4c.infrastructure.UuidIdentifierGenerator
+import com.networkedassets.git4c.infrastructure.mocks.core.DirectorySourcePlugin
 import com.networkedassets.git4c.infrastructure.plugin.converter.ConverterPluginList
 import com.networkedassets.git4c.infrastructure.plugin.converter.images.ImageConverterPlugin
 import com.networkedassets.git4c.infrastructure.plugin.converter.main.JSoupPostProcessor
@@ -12,7 +13,6 @@ import com.networkedassets.git4c.infrastructure.plugin.converter.plaintext.Plain
 import com.networkedassets.git4c.infrastructure.plugin.converter.plantuml.PUMLConverterPlugin
 import com.networkedassets.git4c.infrastructure.plugin.converter.prismjs.PrismJSConverterPlugin
 import com.networkedassets.git4c.utils.genTransactionId
-import com.networkedassets.git4c.infrastructure.mocks.core.DirectorySourcePlugin
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import kotlin.test.assertNotNull
@@ -34,7 +34,7 @@ class GetFilesProcessTest() {
         // Given
         val branch = "master";
         val file = "README.md"
-        val repository = RepositoryWithNoAuthorization(genTransactionId(), "src/test/resources")
+        val repository = RepositoryWithNoAuthorization(genTransactionId(), "src/test/resources", false)
 
         // When
         val answer = process.getFiles(repository, branch);

@@ -369,3 +369,7 @@ pre.line-numbers {
     background-color: white;
     /*border: 2px solid black;*/
 }
+
+.git4c-full-width {
+    width: 100%;
+}

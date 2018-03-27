@@ -13,7 +13,6 @@ class ConfluenceActiveObjectMacroLocation(val ao: ActiveObjects) : MacroLocation
 
     override fun get(uuid: String) = getFromDatabase(uuid).firstOrNull()?.run { convert() }
 
-
     private fun getFromDatabase(uuid: String) = ao.find(MacroLocationEntity::class.java, Query.select().where("UUID = ?", uuid))
 
     override fun put(uuid: String, data: MacroLocation) {
@@ -31,8 +30,9 @@ class ConfluenceActiveObjectMacroLocation(val ao: ActiveObjects) : MacroLocation
         getFromDatabase(uuid).firstOrNull()?.let { ao.delete(it) }
     }
 
-    override fun removeAll() = ao.find(MacroLocationEntity::class.java).forEach { remove(it.uuid) }
-
+    override fun removeAll()  {
+        ao.deleteWithSQL(MacroLocationEntity::class.java, "ID > ?", 0)
+    }
 
     private fun MacroLocationEntity.convert(): MacroLocation {
         return MacroLocation(

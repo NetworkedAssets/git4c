@@ -1,96 +1,52 @@
 package com.networkedassets.git4c.core
 
+import com.networkedassets.git4c.application.PluginComponents
+import com.networkedassets.git4c.boundary.PublishFileCommand
 import com.networkedassets.git4c.boundary.PublishFileResultRequest
-import com.networkedassets.git4c.boundary.outbound.exceptions.NotReadyException
-import com.networkedassets.git4c.core.business.Computation
-import com.networkedassets.git4c.core.business.Computation.ComputationState.*
-import com.networkedassets.git4c.core.datastore.cache.PublishFileComputationCache
-import com.networkedassets.git4c.utils.genTransactionId
+import com.networkedassets.git4c.boundary.inbound.FileToSave
+import com.networkedassets.git4c.core.business.User
+import com.networkedassets.git4c.core.bussiness.ComputationCache
+import com.networkedassets.git4c.data.MacroLocation
+import com.networkedassets.git4c.data.MacroSettings
+import com.networkedassets.git4c.data.RepositoryWithNoAuthorization
+import com.networkedassets.git4c.test.AsyncResultUseCaseTest
 import com.nhaarman.mockito_kotlin.whenever
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Before
-import org.junit.Test
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
 
-class PublishFileResultUseCaseTest {
+class PublishFileResultUseCaseTest : AsyncResultUseCaseTest<PublishFileUseCase, PublishFileResultUseCase, PublishFileCommand, Unit, PublishFileResultRequest>() {
 
-    @Mock
-    lateinit var cache: PublishFileComputationCache
-
-    lateinit var usecase: PublishFileResultUseCase
-
-    val requestId = "request_id"
-
-    @Before
-    fun setup() {
-        MockitoAnnotations.initMocks(this)
-        usecase = PublishFileResultUseCase(cache)
+    override fun getAnswerCache(): ComputationCache<Unit> {
+        return components.async.publishFileComputationCache
     }
 
-    @Test
-    fun `When result is not in cache error is returned`() {
-        whenever(cache.get(requestId)).thenReturn(null)
-
-        val result = usecase.execute(PublishFileResultRequest(requestId))
-
-        assertThat(result.component1()).isNull()
-        assertThat(result.component2()).isNotNull()
+    override fun getResultRequest(requestId: String): PublishFileResultRequest {
+        return PublishFileResultRequest(requestId)
     }
 
-    @Test
-    fun `When computation is not done 202 is returned`() {
-
-        val res = Computation<Unit>(
-                genTransactionId(),
-                state = RUNNING
-        )
-
-        whenever(cache.get(requestId)).thenReturn(res)
-
-        val result = usecase.execute(PublishFileResultRequest(requestId))
-
-        assertThat(result.component1()).isNull()
-        assertThat(result.component2()).isNotNull()
-        assertThat(result.component2()).isExactlyInstanceOf(NotReadyException::class.java)
-
+    override fun getExpectedProperAnswer() {
+        return Unit
     }
 
-    @Test
-    fun `When computation errored exception is returned`() {
-
-        val exception = Exception()
-
-        val res = Computation<Unit>(
-                genTransactionId(),
-                state = FAILED,
-                error = exception
-        )
-
-        whenever(cache.get(requestId)).thenReturn(res)
-
-        val result = usecase.execute(PublishFileResultRequest(requestId))
-
-        assertThat(result.component1()).isNull()
-        assertThat(result.component2()).isNotNull()
-        assertThat(result.component2()).isSameAs(exception)
+    override fun getCommandForProperAnswer(): PublishFileCommand {
+        val macroSettingsId = "msId"
+        val repositoryId = "rId"
+        val macroSettings = MacroSettings(macroSettingsId, repositoryId, "branch", "", null, null)
+        val repositorySettings = RepositoryWithNoAuthorization(repositoryId, "path", true)
+        val fileToSave = FileToSave("file.txt", "old content\nnew content", "Edit file.txt", null)
+        val location = MacroLocation(macroSettingsId, "page_1", "space_2")
+        components.providers.macroSettingsProvider.put(macroSettingsId, macroSettings)
+        components.providers.repositoryProvider.put(repositoryId, repositorySettings)
+        components.database.macroLocationDatabase.put(location.uuid, location)
+        // TODO: Don't use mockito!!! Use mocked interfaces imlementation!
+        whenever(components.utils.userManager.getUser("user")).thenReturn(User("User", "user@user.com"))
+        return PublishFileCommand("user", macroSettingsId, fileToSave)
     }
 
-    @Test
-    fun `When computation succeed result is returned`() {
-
-        val res = Computation(
-                genTransactionId(),
-                data = Unit,
-                state = FINISHED
-        )
-
-        whenever(cache.get(requestId)).thenReturn(res)
-
-        val result = usecase.execute(PublishFileResultRequest(requestId))
-
-        assertThat(result.component1()).isNotNull()
-        assertThat(result.component1()).isSameAs(Unit)
-        assertThat(result.component2()).isNull()
+    override fun getAnswerUseCase(plugin: PluginComponents): PublishFileResultUseCase {
+        return PublishFileResultUseCase(plugin.bussines)
     }
+
+    override fun getUseCase(plugin: PluginComponents): PublishFileUseCase {
+        return PublishFileUseCase(plugin.bussines)
+    }
+
 }

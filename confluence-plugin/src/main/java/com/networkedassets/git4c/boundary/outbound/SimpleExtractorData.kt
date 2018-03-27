@@ -6,11 +6,11 @@ abstract class SimpleExtractorData(
 
 data class SimpleMethod(
         val name: String
-): SimpleExtractorData(type = "METHOD")
+) : SimpleExtractorData(type = "METHOD")
 
 data class LineRange(
         val startLine: Int,
         val endLine: Int
-): SimpleExtractorData(type = "LINES")
+) : SimpleExtractorData(type = "LINES")
 
 class EmptyExtractor : SimpleExtractorData(type = "EMPTY")
