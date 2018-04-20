@@ -1,5 +1,8 @@
 var Git4CCustomRepositoryDialog = {
-    getComponent: function (Events, isEditableOptionAvailable) {
+    getComponent: function (Events, fromMacroCreationDialog) {
+
+        const isEditableOptionAvailable = !fromMacroCreationDialog
+        const backArrow = fromMacroCreationDialog
 
         const Error = function (id, serverError, text) {
             return {
@@ -65,7 +68,17 @@ var Git4CCustomRepositoryDialog = {
                     errors: errors,
                     currentError: undefined,
                     editable: false,
-                    editableOptionAvailable: isEditableOptionAvailable
+                    editableOptionAvailable: isEditableOptionAvailable,
+                    showBackArrow: backArrow
+                }
+            },
+            computed: {
+                exitClass: function() {
+                    if (this.showBackArrow) {
+                        return "aui-iconfont-back-page"
+                    } else {
+                        return "aui-iconfont-close-dialog"
+                    }
                 }
             },
             watch: {
@@ -219,7 +232,7 @@ var Git4CCustomRepositoryDialog = {
                     '<header class="aui-dialog2-header">'+
                     '   <h2 class="aui-dialog2-header-main">Git4C macro parameters</h2>'+
                     '   <a class="aui-dialog2-header-close" v-on:click="closeDialog()">'+
-                    '   <span class="aui-icon aui-icon-small aui-iconfont-close-dialog">Close</span>'+
+                    '   <span class="aui-icon aui-icon-small" v-bind:class="[exitClass]" >Close</span>'+
                     '   </a>'+
                     '</header>'+
                     '<div class="aui-dialog2-content">'+
@@ -240,12 +253,12 @@ var Git4CCustomRepositoryDialog = {
                     '             <div class="field-group">'+
                     '                <label for="doc_macro-repo_name">Name</label>'+
                     '                <input id="doc_macro-repo_name" v-model="name" class="text" type="text" placeholder="custom">'+
-                    '                <div class="description">Please type the name for your repository</div>'+
+                    '                <div class="description">Please enter name for your repository</div>'+
                     '             </div>'+
                     '             <div class="field-group">'+
                     '                <label for="doc_macro-repo_url">Repository url</label>'+
                     '                <input id="doc_macro-repo_url" v-model="url" class="text" type="text" placeholder="git clone URL">'+
-                    '                <div class="description">Please type your repository\'s git file\'s url</div>'+
+                    '                <div class="description">Please enter repository URL</div>'+
                     '             </div>'+
                     '             <div class="field-group">'+
                     '                 <label for="doc_macro-auth_type">Connection and Authorization type</label>'+
@@ -258,17 +271,17 @@ var Git4CCustomRepositoryDialog = {
                     '             <div class="field-group" v-if="authType === \'USERNAMEPASSWORD\'">'+
                     '                <label for="doc_macro-username">Username</label>'+
                     '                <input id="doc_macro-username" v-model="username" class="text" type="text" placeholder="username">'+
-                    '                <div class="description">Please type the username for the given git</div>'+
+                    '                <div class="description">Please enter username for the repository</div>'+
                     '             </div>'+
                     '             <div class="field-group" v-if="authType === \'USERNAMEPASSWORD\'">'+
                     '                <label for="doc_macro-password">Password</label>'+
                     '                <input id="doc_macro-password" v-model="password" class="password" type="password" placeholder="password">'+
-                    '                <div class="description">Please type the password to the given git</div>'+
+                    '                <div class="description">Please enter password for the repository</div>'+
                     '             </div>'+
                     '             <div class="field-group" v-if="authType === \'SSHKEY\'">'+
                     '               <label for="doc_macro-sshkey">SSH key</label>'+
                     '               <textarea id="doc_macro-sshkey" v-model="sshKey" class="text" style="height: auto" rows="10" placeholder="key" />'+
-                    '               <div class="description">Please paste your SSH key</div>'+
+                    '               <div class="description">Please paste SSH key for the repository</div>'+
                     '             </div>'+
                     '             <div class="field-group" v-if="editableOptionAvailable">'+
                     '                  <label for="iseditable">Editable</label>'+

@@ -1,6 +1,7 @@
 package com.networkedassets.git4c.infrastructure.plugin.converter.plantuml
 
 import com.networkedassets.git4c.core.business.ExtractionResult
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
 import com.networkedassets.git4c.data.macro.documents.item.ConvertedDocumentsItem
 import com.networkedassets.git4c.data.macro.documents.item.TableOfContents.Companion.EMPTY
@@ -13,7 +14,7 @@ import java.util.*
 
 class PUMLConverterPlugin : InternalConverterPlugin {
 
-    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult): ConvertedDocumentsItem? {
+    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult, macro: Macro): ConvertedDocumentsItem? {
         val content = fileData.content()
 
         val tempFile = Files.createTempFile(null, null).toFile()

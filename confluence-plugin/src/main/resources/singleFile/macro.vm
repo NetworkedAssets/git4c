@@ -26,16 +26,7 @@
     <div v-show="!collapsed">
         <overlay>
             <topbartoggler v-show="!showTopBar" :edit-branch="editBranch" ref="topbartoggler" style="z-index: 90"></topbartoggler>
-            <div v-bind:class="{ 'git4c-edited-background-color': editBranch }">
-                <div class="git4c-singlefile-toc" v-show="showToc && toc && toc.children.length > 0">
-                    <toc parent="#app-${UUID}-${RANDOM}" :data="toc"></toc>
-                </div>
-                <div class="git4c-singlefile-content git4c-any-content"
-                     v-bind:class="{ 'git4c-singlefile-content-markdown': markdown, 'git4c-single-dialog-no-line-numbers': !lines, 'git4c-singlefile-no-height': showsError }"
-                     v-show="!collapsed">
-                    <filecontent :lines="lines" parent="#app-${UUID}-${RANDOM}" :template="content"></filecontent>
-                </div>
-            </div>
+            <filecontent v-show="!collapsed" v-bind:class="{ 'git4c-edited-background-color': editBranch }" :show-line-numbers="lines" :content="content" :show-toc="showToc" :toc="toc" :toolbar-height="41"></filecontent>
         </overlay>
     </div>
     <git4csourcedialog ref="sourcedialog"></git4csourcedialog>

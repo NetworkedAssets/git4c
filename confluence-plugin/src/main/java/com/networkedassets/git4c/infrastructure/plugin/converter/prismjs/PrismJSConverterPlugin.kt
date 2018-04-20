@@ -1,6 +1,7 @@
 package com.networkedassets.git4c.infrastructure.plugin.converter.prismjs
 
 import com.networkedassets.git4c.core.business.ExtractionResult
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
 import com.networkedassets.git4c.data.macro.documents.item.ConvertedDocumentsItem
 import com.networkedassets.git4c.data.macro.documents.item.TableOfContents
@@ -24,7 +25,7 @@ class PrismJSConverterPlugin : InternalConverterPlugin {
 
     val extensions = map.values.flatten()
 
-    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult): ConvertedDocumentsItem? {
+    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult, macro: Macro): ConvertedDocumentsItem? {
 
         val content = fileData.content()
         val extension = fileData.extension

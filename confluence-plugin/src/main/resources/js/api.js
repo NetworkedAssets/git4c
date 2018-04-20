@@ -482,9 +482,9 @@ var Git4CApi = {
             return Git4CApi.makeCancelable(
                 new AsyncRequest(
                     Vue.http.post(
-                        UrlService.getRestUrl("documentation", "repository", "methods"), o
+                        UrlService.getRestUrl("documentation", "repository", "file", "methods"), o
                     ),
-                    UrlService.getRestUrl("documentation", "repository", "methods", "result")
+                    UrlService.getRestUrl("documentation", "repository","file", "methods", "result")
                 )
                     .then(function (response) {
                         return response.body

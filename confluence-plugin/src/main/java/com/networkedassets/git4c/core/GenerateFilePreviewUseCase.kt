@@ -8,6 +8,7 @@ import com.networkedassets.git4c.boundary.outbound.FileContent
 import com.networkedassets.git4c.boundary.outbound.VerificationStatus
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
 import com.networkedassets.git4c.core.business.Commit
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.core.business.UserManager
 import com.networkedassets.git4c.core.bussiness.ComputationCache
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
@@ -41,18 +42,20 @@ class GenerateFilePreviewUseCase(
             return error(requestId, NotAuthorizedException("User doesn't have permission to this space"))
         }
 
-        val macro = macroSettingsRepository.get(macroId)
+        val macroSettings = macroSettingsRepository.get(macroId)
                 ?: return error(requestId, NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
-        val repositoryId = macro.repositoryUuid
+        val repositoryId = macroSettings.repositoryUuid
         val repository = repositoryDatabase.get(repositoryId!!)!!
-        val branch = macro.branch
+        val branch = macroSettings.branch
 
         val branchName = "temppreview/${UUID.randomUUID()}"
+
+        val macro = Macro(macroSettings.uuid, Macro.MacroType.SINGLEFILE)
 
         try {
             importer.createNewBranch(repository, branch, branchName)
             importer.updateFile(repository, branchName, file, content, Commit("a", "a", "a"))
-            val fileContent = getFileProcess.getFile(repository, branchName, file)
+            val fileContent = getFileProcess.getFile(repository, branchName, file, macro)
             importer.removeBranch(repository, branchName)
             success(requestId, fileContent)
         } catch (e: Exception) {

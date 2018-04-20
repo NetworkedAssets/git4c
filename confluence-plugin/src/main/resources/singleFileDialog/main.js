@@ -171,10 +171,8 @@
         '          </form>'+
         '          <div class="aui-item" id="dialog-code-content" style="display: flex; flex-direction: column; overflow: auto; width: 560px; border-left: 1px solid #ccc;">'+
         '                     <div style="color: gray; margin: 10px">File preview (will show after macro is loaded)</div>'+
-        '                     <hr style="margin: 0px;" />'+
-        '                     <div id="git4c_singlefiledialog_markup_toc" class="git4c-singlefile-toc" v-show="hasToc && toc && tocObject">' +
-        '                         <toc container="#dialog-code-content" :data="tocObject"></toc></div>' +
-        '                     <div v-show="fileContent" class="git4c-any-content" id="git4c-single-dialog-code-holder"  v-html="fileContent" v-bind:class="{\'git4c-single-dialog-no-line-numbers\': haveLineNumbers && !showLineNumbers, \'git4c-single-dialog-code-holder-markdown\': !singleFile}"></div>'+
+        '                     <hr style="margin: 0;" />'+
+        '                     <filepreview id="git4c-single-dialog-code-holder" :show-line-numbers="showLineNumbers" :show-toc="hasToc && toc" :toc="tocObject" v-show="fileContent" :content="fileContent"></filepreview>'+
         '                     <div v-show="!fileContent" style="position: relative; top: 50%; ">'+
         '                        <overlay v-if="file && files"></overlay>'+
         '                     </div>'+
@@ -362,9 +360,10 @@
                 },
                 components: {
                     toc: Git4CToc.getComponent(),
-                    customRepositoryDialog: Git4CCustomRepositoryDialog.getComponent(Bus),
+                    customRepositoryDialog: Git4CCustomRepositoryDialog.getComponent(Bus, true),
                     git4cselect2single: Git4CSelect2Single.getComponent(),
-                    overlay: Git4COverlay.getLoaderAlone(Bus)
+                    overlay: Git4COverlay.getLoaderAlone(Bus),
+                    filepreview: Git4CFilePreview.getComponent()
                 },
                 watch: {
                     showTopBar: function () {
@@ -594,6 +593,12 @@
                                         const branches = response.allBranches
                                         vm.branches = branches
 
+                                        if (branches.length == 0){
+                                            vm.branches = undefined
+                                            vm.downloadingBranches = false
+                                            return
+                                        }
+
                                         const masterId = branches.indexOf("master")
                                         const developId = branches.indexOf("develop")
                                         const prevBranchId = branches.indexOf(vm.prevBranch)
@@ -614,11 +619,9 @@
                                     .catch(function(error) {
                                         error.text().then(function(text) {
                                             vm.showError(text)
-                                            // console.log(text)
                                             vm.currentError = text
                                             vm.downloadingBranches = false
                                         })
-                                        // console.log(errorText)
                                     })
                             }
                         },
@@ -1230,8 +1233,7 @@
 '                       <div style="margin-left: 20px; margin-top: 8px; margin-bottom: 8px">File preview</div>'+
 '                       <hr ref="previewbar" style="margin: 0" />'+
 '                       <div v-if="fileContent" style="height: 100%;" v-bind:class="{ \'git4c-single-dialog-tree-code-holder-markdown \': !singleFile }">' +
-'                           <toc id="git4c-single-dialog-tree-toc" v-show="toc && tocObject" container="#git4c-single-dialog-right-column" :data="tocObject" />' +
-'                           <div class="git4c-any-content" id="git4c-single-dialog-tree-code-holder" v-html="fileContent" />' +
+'                           <preview id="git4c-single-dialog-tree-code-holder" :show-toc="toc" :toc="tocObject" :content="fileContent"></preview>'+
 '                       </div>'+
 '                       <overlay v-else></overlay>'+
 '                    </div>'+
@@ -1299,7 +1301,8 @@
             components: {
                 "toc": Git4CToc.getComponent(),
                 "git4c-filetree": Git4CFileTree.getComponent(Bus),
-                "overlay": Git4COverlay.getLoaderAlone(Bus)
+                "overlay": Git4COverlay.getLoaderAlone(Bus),
+                "preview": Git4CFilePreview.getComponent()
             },
             methods: {
                 hideDialog: function () {

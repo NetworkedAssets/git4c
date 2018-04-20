@@ -32,6 +32,7 @@ var Git4COverlay = {
             '           <p v-if="noBranches == true">There are no banches available on this repository.</p>' +
             '           <p v-if="nonExistingBranch == true"> The branch you requested doesn\'t exist. You can return to default branch by clicking <a href="javascript:void(0)" v-on:click="returnToDefaultBranch" >here</a>.</p>' +
             '           <p v-if="defaultError == true">Ooops... Something went wrong. Try refreshing your Git4C macro or ask your administrator for help.</p>' +
+            '           <p v-if="noFiles == true">There are no files present on branch. Check if filter is set correctly or if there are any files at branch.</p>' +
             '        </div>' +
             '    </div>' +
             '    <div ref="dragoncage" class="dragonCage"></div>' +

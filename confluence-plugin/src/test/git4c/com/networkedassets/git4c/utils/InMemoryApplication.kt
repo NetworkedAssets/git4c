@@ -103,15 +103,17 @@ object InMemoryApplication {
     private fun getMacroComponents(utils: UtilitiesPluginComponents, sourcePlugin: SourcePlugin): MacroPluginComponents {
         val importer = sourcePlugin
         val postProcessor = JSoupPostProcessor(utils.idGenerator)
-        val mainPlugins = MainConverterPluginList(listOf(AsciidocConverterPlugin(), MarkdownConverterPlugin()), postProcessor)
+        val mainPlugins = MainConverterPluginList(listOf(AsciidocConverterPlugin.get(false), MarkdownConverterPlugin()), postProcessor)
         val converterPlugins = listOf(mainPlugins, PrismJSConverterPlugin(), ImageConverterPlugin(), PUMLConverterPlugin())
         val converter = ConverterPluginList(converterPlugins, PlainTextConverterPlugin())
+        val fileIgnorer = FileIgnorerList(AsciidocConverterPlugin.get(false))
         val parser = Parsers()
         val pageBuilder = HtmlErrorPageBuilder()
         val pageMacroExtractor = AtlassianPageMacroExtractor()
         return MacroPluginComponents(
                 importer,
                 converter,
+                fileIgnorer,
                 parser,
                 pageBuilder,
                 pageMacroExtractor

@@ -1,5 +1,6 @@
 package com.networkedassets.git4c.core.process
 
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.data.RepositoryWithNoAuthorization
 import com.networkedassets.git4c.infrastructure.UuidIdentifierGenerator
 import com.networkedassets.git4c.infrastructure.mocks.core.DirectorySourcePlugin
@@ -25,7 +26,7 @@ class GetFileProcessTest() {
     val importer = DirectorySourcePlugin()
     val identifierGenerator = UuidIdentifierGenerator()
     val postProcessor = JSoupPostProcessor(identifierGenerator)
-    val mainPlugins = MainConverterPluginList(listOf(AsciidocConverterPlugin(), MarkdownConverterPlugin()), postProcessor)
+    val mainPlugins = MainConverterPluginList(listOf(AsciidocConverterPlugin.get(false), MarkdownConverterPlugin()), postProcessor)
     val converterPlugins = listOf(mainPlugins, PrismJSConverterPlugin(), ImageConverterPlugin(), PUMLConverterPlugin())
     val converter = ConverterPluginList(converterPlugins, PlainTextConverterPlugin())
     val parser = Parsers()
@@ -46,7 +47,7 @@ class GetFileProcessTest() {
         val repository = RepositoryWithNoAuthorization(genTransactionId(), "src/test/resources", false)
 
         // When
-        val answer = process.getFile(repository, branch, file);
+        val answer = process.getFile(repository, branch, file, Macro());
 
         // Then
         assertNotNull(answer.content)
@@ -62,7 +63,7 @@ class GetFileProcessTest() {
         val repository = RepositoryWithNoAuthorization(genTransactionId(), "src/test/resources", false)
 
         // When
-        val fileProcess = { process.getFile(repository, branch, file) }
+        val fileProcess = { process.getFile(repository, branch, file, Macro()) }
 
         // Then
         assertThatThrownBy { fileProcess.invoke() }

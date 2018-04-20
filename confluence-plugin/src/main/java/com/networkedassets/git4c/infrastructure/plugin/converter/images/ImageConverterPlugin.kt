@@ -1,6 +1,7 @@
 package com.networkedassets.git4c.infrastructure.plugin.converter.images
 
 import com.networkedassets.git4c.core.business.ExtractionResult
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
 import com.networkedassets.git4c.data.macro.documents.item.ConvertedDocumentsItem
 import com.networkedassets.git4c.data.macro.documents.item.TableOfContents
@@ -9,7 +10,7 @@ import java.util.*
 
 class ImageConverterPlugin : InternalConverterPlugin {
 
-    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult): ConvertedDocumentsItem? {
+    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult, macro: Macro): ConvertedDocumentsItem? {
 
         val extension = fileData.extension
         val b64Content = String(Base64.getEncoder().encode(fileData.getAbsolutePath().toFile().readBytes()))

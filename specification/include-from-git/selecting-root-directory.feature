@@ -1,26 +1,28 @@
-Feature: Select root directory in multi file macro
-  The feature allows an user to an root directory whilst creating macro in macro creation dialog.
-  After clicking on the root directory button the file tree will be displayed and user will choose single folder that will be saved as a glob filter.
-  only files from that directory will be displayed.
+Feature: Select Root Directory for repository in Multi File Macro
+  The feature allows a User to select root directory whilst creating Multi File Macro.
+  After clicking on the root directory button, the file tree will be displayed and User should be able to choose a single folder that will be saved as a glob filter.
+  Only files from the selected directory will be displayed.
 
-  Background: The user is logged in
+  Background: User is logged in
 
-  Scenario: User can see a list of directories
-    Given a confluence page with opened multi file macro creation dialog
-    When the user clicks on root directory selection button
-    Then dialog with file tree is displayed
+  Scenario: User browses through directories list in repository
+    Given Confluence page in edit mode
+    And Git4C Macro Parameters window is opened
+    And Repository is chosen for the macro
+    When User opens Root Directory Selection Dialog
+    Then Dialog with repository file tree is displayed
 
-  Scenario: User can select a root directory
-    Given a confluence page with opened multi file macro creation dialog
-    When root directory selection dialog with file tree is opened
-    When the user selects a root directory
-    When the user confirms selection with "Select" button
-    Then selected directory is saved as a glob filter
-    Then selected directory is displayed in glob filter field
+  Scenario: User selects Root Directory for macro content
+    Given Confluence page in edit mode
+    And Git4C Macro Parameters window is opened
+    And Repository is chosen for the macro
+    When User opens Root Directory Selection Dialog
+    And User chooses User Directory for the macro
+    Then Selected Root Directory is displayed on its field on Git4c Parameters window
 
-  Scenario: List of files is filtered by selected root directory
-    Given a confluence page with multi file macro
-    When The user selected root directory
-    Then File tree only shows files within selected root directory
-    Then Root directory is displayed in glob information tooltip
-    
+  Scenario: Displaying files in selected Root Directory on Confluence Page
+    Given Confluence page with macro having Root Directory selected
+    When User visits the page
+    And Macro loaded its content
+    Then File Tree shows only the files from selected Root Directory
+    And Root directory path is displayed on the top of File Tree

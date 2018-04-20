@@ -5,6 +5,7 @@ import com.networkedassets.git4c.boundary.GetMethodsForRepositoryQuery
 import com.networkedassets.git4c.boundary.GetMethodsForRepositoryResultRequest
 import com.networkedassets.git4c.boundary.inbound.RepositoryToGetMethods
 import com.networkedassets.git4c.boundary.outbound.Methods
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.core.bussiness.ComputationCache
 import com.networkedassets.git4c.core.process.GetMethodsProcess
 import com.networkedassets.git4c.core.usecase.async.ComputationResultUseCase
@@ -27,7 +28,8 @@ class GetMethodsForRepositoryUseCase(
         val file = request.repositoryToGetMethods.file
 
         try {
-            val methods = process.getMethods(repository, branch, file)
+            val macro = Macro()
+            val methods = process.getMethods(repository, branch, file, macro)
             success(requestId, methods)
         } catch (e: Exception) {
             error(requestId, e)

@@ -49,8 +49,8 @@ var Git4CPagesWithMacroList = {
                                 '<td><a :href="contextPath + macro.spaceUrl">{{macro.spaceName}}</a></td>' +
                                 '<td><a :href="contextPath + macro.pageUrl">{{macro.pageName}}</a></td>' +
                                 "<td>" +
-                                    "<span v-if=\"macro.macroType === 'SINGLEFILEMACRO'\" :title=\"'Single page macro: ' + macro.macroFile\" class=\"aui-icon aui-icon-small aui-iconfont-doc tooltipable\">Single page macro</span>" +
-                                    '<span v-else title="Multi file macro" class="aui-icon aui-icon-small aui-iconfont-nav-children tooltipable">Multi file macro</span>' +
+                                    "<span v-if=\"macro.macroType === 'SINGLEFILEMACRO'\" :title=\"'Single page macro: ' + macro.macroFile\" class='aui-icon aui-icon-small aui-iconfont-doc tooltipable'>Single page macro</span>" +
+                                    "<span v-if=\"macro.macroType === 'MULTIFILEMACRO'\" title='Multi file macro' class='aui-icon aui-icon-small aui-iconfont-nav-children tooltipable'>Multi file macro</span>" +
                                 "</td>" +
                                 "<td>" +
                                     "<span v-if=\"statuses[index] == 'UNKNOWN'\" class=\"aui-icon aui-icon-wait\">Loading...</span>" +

@@ -43,8 +43,7 @@ var Git4CFileTree = {
                     this.open = !this.open
                 },
                 anchor: function (id) {
-                    const top = document.getElementsByName(id)[0].offsetTop;
-                    window.scrollTo(0, top);
+                    Git4CUtils.scrollTo(this.$parent.$el, id)
                 },
                 selectFile: function() {
                     // alert("From file tree " + this.data.fullName)

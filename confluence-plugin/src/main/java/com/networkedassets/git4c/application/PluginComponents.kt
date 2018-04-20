@@ -94,6 +94,7 @@ class ResultsCachePluginComponents(
 class MacroPluginComponents(
         val importer: SourcePlugin,
         val converter: ConverterPlugin,
+        val fileIgnorer: FileIgnorer,
         val parser: ParserPlugin,
         val pageBuilder: ErrorPageBuilder,
         val pageMacroExtractor: PageMacroExtractor
@@ -149,7 +150,7 @@ class ProcessesPluginComponents(
         providers: ProvidersPluginComponents,
         val extractContentProcess: ExtractContentProcess = ExtractContentProcess(macro.parser),
         val revisionCheckAction: RevisionCheckAction = RevisionCheckAction(executors.revisionCheckExecutor, macro.importer, cache.revisionCache, providers.macroSettingsProvider, providers.repositoryProvider, providers.globsForMacroProvider, cache.documentsViewCache),
-        val indexDocumentAction: IndexDocumentsAction = IndexDocumentsAction(cache.documentItemCache),
+        val indexDocumentAction: IndexDocumentsAction = IndexDocumentsAction(cache.documentItemCache, macro.fileIgnorer),
         val repositoryPullAction: PullRepositoryAction = PullRepositoryAction(executors.repositoryPullExecutor, providers.macroSettingsProvider, providers.repositoryProvider, providers.globsForMacroProvider, database.extractorDataDatabase, macro.importer, indexDocumentAction, cache.documentsViewCache, cache.revisionCache),
         val converterAction: ConvertDocumentItemAction = ConvertDocumentItemAction(macro.importer, providers.macroSettingsProvider, providers.repositoryProvider, async.documentToBeConvertedLockCache, executors.converterExecutor, cache.documentItemCache, macro.pageBuilder, extractContentProcess, database.extractorDataDatabase, macro.converter),
         val refreshProcess: RefreshMacroAction = RefreshMacroAction(cache.documentsViewCache, macro.importer, cache.revisionCache, providers.globsForMacroProvider, providers.macroSettingsProvider, providers.repositoryProvider, revisionCheckAction, repositoryPullAction),
@@ -157,7 +158,7 @@ class ProcessesPluginComponents(
         val macroViewProcess: MacroViewProcess = MacroViewProcess(cache.macroViewCache, refreshProcess, providers.macroSettingsProvider, providers.repositoryProvider, cache.documentsViewCache),
         val getBranchesProcess: GetBranchesProcess = GetBranchesProcess(macro.importer),
         val getMethodsProcess: GetMethodsProcess = GetMethodsProcess(macro.importer, macro.converter, macro.parser, extractContentProcess),
-        val getFilesProcess: GetFilesProcess = GetFilesProcess(macro.importer),
+        val getFilesProcess: GetFilesProcess = GetFilesProcess(macro.importer, macro.fileIgnorer),
         val getFileProcess: GetFileProcess = GetFileProcess(macro.importer, macro.converter, extractContentProcess),
         val checkUserPermissionProcess: CheckUserPermissionProcess = CheckUserPermissionProcess(database.macroLocationDatabase, utils.permissionChecker, cache.pageAndSpacePermissionsForUserCache),
         val getAllMacrosInSystemProcess: GetAllMacrosInSystem = GetAllMacrosInSystem(utils.pageManager, macro.pageMacroExtractor)

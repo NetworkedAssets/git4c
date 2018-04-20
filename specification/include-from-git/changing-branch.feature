@@ -1,44 +1,39 @@
-Feature: Change branch in multi file macro
-  The feature allows an user to change a branch while reading selected file.
-  After switching branches current file is not changed, but when file is not present
-  macro resets to default file.
+Feature: Switch branch in Multi File Macro
+  The feature allows a user to switch between branches while displaying repository content.
 
-  Background: The user is logged in
+  Background: User is logged in and visits a Confluence page with Multi File Macro.
 
-  Scenario: User can see list of available branches
-    Given a confluence page with multi file macro
-    When the user clicks on branch select
-    Then list of branches is shown
+  Scenario: User browses a list of available branches
+    When User expands branch list
+    Then List of branches is shown
 
-  Scenario: User can change current branch (file available)
-    Given a confluence page with multi file macro
-    When list of branches is shown
-    When the user selects branch
-    Then branch is visible in url
-    Then branch is changed
-    Then file from selected branch is displayed
+  Scenario: User switches to another branch with the same file on it
+    Given List of branches is expanded
+    When User selects a branch
+    Then Selected branch name is visible in URL
+    And Branch name is changed on branch selector
+    And File from selected branch is displayed
 
-  Scenario: User can change current branch (file not available)
-    Given a confluence page with multi file macro
-    When list of branches is shown
-    When the user selects branch
-    Then branch is visible in url
-    Then branch is changed
-    Then default file from selected branch is displayed
+  Scenario: User switches to another branch without the same file on it
+    Given List of branches is expanded
+    When User selects a branch
+    Then Selected branch name is visible in URL
+    And Branch name is changed on branch selector
+    And Error is shown, informing about lack of the file on current branch
+    And Default file from selected branch is displayed
 
-  Scenario: User changes branch in url (branch exists and file is available)
-    Given a confluence page with multi file macro
-    When the user enters another branch
-    Then branch is changed
-    Then file from selected branch is displayed
+  Scenario: User switches to existing branch with the same file on it using URL
+    When User changes branch name in URL
+    Then Branch name is changed on branch selector
+    And File from selected branch is displayed
 
-  Scenario: User changes branch in url (branch exists and file is not available)
-    Given a confluence page with multi file macro
-    When the user enters another branch
-    Then branch is changed
-    Then file from selected branch is displayed
+  Scenario: User switches to existing branch without the same file on it using URL
+    When  User changes branch name in URL
+    Then Branch name is changed on branch selector
+    And Error is shown, informing about lack of the file on current branch
+    And Default file from selected branch is displayed
 
-  Scenario: User changes branch in url (branch doesn't exist)
-    Given a confluence page with multi file macro
-    When the user enters another branch
-    Then error message is shown
+  Scenario: User switches to unexisting branch using URL
+    When User changes branch name in URL
+    Then Error is shown, informing about lack of the branch in repository
+    And Link to default branch is displayed

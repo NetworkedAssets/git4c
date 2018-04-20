@@ -1,6 +1,7 @@
 package com.networkedassets.git4c.infrastructure.plugin.converter.plaintext
 
 import com.networkedassets.git4c.core.business.ExtractionResult
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.core.bussiness.ConverterPlugin
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
 import com.networkedassets.git4c.data.macro.documents.item.ConvertedDocumentsItem
@@ -9,7 +10,7 @@ import org.apache.commons.lang3.StringEscapeUtils
 
 class PlainTextConverterPlugin : ConverterPlugin {
 
-    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult): ConvertedDocumentsItem? {
+    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult, macro: Macro): ConvertedDocumentsItem? {
 
         val content = extractionResult.content
 

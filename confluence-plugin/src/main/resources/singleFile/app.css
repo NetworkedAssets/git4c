@@ -5,10 +5,6 @@
     flex-direction: column;
 }
 
-.git4c-singlefile-content {
-    /*min-height: 200px;*/
-}
-
 .git4c-singlefile-topbar-outer {
     height: 50px;
     background-color: #eee;
@@ -88,10 +84,6 @@ pre.line-numbers {
 
 .git4c-single-dialog-no-line-numbers .git4c-prismjs-div .line-numbers-rows {
     display: none;
-}
-
-.git4c-singlefile-no-height {
-    min-height: 0 !important;
 }
 
 .git4c-link-black {

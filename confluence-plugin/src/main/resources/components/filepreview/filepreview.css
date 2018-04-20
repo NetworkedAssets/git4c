@@ -1,3 +1,15 @@
 .git4c-file-preview-markdown {
-    margin: 20px;
+    padding: 20px;
+}
+
+.git4c-file-preview-no-lines .git4c-prismjs-div  pre {
+    white-space: pre-line !important;
+}
+
+.git4c-file-preview-no-lines .git4c-prismjs-div code {
+    padding-left: 10px;
+}
+
+.git4c-file-preview-no-lines .git4c-prismjs-div .line-numbers-rows {
+    display: none;
 }

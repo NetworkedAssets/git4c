@@ -7,10 +7,10 @@ const router = new VueRouter({
 
 AJS.toInit(function () {
 
+    const timeoutInterval = 90000
     var lastRevision = undefined;
     var alertShown = false;
-    var intervalId = undefined;
-    const timeoutInterval = 90000
+    var revisionCheckStarted = false
 
     const startInterval = function () {
 
@@ -38,7 +38,11 @@ AJS.toInit(function () {
             })
         }
 
-        setTimeout(checkRevision, timeoutInterval)
+        if (!revisionCheckStarted) {
+            revisionCheckStarted = true
+            checkRevision()
+        }
+
     }
 
 
@@ -72,15 +76,17 @@ AJS.toInit(function () {
                         return docItemName
                     }
                 }
-                if (element.children != null) {
+                if (element&& element.children) {
                     function findfirstItem(element) {
-                        const maybeFile = element.children.find(function (file) {return file.type === "DOCITEM"})
-                        const child = element.children[0]
+                        if (element) {
+                            const maybeFile = element.children.find(function (file) {return file.type === "DOCITEM"})
+                            const child = element.children[0]
 
-                        if (maybeFile) {
-                            return maybeFile.fullName
-                        } else {
-                            return findfirstItem(child)
+                            if (maybeFile) {
+                                return maybeFile.fullName
+                            } else {
+                                return findfirstItem(child)
+                            }
                         }
                     }
                     docItemName = findfirstItem(element)
@@ -92,9 +98,11 @@ AJS.toInit(function () {
                 const vm = this
                 MarkupService.getTree().then(function(tree) {
                     if(tree.children.length == 0){
+                        //NotifyService.error('Error', 'There are no files present on this branch.')
                         Events.$emit("tree", null)
-                        NotifyService.error('Error', 'There are no files present on this branch.')
+                        Events.$emit('errorOccured', "no_files");
                     }
+                    vm.noFiles = false
                     Vue.set(vm, 'tree', tree.children);
                     Events.$emit("tree", tree.children)
                     if (!vm.$route.params.fullName) {
@@ -248,7 +256,7 @@ AJS.toInit(function () {
                 ParamsService.setUuid(id);
                 console.log("Macro is: "+ParamsService.getUuid())
                 vm.getTree();
-                clearInterval(intervalId);
+                lastRevision = undefined
             });
 
             Events.$on('updateError', function () {

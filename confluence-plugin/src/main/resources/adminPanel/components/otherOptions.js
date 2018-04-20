@@ -19,7 +19,7 @@ var Git4COtherOptions = {
             '         <a id="clean_unused_data_hint" style="margin-left: 10px;" class="aui-icon aui-icon-small aui-iconfont-error"></a>' +
             '     </div>' +
             '     <div id="remove_data-div">' +
-            '         <button id="remove_data-button" style="margin-top: 10px" v-on:click="cleanDataRequest" class="aui-button aui-button-primary" >Clean data</button>' +
+            '         <button id="remove_data-button" style="margin-top: 10px; background-color: #d04437" v-on:click="cleanDataRequest" class="aui-button aui-button-primary" >Clean plugin data</button>' +
             '         <a id="remove_data-button-hint" style="margin-left: 10px; color: red;" class="aui-icon aui-icon-small aui-iconfont-error"></a>' +
             '     </div>' +
             '     <div id="force_predefined_repositories-div" style="margin-top: 50px;">' +
@@ -137,12 +137,12 @@ var Git4COtherOptions = {
                 setTooltips: function () {
                     AJS.$("#remove_data-button-hint").tooltip({
                         title: function () {
-                            return "click here clean all data";
+                            return "Click here clean all plugin data";
                         }
                     });
                     AJS.$("#restore_default_globs-button-hint").tooltip({
                         title: function () {
-                            return "click here to restore default filters";
+                            return "Click here to restore default filters (for Markdown, Java, Gherkin, Kotlin and Scala)";
                         }
                     });
                     AJS.$("#clean_unused_data_hint").tooltip({

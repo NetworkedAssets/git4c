@@ -2,6 +2,7 @@ package com.networkedassets.git4c.core.process
 
 import com.networkedassets.git4c.boundary.outbound.Method
 import com.networkedassets.git4c.boundary.outbound.Methods
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.core.bussiness.ConverterPlugin
 import com.networkedassets.git4c.core.bussiness.ParserPlugin
 import com.networkedassets.git4c.core.bussiness.SourcePlugin
@@ -15,7 +16,7 @@ class GetMethodsProcess(
         val extractorContentProcess: ExtractContentProcess
 ) {
 
-    fun getMethods(repository: Repository, branch: String, file: String): Methods {
+    fun getMethods(repository: Repository, branch: String, file: String, macro : Macro): Methods {
 
         return importer.pull(repository, branch).use { importedFiles ->
             val files = importedFiles.imported
@@ -28,7 +29,7 @@ class GetMethodsProcess(
                 val range = it.range
                 val extractor = LineNumbersExtractorData("", range.start, range.end)
                 val extractionResult = extractorContentProcess.extract(extractor, gitFile)
-                val fileResult = converter.convert(gitFile, extractionResult)
+                val fileResult = converter.convert(gitFile, extractionResult, macro)
 
                 if (fileResult != null) {
                     Method(it.name, fileResult.content)

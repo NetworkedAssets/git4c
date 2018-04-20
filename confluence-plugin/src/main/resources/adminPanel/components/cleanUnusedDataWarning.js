@@ -16,8 +16,7 @@ var Git4CUnusedDataWarning = {
                    '</header>'+
                    '<!-- Main dialog content -->'+
                    '<div class="aui-dialog2-content">'+
-                   '    <p style="font-size: 13px">You are about to permamently remove unused data from repository.</p>'+
-                   '    <p style="text-align: center"><b>Information about repositories that are not currently used will be removed</b>.</p>'+
+                   '    <p style="font-size: 13px">You are about to permamently remove unused data. Only database entries related to macros that no longer exist on Confluence and related to repositories that no macro is using will be deleted.</p>'+
                    '</div>'+
                    '<!-- Dialog footer -->'+
                    '<footer class="aui-dialog2-footer">'+

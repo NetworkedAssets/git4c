@@ -1,5 +1,6 @@
 package com.networkedassets.git4c.infrastructure.plugin.converter.main
 
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.core.common.IdentifierGenerator
 import com.networkedassets.git4c.core.exceptions.ConDocException
 import com.networkedassets.git4c.data.macro.documents.item.TableOfContents
@@ -36,13 +37,13 @@ class JSoupPostProcessor(
 
     private val log = LoggerFactory.getLogger(JSoupPostProcessor::class.java)
 
-    override fun parse(result: String, file: File, startDirectory: Path): String {
+    override fun parse(result: String, file: File, startDirectory: Path, macro: Macro): String {
         val jsoup = parse(result, "", xmlParser())
 
         inlineImages(jsoup, file)
         addClassToCode(jsoup)
         addClassToTables(jsoup)
-        parseAnchors(jsoup, file, startDirectory)
+        parseAnchors(jsoup, file, startDirectory, macro)
         return parseLinks(jsoup.html())
     }
 
@@ -110,7 +111,7 @@ class JSoupPostProcessor(
                         try {
                             val reader = SourceFileReader(f.toFile(), Files.createTempDirectory("temp").toFile(), FileFormatOption(FileFormat.SVG))
                             val images = reader.generatedImages
-                            if(images.isEmpty()) {
+                            if (images.isEmpty()) {
                                 it.remove()
                                 return@forEach
                             }
@@ -183,7 +184,7 @@ class JSoupPostProcessor(
 
     }
 
-    private fun parseAnchors(html: Document, file: File, startDirectoryPath: Path) {
+    private fun parseAnchors(html: Document, file: File, startDirectoryPath: Path, macro: Macro) {
 
         val path = file.toPath()
 
@@ -203,7 +204,7 @@ class JSoupPostProcessor(
                         val afterHash = href.substringAfter("#", "")
 
                         val target = path.parent.toUri().resolve(beforeHash)
-                        if (File(target).exists()) {
+                        if (File(target).exists() && macro.type != Macro.MacroType.SINGLEFILE) {
                             try {
                                 //We can't just encode target - markdown requires "%20" instead of spaces which will
                                 //encode to %2520 instead of %20. To fix this we replace %2520 with %20 after encoding

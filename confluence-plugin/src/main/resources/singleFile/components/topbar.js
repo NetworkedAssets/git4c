@@ -78,7 +78,8 @@ var TopBar = {
                     lines: lineNumbers,
                     canHaveLines: true,
                     collapsible: collapsible,
-                    fileEditEnabled: fileEditEnabled
+                    fileEditEnabled: fileEditEnabled,
+                    hasSource: false
                 }
             },
             props: {
@@ -168,11 +169,8 @@ var TopBar = {
                     vm.canHaveLines = Git4CUtils.hasLines(document.name)
 
                     const name = document.name;
-                    if (name.endsWith("md") || name.endsWith("svg") || name.endsWith("puml")) {
-                        vm.hasSource = true
-                    } else {
-                        vm.hasSource = false
-                    }
+
+                    vm.hasSource = Git4CUtils.hasSourceCode(name)
 
                     vm.$nextTick(function() {
 

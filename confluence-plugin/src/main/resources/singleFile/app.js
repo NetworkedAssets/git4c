@@ -33,7 +33,7 @@ var Git4CSingleFileMacro = {
                 git4csourcedialog: Git4CSourceDialog.getComponent(),
                 overlay: Git4COverlay.getComponent(Events),
                 topbar: TopBar.getComponent(Events, uuid, lineNumbers, collapsible, collapseByDefault, fileEditEnabled),
-                filecontent: Git4CFileContent.getComponent(),
+                filecontent: Git4CFilePreview.getComponent(),
                 topbartoggler: Git4CTopBarToggler.getComponent(Events)
             },
             mounted: function () {
@@ -143,9 +143,5 @@ var Git4CSingleFileMacro = {
 
             }
         })
-
-        // TopBar.initTopBar(v)
-
-        // v.$mount(root);
     }
 };

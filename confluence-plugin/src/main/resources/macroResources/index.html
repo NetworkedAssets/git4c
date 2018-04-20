@@ -155,13 +155,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="git4c-content" class="git4c-any-content" v-bind:class="{ 'git4c-no-padding': singleFile }">
-                            <div class="git4c-toc" v-show="toc && toc.children.length > 0 && locationPath!==''">
-                                <toc :data="toc"></toc>
-                            </div>
-                            <div v-show="!overlayVisible && locationPath!==''">
-                                <dynamiccontent :template="template"></dynamiccontent>
-                            </div>
+                        <div>
+                            <filepreview ref="preview" v-show="!overlayVisible && locationPath!==''" :content="template" :show-toc="locationPath !== ''" :toc="toc" :toolbar-height="41"></filepreview>
                         </div>
                     </div>
 

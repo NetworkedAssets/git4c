@@ -1,6 +1,7 @@
 package com.networkedassets.git4c.infrastructure.plugin.converter
 
 import com.networkedassets.git4c.core.business.ExtractionResult
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.core.common.IdentifierGenerator
 import com.networkedassets.git4c.data.macro.documents.item.ConvertedDocumentsItem
 import com.networkedassets.git4c.infrastructure.plugin.converter.main.JSoupPostProcessor
@@ -18,19 +19,20 @@ class ConverterUtils {
 
     private static def EXTRACTION_RESULT = new ExtractionResult("", 0)
 
-    public static ConvertedDocumentsItem getAsciidoc(String name) {
+    public static def asciidocConverter = AsciidocConverterPlugin.get(false)
+
+    public static ConvertedDocumentsItem getConvertedAsciidoc(String name, Macro.MacroType macroType) {
 
         def resourceDirectory = Paths.get("src/test/resources", "asciidoc/$name");
         def source = getDataFromDirectory(resourceDirectory)
-        def asciidocConverter = new AsciidocConverterPlugin()
 
         def converter = new MainConverterPluginList([asciidocConverter], new JSoupPostProcessor(new UUIDGen()))
 
-        return source.collect { converter.convert(it, EXTRACTION_RESULT) }.grep()[0]
+        return source.collect { converter.convert(it, EXTRACTION_RESULT, new Macro("", macroType)) }.grep()[0]
     }
 
 
-    public static ConvertedDocumentsItem getMarkdown(String name) {
+    public static ConvertedDocumentsItem getConvertedMarkdown(String name, Macro.MacroType macroType) {
 
         def resourceDirectory = Paths.get("src/test/resources", "markdown/$name");
         def source = getDataFromDirectory(resourceDirectory)
@@ -38,10 +40,10 @@ class ConverterUtils {
 
         def converter = new MainConverterPluginList([markdownConverter], new JSoupPostProcessor(new UUIDGen()))
 
-        return source.collect { converter.convert(it, EXTRACTION_RESULT) }.grep()[0]
+        return source.collect { converter.convert(it, EXTRACTION_RESULT, new Macro("", macroType)) }.grep()[0]
     }
 
-    public static ConvertedDocumentsItem getPUML(String location) {
+    public static ConvertedDocumentsItem getConvertedPUML(String location, Macro.MacroType macroType) {
 
         def source = getDataFromDirectory(Paths.get(location))
 
@@ -49,7 +51,7 @@ class ConverterUtils {
 
         def converter = new ConverterPluginList([pumlConverter], new PlainTextConverterPlugin())
 
-        return source.collect { converter.convert(it, EXTRACTION_RESULT) }.grep()[0]
+        return source.collect { converter.convert(it, EXTRACTION_RESULT, new Macro("", macroType)) }.grep()[0]
 
     }
 

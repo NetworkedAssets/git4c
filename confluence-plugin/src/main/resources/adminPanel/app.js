@@ -49,7 +49,7 @@ var Git4CAdminPanel = {
                 '</div>'
                 ,
             components: {
-                customRepositoryDialog: Git4CCustomRepositoryDialog.getComponent(Events, true),
+                customRepositoryDialog: Git4CCustomRepositoryDialog.getComponent(Events, false),
                 customGlobDialog: Git4CCustomGlobDialog.getComponent(Events),
 
                 predefinedRepositoryList: Git4CPredefinedRepositoryList.getComponent(Events),

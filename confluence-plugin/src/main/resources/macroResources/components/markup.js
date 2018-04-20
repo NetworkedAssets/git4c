@@ -1,44 +1,3 @@
-var Loading = {
-    template: '<div></div>'
-}
-
-var dynamiccontent = {
-    functional: true,
-    props: {
-        template: String,
-    },
-    render: function(h, context) {
-        const template = context.props.template;
-        const dynComponent = {
-            template: '<div class="html-content">' + template + ' </div>',
-            data: function() {
-                return {
-                    //Used by template
-                    anchor: function (id) {
-                        const top = document.getElementsByName(id)[0].offsetTop;
-                        window.scrollTo(0, top);
-                        Events.$emit("pushAnchor", id)
-                    },
-                    moveToFile: function (file, anchor) {
-                        //File is already encoded
-                        Events.$emit("pushFile", file)
-
-                        if(anchor) {
-                            Events.$emit("pushAnchor", anchor)
-                            Events.$emit("NextAnchor", anchor)
-                        }
-
-                        Events.$emit("TreeviewInvalidate")
-                    }
-                }
-            }
-        }
-        const component = template ? dynComponent : Loading;
-        return h(component);
-    }
-
-}
-
 var commitHistory = function (){
     const Bus = new Vue({})
     return Git4CCommitHistory.getComponent(Bus)
@@ -49,9 +8,9 @@ var Markup = {
 
     components: {
         toc: Git4CToc.getComponent(Events),
-        dynamiccontent: dynamiccontent,
         commitHistory: commitHistory(),
-        filesourcedialog: Git4CSourceDialog.getComponent()
+        filesourcedialog: Git4CSourceDialog.getComponent(),
+        filepreview: Git4CFilePreview.getComponent()
     },
 
     data: function () {
@@ -127,11 +86,7 @@ var Markup = {
 
                     vm.singleFile = docItem.content.indexOf("git4c-prismjs-code") !== -1
 
-                    if (fullName.endsWith("md") || fullName.endsWith("svg") || fullName.endsWith("puml")) {
-                        vm.hasSource = true
-                    } else {
-                        vm.hasSource = false
-                    }
+                    vm.hasSource = Git4CUtils.hasSourceCode(fullName)
 
                     vm.$nextTick(function(){
                         vm.resizeContent()
@@ -171,8 +126,7 @@ var Markup = {
 
 
                         if (vm.nextAnchor) {
-                            const top = document.getElementsByName(vm.nextAnchor)[0].offsetTop;
-                            window.scrollTo(0, top);
+                            vm.$refs["preview"].scrollTo(vm.nextAnchor)
                             vm.nextAnchor = undefined
                         }
 
@@ -276,6 +230,23 @@ var Markup = {
         }
     },
     mounted: function() {
+
+        //@ doesn't seem to work FIXME
+        this.$on('anchor', function (anchor) {
+            Events.$emit("pushAnchor", anchor)
+        });
+
+        this.$on('moveToFile', function (file, anchor) {
+
+            Events.$emit("pushFile", file)
+
+            if(anchor) {
+                Events.$emit("pushAnchor", anchor)
+                Events.$emit("NextAnchor", anchor)
+            }
+
+            Events.$emit("TreeviewInvalidate")
+        })
 
         const vm = this
 

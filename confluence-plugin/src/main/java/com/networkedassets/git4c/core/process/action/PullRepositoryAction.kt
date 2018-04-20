@@ -110,7 +110,9 @@ class PullRepositoryAction(
         }
     }
 
-    override fun finished(macroId: String, ready: Runnable, pullResult: ImportedFiles, failed: Runnable, convertedFilesIndex: Sequence<DocumentsFileIndex>) {
+    override fun finished(macroId: String, ready: Runnable, pullResult: ImportedFiles, failed: Runnable, convertedFilesIndex: Sequence<DocumentsFileIndex>, filesToIgnore: List<String>) {
+
+        val convertedFiles = convertedFilesIndex.filterNot { filesToIgnore.contains(it.path) }
 
         log.debug { "Repository may be unlocked after a pull operation as all other operations at files are marked as done, for Macro=${macroId}" }
 
@@ -133,7 +135,7 @@ class PullRepositoryAction(
             }
             try {
                 val globs = globForMacroDatabase.getByMacro(macroSettings.uuid)
-                updateRevisionAndCloseOperation(macroSettings, repository, convertedFilesIndex, globs, macroId, ready, pullResult)
+                updateRevisionAndCloseOperation(macroSettings, repository, convertedFiles, globs, macroId, ready, pullResult)
             } catch (e: Exception) {
                 log.error({ "There was an error during revision check after pull of repository RepositoryPath=${repository.repositoryPath}" }, e)
                 failed.run()
@@ -154,5 +156,5 @@ class PullRepositoryAction(
 }
 
 interface FinishedConvertionProcess {
-    fun finished(macroId: String, ready: Runnable, pullResult: ImportedFiles, failed: Runnable, convertedFilesIndex: Sequence<DocumentsFileIndex>)
+    fun finished(macroId: String, ready: Runnable, pullResult: ImportedFiles, failed: Runnable, convertedFilesIndex: Sequence<DocumentsFileIndex>, filesToIgnore: List<String>)
 }

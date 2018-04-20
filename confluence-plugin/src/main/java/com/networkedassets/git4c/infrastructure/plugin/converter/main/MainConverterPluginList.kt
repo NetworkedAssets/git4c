@@ -1,6 +1,7 @@
 package com.networkedassets.git4c.infrastructure.plugin.converter.main
 
 import com.networkedassets.git4c.core.business.ExtractionResult
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
 import com.networkedassets.git4c.data.macro.documents.item.ConvertedDocumentsItem
 import com.networkedassets.git4c.infrastructure.UuidIdentifierGenerator
@@ -15,13 +16,13 @@ class MainConverterPluginList(
 
     override fun supportedExtensions() = plugins.flatMap { it.supportedExtensions() }
 
-    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult): ConvertedDocumentsItem? {
+    override fun convert(fileData: ImportedFileData, extractionResult: ExtractionResult, macro: Macro): ConvertedDocumentsItem? {
 
         val plugin = plugins.firstOrNull { it.supportedExtensions().contains(fileData.extension) } ?: return null
 
         val convertedHtml = plugin.convert(fileData)
 
-        val result2 = postProcessor.parse(convertedHtml, fileData.getAbsolutePath().toFile(), fileData.context)
+        val result2 = postProcessor.parse(convertedHtml, fileData.getAbsolutePath().toFile(), fileData.context, macro)
 
         val (finalResult, toc) = postProcessor.generateTableOfContents(result2)
 

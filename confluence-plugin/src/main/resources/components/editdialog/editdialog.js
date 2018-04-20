@@ -34,7 +34,7 @@ var Git4CEditDialog = {
             '                     </div>' +
             '                 </div>' +
             '                 <div v-show="preview" style="width: 100%; height: 100%;">' +
-            '                     <preview :container="container" :file="content"></preview>' +
+            '                     <preview :content="content.content"></preview>' +
             '                 </div>' +
             '             </div>' +
             '            <!-- Dialog footer -->' +
@@ -88,6 +88,7 @@ var Git4CEditDialog = {
                     file: undefined,
                     macroUuid: undefined,
 
+                    // container: undefined
                     container: "#" + uuid + " .aui-dialog2-content"
                 }
             },
@@ -138,7 +139,6 @@ var Git4CEditDialog = {
 
             },
             methods: {
-
                 togglePreview: function () {
 
                     if (this.preview) {
@@ -263,16 +263,9 @@ var Git4CEditDialog = {
                             inter.resize()
                         })
 
-                        var timeoutId = undefined
-
-                        var hidden = false
 
                         AJS.dialog2(dialogId).on("hide", function () {
                             inter.hide()
-                            hidden = true
-                            if (timeoutId) {
-                                clearTimeout(timeoutId)
-                            }
                         });
 
                         AJS.dialog2(dialogId).show();

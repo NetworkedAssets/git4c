@@ -6,6 +6,7 @@ import com.networkedassets.git4c.boundary.GetMethodsForPredefinedRepositoryResul
 import com.networkedassets.git4c.boundary.outbound.Methods
 import com.networkedassets.git4c.boundary.outbound.VerificationStatus
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.core.bussiness.ComputationCache
 import com.networkedassets.git4c.core.datastore.repositories.PredefinedRepositoryDatabase
 import com.networkedassets.git4c.core.datastore.repositories.RepositoryDatabase
@@ -30,7 +31,8 @@ class GetMethodsForPredefinedRepositoryUseCase(
                 ?: return error(requestId, NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
 
         try {
-            val methods = process.getMethods(repository, details.branch, details.file)
+            val macro = Macro()
+            val methods = process.getMethods(repository, details.branch, details.file, macro)
             success(requestId, methods)
         } catch (e: Exception) {
             error(requestId, e)

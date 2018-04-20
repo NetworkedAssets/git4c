@@ -6,6 +6,7 @@ import com.networkedassets.git4c.boundary.GetFileContentForExistingRepositoryRes
 import com.networkedassets.git4c.boundary.outbound.FileContent
 import com.networkedassets.git4c.boundary.outbound.VerificationStatus
 import com.networkedassets.git4c.boundary.outbound.exceptions.NotFoundException
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.core.bussiness.ComputationCache
 import com.networkedassets.git4c.core.datastore.repositories.RepositoryDatabase
 import com.networkedassets.git4c.core.process.GetFileProcess
@@ -27,7 +28,8 @@ class GetFileContentForExistingRepositoryUseCase(
         if (repository == null) return error(requestId, NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
 
         try {
-            val fileContent = process.getFile(repository, branch, request.detailsToGetFile.file)
+            val macro = Macro()
+            val fileContent = process.getFile(repository, branch, request.detailsToGetFile.file, macro)
             success(requestId, fileContent)
         } catch (e: Exception) {
             error(requestId, e)

@@ -9,10 +9,7 @@ import com.atlassian.sal.api.transaction.TransactionTemplate
 import com.atlassian.user.UserManager
 import com.networkedassets.git4c.application.*
 import com.networkedassets.git4c.boundary.outbound.*
-import com.networkedassets.git4c.core.business.ConfluenceQueryBaseExecutorHolder
-import com.networkedassets.git4c.core.business.ConverterBaseExecutorHolder
-import com.networkedassets.git4c.core.business.RepositoryPullBaseExecutorHolder
-import com.networkedassets.git4c.core.business.RevisionCheckBaseExecutorHolder
+import com.networkedassets.git4c.core.business.*
 import com.networkedassets.git4c.core.datastore.repositories.*
 import com.networkedassets.git4c.infrastructure.*
 import com.networkedassets.git4c.infrastructure.cache.*
@@ -112,15 +109,17 @@ class ConfluencePlugin(
         val gitClient = DefaultGitClient()
         val importer = GitSourcePlugin(gitClient)
         val postProcessor = JSoupPostProcessor(utils.idGenerator)
-        val mainPlugins = MainConverterPluginList(listOf(AsciidocConverterPlugin(), MarkdownConverterPlugin()), postProcessor)
+        val mainPlugins = MainConverterPluginList(listOf(AsciidocConverterPlugin.get(true), MarkdownConverterPlugin()), postProcessor)
         val converterPlugins = listOf(mainPlugins, PrismJSConverterPlugin(), ImageConverterPlugin(), PUMLConverterPlugin())
         val converter = ConverterPluginList(converterPlugins, PlainTextConverterPlugin())
+        val fileIgnorer = FileIgnorerList(AsciidocConverterPlugin.get(true))
         val parser = Parsers()
         val pageBuilder = HtmlErrorPageBuilder()
         val pageMacroExtractor = AtlassianPageMacroExtractor()
         return MacroPluginComponents(
                 importer,
                 converter,
+                fileIgnorer,
                 parser,
                 pageBuilder,
                 pageMacroExtractor

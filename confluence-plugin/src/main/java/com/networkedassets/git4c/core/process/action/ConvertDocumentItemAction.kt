@@ -2,6 +2,7 @@ package com.networkedassets.git4c.core.process.action
 
 import com.networkedassets.git4c.core.business.ConverterExecutorHolder
 import com.networkedassets.git4c.core.business.ErrorPageBuilder
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.core.bussiness.ConverterPlugin
 import com.networkedassets.git4c.core.bussiness.ImportedFileData
 import com.networkedassets.git4c.core.bussiness.ImportedFiles
@@ -116,25 +117,26 @@ class ConvertDocumentItemAction(
             documentToBeConvertedLockCache.remove(idOfDocumentInConvertion)
             return
         }
-        convertDocumentIfExist(repository.repositoryPath, macroSettings.branch, fileToConvert, extractor)
+        val macro = Macro.from(macroSettings)
+        convertDocumentIfExist(repository.repositoryPath, macroSettings.branch, fileToConvert, extractor, macro)
     }
 
-    private fun convertDocumentIfExist(repositoryPath: String, repositoryBranch: String, importedFileData: ImportedFileData, extractor: ExtractorData?) {
+    private fun convertDocumentIfExist(repositoryPath: String, repositoryBranch: String, importedFileData: ImportedFileData, extractor: ExtractorData?, macro: Macro) {
         val existing = documentItemCache.get(idOfConvertedDocument(repositoryPath, repositoryBranch, importedFileData, extractor))
         if (existing == null
                 || existing.updateAuthorEmail != importedFileData.updateAuthorEmail
                 || existing.updateAuthorFullName != importedFileData.updateAuthorFullName
                 || existing.updateDate != importedFileData.updateDate) {
-            convertion(repositoryPath, repositoryBranch, importedFileData, extractor)
+            convertion(repositoryPath, repositoryBranch, importedFileData, extractor, macro)
         } else {
             log.debug { "Will skip converting of document ${importedFileData.path} as it already exist in cache!" }
             close(repositoryPath, repositoryBranch, importedFileData, extractor)
         }
     }
 
-    private fun convertion(repositoryPath: String, repositoryBranch: String, importedFileData: ImportedFileData, extractor: ExtractorData?) {
+    private fun convertion(repositoryPath: String, repositoryBranch: String, importedFileData: ImportedFileData, extractor: ExtractorData?, macro: Macro) {
         val time = System.currentTimeMillis()
-        convertFileToDocumentsItem(repositoryPath, repositoryBranch, importedFileData, extractor)
+        convertFileToDocumentsItem(repositoryPath, repositoryBranch, importedFileData, extractor, macro)
         log.debug { "Convertion of ConvertFile=${importedFileData.path} at RepositoryPath=${repositoryPath} in RepositoryBranch=${repositoryBranch}" }
         val convertionTime = System.currentTimeMillis() - time
         logConvertionTime(convertionTime, importedFileData, repositoryPath, repositoryBranch)
@@ -148,9 +150,9 @@ class ConvertDocumentItemAction(
     }
 
 
-    private fun convertFileToDocumentsItem(repositoryPath: String, repositoryBranch: String, fileToConvert: ImportedFileData, extractor: ExtractorData?) {
+    private fun convertFileToDocumentsItem(repositoryPath: String, repositoryBranch: String, fileToConvert: ImportedFileData, extractor: ExtractorData?, macro: Macro) {
         try {
-            convertItem(fileToConvert, repositoryPath, repositoryBranch, extractor)
+            convertItem(fileToConvert, repositoryPath, repositoryBranch, extractor, macro)
         } catch (e: OutOfMemoryError) {
             generateErrorPage(fileToConvert, repositoryPath, e, repositoryBranch, extractor)
         } catch (e: Throwable) {
@@ -165,9 +167,9 @@ class ConvertDocumentItemAction(
         documentToBeConvertedLockCache.put(idOfDocumentInConvertion, DocumentView(idOfDocumentInConvertion, DocumentView.MacroViewStatus.READY))
     }
 
-    private fun convertItem(fileToConvert: ImportedFileData, repositoryPath: String, repositoryBranch: String, extractor: ExtractorData?) {
+    private fun convertItem(fileToConvert: ImportedFileData, repositoryPath: String, repositoryBranch: String, extractor: ExtractorData?, macro: Macro) {
         val extractionResult = extractContentProcess.extract(extractor, fileToConvert)
-        val convertedDocumentItem = converter.convert(fileToConvert, extractionResult)
+        val convertedDocumentItem = converter.convert(fileToConvert, extractionResult, macro)
         if (convertedDocumentItem != null) {
             val documentItem = DocumentsItem(repositoryPath, repositoryBranch, convertedDocumentItem, extractor)
             documentItemCache.put(documentItem.uuid, documentItem)

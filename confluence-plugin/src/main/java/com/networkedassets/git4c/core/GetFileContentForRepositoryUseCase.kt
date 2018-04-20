@@ -5,7 +5,9 @@ import com.networkedassets.git4c.boundary.GetFileContentForRepositoryQuery
 import com.networkedassets.git4c.boundary.GetFileContentForRepositoryResultRequest
 import com.networkedassets.git4c.boundary.inbound.RepositoryToGetFile
 import com.networkedassets.git4c.boundary.outbound.FileContent
+import com.networkedassets.git4c.core.business.Macro
 import com.networkedassets.git4c.core.bussiness.ComputationCache
+import com.networkedassets.git4c.core.datastore.repositories.MacroSettingsDatabase
 import com.networkedassets.git4c.core.process.GetFileProcess
 import com.networkedassets.git4c.core.usecase.async.ComputationResultUseCase
 import com.networkedassets.git4c.core.usecase.async.MultiThreadAsyncUseCase
@@ -25,7 +27,8 @@ class GetFileContentForRepositoryUseCase(
         val repository = detectRepository(request.repositoryToGetFile)
         val branch = request.repositoryToGetFile.branch
         try {
-            val file = process.getFile(repository, branch, request.repositoryToGetFile.file)
+            val macro = Macro()
+            val file = process.getFile(repository, branch, request.repositoryToGetFile.file, macro)
             success(requestId, file)
         } catch (e: Exception) {
             error(requestId, e)

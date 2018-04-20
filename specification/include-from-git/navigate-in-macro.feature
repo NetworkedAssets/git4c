@@ -1,27 +1,46 @@
-Feature: Navigate in multi file macro
-  The feature allows an user to navigate between files in macro.
-  After switching file, it should be selected in file tree and visible in url.
-  content of macro should change.
+Feature: Multi File macro navigation
+  This feature allows a user to navigate between files in macro scope.
+  After switching file, it should be visible in both file tree and URL.
+  Content of macro should change.
+  Changing files using URL is described in Changing Branch feature.
 
-  Background: The user is logged in
+  Background: User is logged in and visits a Confluence page with Multi File Macro.
 
-  Scenario: User can switch between files with file tree
-    Given a confluence page with multi file macro
-    When the user clicks selects a file in the file tree
-    Then file is highlighted in file tree
-    Then selected file's content is diplayed
-    Then selected file is present in the url
+  Scenario: User switches between files using file tree
+    Given Confluence page with Multi File Macro
+    When User selects a file in file tree
+    Then Selected file is highlighted in file tree
+    And Selected file's content is displayed
+    And Selected file name is present in the URL
 
 
-  Scenario: User can switch between files with browser history navigation buttons
-    Given a confluence page with multi file macro
-    When the user has changed file in the file tree
-    When the user clicks "back" button in browser
-    Then previous file is displayed
-    Then previous file is selected in file tree
-    Then previous file is present in the url
+  Scenario: User switches between files using browser history navigation buttons
+    Given Confluence page with Multi File Macro
+    When User selects a file in file tree
+    And User clicks "back" navigation browser button
+    Then Previous file's content is displayed
+    And Previous file is highlighted in file tree
+    And Previous file name is present in the URL
 
-  Scenario: User can use link to file with specified branch and anchor in Multi File macro and will be navigated to correct fragment
-    Given a confluence page with multi file macro
-    When user uses a link with specified branch and anchor
-    Then Git4C macro will navigate to specified in link fragment.
+
+  Scenario: User uses a link to another file/section in Multi File macro content
+    Given Confluence page with Multi File Macro
+    When User uses a link to another file/section in macro scope
+    Then Git4C macro will navigate to file/section specified in link.
+
+  Scenario: Hide file tree
+    Given Confluence page with Multi File Macro
+    When User clicks on hide file tree button
+    Then Left panel with file tree collapses
+    And File tree button appears along with open toolbar button
+
+  Scenario: Display commit history
+    Given Confluence page with Multi File macro
+    When User clicks on view commits button
+    Then Window with previous commits listed opens
+
+  Scenario: View source of displayed file
+  This scenario covers Markdown, Asciidoc, PUML and SVG files
+    Given Confluence page with Multi File macro
+    When User clicks on view source button
+    Then Window with file source opens

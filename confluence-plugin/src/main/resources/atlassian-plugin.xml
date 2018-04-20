@@ -220,6 +220,7 @@
         <dependency>com.networkedassets.git4c.confluence-plugin:utils-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:select2single-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:components-overlay-${timestamp}</dependency>
+        <dependency>com.networkedassets.git4c.confluence-plugin:components-filepreview-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:components-markup-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:components-filetree-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:components-toc-${timestamp}</dependency>

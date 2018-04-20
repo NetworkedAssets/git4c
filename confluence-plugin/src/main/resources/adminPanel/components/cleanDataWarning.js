@@ -12,7 +12,7 @@ var Git4CCleanDataWarning = {
                    '</header>'+
                    '<!-- Main dialog content -->'+
                    '<div class="aui-dialog2-content">'+
-                   '    <p style="text-align: center">You are about to permamently remove all data.</p>'+
+                   '    <p style="text-align: center">You are about to remove all data related to Git4C plugin. All database entries that Git4C plugin created will be removed. This option should be used only when uninstalling plugin. Please keep in mind that macros won\'t be removed from Confluence pages - this must be done manually.</p>'+
                    '    <p style="text-align: center"><b>All Git Viewer for Confluence macros will stop working.</b></p>'+
                    '</div>'+
                    '<!-- Dialog footer -->'+

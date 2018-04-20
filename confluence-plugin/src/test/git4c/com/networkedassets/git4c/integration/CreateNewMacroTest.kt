@@ -14,6 +14,7 @@ import org.junit.Before
 import org.junit.Test
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Paths
 
 class CreateNewMacroTest {
 
@@ -158,8 +159,37 @@ class CreateNewMacroTest {
 
         val macroFiles = execute(GetDocumentationsContentTreeByDocumentationsMacroIdQuery(view.macroId, user)).get() as DocumentationsContentTree
         assertThat(macroFiles.getChildren()).hasSize(1)
-        assertThat(macroFiles.getChildren().get(0).name).isEqualTo("README.md")
-        assertThat(macroFiles.getChildren().get(0).type).isEqualTo(DocumentationsContentTree.NodeType.DOCITEM)
+        assertThat(macroFiles.getChildren()[0].name).isEqualTo("README.md")
+        assertThat(macroFiles.getChildren()[0].type).isEqualTo(DocumentationsContentTree.NodeType.DOCITEM)
+    }
+
+    @Test
+    fun `Files tree shouldn't contain ignored files`() {
+
+        val repositoryToCreate = CustomRepository(Paths.get("src/test/resources", "integration/ignoretest").toFile().absolutePath, NoAuth())
+        val repository = RepositoryDetails(repositoryToCreate)
+        val macroToCreate = DocumentationMacro(repository, "testRepository", "master", listOf(), "", null, null)
+        val user = "test"
+        val permission = PageAndSpacePermissionsForUser("", "", "test", true)
+        application.cache.pageAndSpacePermissionsForUserCache.put(permission.uuid, permission)
+
+        val request = execute(CreateDocumentationsMacroCommand(macroToCreate, user)).get() as RequestId
+        await().until { assertThat(execute(CreateDocumentationsMacroResultRequest(request.requestId)).get()).isInstanceOf(SavedDocumentationsMacro::class.java) }
+        val createdMacro = execute(CreateDocumentationsMacroResultRequest(request.requestId)).get() as SavedDocumentationsMacro
+
+        val view =
+                execute(ViewMacroCommand(MacroToView(createdMacro.uuid, MacroType.SINGLEFILE), PageToView(""), SpaceToView(""))).get() as MacroView
+
+        await().ignoreExceptions().until({
+            val macro = execute(GetDocumentationsMacroByDocumentationsMacroIdQuery(view.macroId, user)).get() as DocumentationsMacro
+            assertThat(macro.uuid).isEqualTo(view.macroId)
+        })
+
+        val macroFiles = execute(GetDocumentationsContentTreeByDocumentationsMacroIdQuery(view.macroId, user)).get() as DocumentationsContentTree
+        assertThat(macroFiles.getChildren()).hasSize(1)
+        assertThat(macroFiles.getChildren()[0].name).isEqualTo("a.adoc")
+        assertThat(macroFiles.getChildren()[0].type).isEqualTo(DocumentationsContentTree.NodeType.DOCITEM)
+
     }
 
 }

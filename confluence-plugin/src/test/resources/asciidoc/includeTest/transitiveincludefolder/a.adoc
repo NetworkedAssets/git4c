@@ -1,0 +1,5 @@
+:includedir: include
+
+A file
+
+include::{includedir}/b.adoc[]

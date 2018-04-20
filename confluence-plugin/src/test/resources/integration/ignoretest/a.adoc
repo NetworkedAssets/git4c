@@ -1,0 +1,3 @@
+A file
+
+include::b.adoc[]

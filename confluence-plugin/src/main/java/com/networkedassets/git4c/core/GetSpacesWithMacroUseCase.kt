@@ -155,19 +155,17 @@ class GetSpacesWithMacroUseCase(
                     val macroId = it
 
                     val macro = macroSettingsDatabase.get(macroId) ?: return@macro null
-                    val repositoryUuid = macro.repositoryUuid ?: return@macro null
-                    val repository = repositoryDatabase.get(repositoryUuid) ?: return@macro null
 
                     val globs = globForMacroDatabase.getByMacro(macroId)
 
                     if (macro.type != null && macro.type == MacroType.SINGLEFILE) {
-                        return@macro SinglePageMacro(macroId, repository.repositoryPath, globs.first().glob)
+                        return@macro SinglePageMacro(macroId, globs.first().glob)
                     } else if (macro.type != null && macro.type == MacroType.MULTIFILE) {
-                        return@macro MultiPageMacro(macroId, repository.repositoryPath)
+                        return@macro MultiPageMacro(macroId)
                     } else if (globs.size == 1) {
-                        return@macro SinglePageMacro(macroId, repository.repositoryPath, globs.first().glob)
+                        return@macro SinglePageMacro(macroId, globs.first().glob)
                     } else {
-                        return@macro MultiPageMacro(macroId, repository.repositoryPath)
+                        return@macro MultiPageMacro(macroId)
                     }
 
                 }.filterNotNull().toList()

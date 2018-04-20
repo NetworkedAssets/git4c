@@ -99,7 +99,7 @@
         '            <div class="field-group">'+
         '              <label for="doc_macro-repo_glob">Filter</label>'+
         '               <input class="text" type="text" ref="doc_macro-glob" placeholder="pattern"></input>'+
-        '               <div class="description">Please type your <a ref="pattern_tooltip" href="https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob">pattern</a> (Optional)</div>'+
+        '               <div class="description">Please enter your <a ref="pattern_tooltip" target="_blank" href="https://docs.oracle.com/javase/tutorial/essential/io/fileOps.html#glob">pattern</a> (Optional)</div>'+
         '            </div>'+
         '            <div class="field-group">'+
         '              <label for="doc_macro-repo_root_directory">Root Directory</label>'+
@@ -111,7 +111,7 @@
         '            <div class="field-group">'+
         '               <label for="doc_macro-default_Doc_Item">Default File</label>'+
         '               <input v-model="defaultDocItem" class="text" type="text" id="doc_macro-default_Doc_Item" placeholder="Readme.md">'+
-        '               <div class="description">Please type the name of the default Document File (Optional)</div>'+
+        '               <div class="description">Please enter location of default document (Optional)</div>'+
         '            </div>'+
         '         </div>'+
         '         </div>'+
@@ -251,7 +251,7 @@
             new Vue({
                 el: '#multifiledoc_macroDialog',
                 components:{
-                    customRepositoryDialog: Git4CCustomRepositoryDialog.getComponent(Bus),
+                    customRepositoryDialog: Git4CCustomRepositoryDialog.getComponent(Bus, true),
                     git4cselect2single: Git4CSelect2Single.getComponent()
                 },
                 data: function () {
@@ -367,6 +367,12 @@
                                     .then(function(response) {
                                         vm.downloadingBranches = false;
                                         const branches = response.allBranches
+
+                                        if (branches.length == 0){
+                                            vm.branches = undefined
+                                            vm.downloadingBranches = false
+                                            return
+                                        }
 
                                         const masterId = branches.indexOf("master")
                                         const developId = branches.indexOf("develop")

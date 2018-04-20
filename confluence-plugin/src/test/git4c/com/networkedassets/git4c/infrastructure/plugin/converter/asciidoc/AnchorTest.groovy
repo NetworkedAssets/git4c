@@ -1,15 +1,16 @@
 package com.networkedassets.git4c.infrastructure.plugin.converter.asciidoc
 
+import com.networkedassets.git4c.core.business.Macro
 import spock.lang.Specification
 
-import static com.networkedassets.git4c.infrastructure.plugin.converter.ConverterUtils.getAsciidoc
+import static com.networkedassets.git4c.infrastructure.plugin.converter.ConverterUtils.getConvertedAsciidoc
 
 class AnchorTest extends Specification {
 
-    def "Anchors should be parsed properly"() {
+    def "Anchors should be parsed properly in Multi File Macro"() {
 
         given:
-        def webPage = getAsciidoc("anchorTest").content
+        def webPage = getConvertedAsciidoc("anchorTest", Macro.MacroType.MULTIFILE).content
 
         when:
         def webPageWithNamespace = webPage.replaceFirst("<p", """<p xmlns:v-on="http://www.w3.org/1999/xhtml" """)
@@ -22,4 +23,19 @@ class AnchorTest extends Specification {
         a.@"v-on:click" == "anchor('r1')"
     }
 
+    def "Anchors should be parsed properly in Single File Macro"() {
+
+        given:
+        def webPage = getConvertedAsciidoc("anchorTest", Macro.MacroType.SINGLEFILE).content
+
+        when:
+        def webPageWithNamespace = webPage.replaceFirst("<p", """<p xmlns:v-on="http://www.w3.org/1999/xhtml" """)
+        def xml = new XmlSlurper().parseText(webPageWithNamespace)
+        def a = xml.p.a
+
+        then:
+        a == "Rozdzial 1"
+        a.@href == "javascript:void(0)"
+        a.@"v-on:click" == "anchor('r1')"
+    }
 }
