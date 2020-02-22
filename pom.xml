@@ -11,7 +11,7 @@
 
     <modules>
         <module>confluence-plugin</module>
-        <!--  <module>seleniumtests</module>-->
+        <module>seleniumtests</module>
     </modules>
 
     <properties>
