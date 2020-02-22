@@ -120,7 +120,7 @@ class GetDocumentItemInDocumentationsMacroUseCase(
         }
     }
 
-    private fun retry(idOfDocumentInConvertion: String, macroId: String, documentPath: String, repositoryPath: String, repositoryBranch: String, extractorUuid: String?): Result.Failure<Nothing, NotReadyException> {
+    private fun retry(idOfDocumentInConvertion: String, macroId: String, documentPath: String, repositoryPath: String, repositoryBranch: String, extractorUuid: String?): Result.Failure<NotReadyException> {
         documentToBeConvertedLockCache.put(idOfDocumentInConvertion, DocumentView(idOfDocumentInConvertion, DocumentView.MacroViewStatus.TO_CONVERT))
         documentItemCache.remove(idOfDocumentInConvertion)
         converter.planConvertion(macroId, documentPath, repositoryPath, repositoryBranch, extractorUuid)

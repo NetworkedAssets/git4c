@@ -1,6 +1,7 @@
 package com.networkedassets.git4c.selenium.confluence
 
 import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.core.extensions.authentication
 import com.google.gson.JsonParser
 import com.networkedassets.git4c.selenium.TestConfig
 import org.apache.xmlrpc.client.XmlRpcClient
@@ -28,7 +29,7 @@ class ConfluenceApi(
         val (req, resp, res) = Fuel.post("$url/rest/api/space")
                 .header("Content-Type" to "application/json")
                 .body(spaceJson)
-                .authenticate(username, password)
+                .authentication().basic(username, password)
                 .responseString()
 
         if (res.component2() != null) {
@@ -45,7 +46,7 @@ class ConfluenceApi(
 
         val (_, _, res) = Fuel.delete("$url/rest/api/space/${space.spaceKey}")
                 .header("Content-Type" to "application/json")
-                .authenticate(username, password)
+                .authentication().basic(username, password)
                 .responseString()
 
         val err = res.component2()
@@ -60,7 +61,7 @@ class ConfluenceApi(
     fun getSpaceByName(spaceName: String): Space? {
 
         val (req, resp, res) = Fuel.get("$url/rest/api/space")
-                .authenticate(username, password)
+                .authentication().basic(username, password)
                 .responseString()
 
         val err = res.component2()
@@ -97,7 +98,7 @@ class ConfluenceApi(
         val (req, resp, res) = Fuel.post("$url/rest/api/content")
                 .header("Content-Type" to "application/json")
                 .body(pageObj)
-                .authenticate(username, password)
+                .authentication().basic(username, password)
                 .responseString()
 
         val err = res.component2()
@@ -119,7 +120,7 @@ class ConfluenceApi(
 
         val (req, resp, res) = Fuel.delete("$url/rest/api/content/${page.id}")
                 .header("Content-Type" to "application/json")
-                .authenticate(username, password)
+                .authentication().basic(username, password)
                 .response()
 
         val err = res.component2()
@@ -133,7 +134,7 @@ class ConfluenceApi(
     fun getPageByName(space: Space, pageName: String): Page? {
 
         val (req, resp, res) = Fuel.get("$url/rest/api/space/${space.spaceKey}/content?limit=500")
-                .authenticate(username, password)
+                .authentication().basic(username, password)
                 .responseString()
 
         val err = res.component2()

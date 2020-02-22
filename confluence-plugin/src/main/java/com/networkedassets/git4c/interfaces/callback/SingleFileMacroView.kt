@@ -41,7 +41,7 @@ class SingleFileMacroView(
         //Yes, it can be null in some cases
         val macroUuid = params["uuid"] ?: return ""
 
-        val user = userManager.remoteUsername
+        val user: String = userManager.remoteUser?.username ?: return ""
 
         if (conversionContext.outputType == "pdf" || conversionContext.outputType == "word") {
 
@@ -53,7 +53,7 @@ class SingleFileMacroView(
                     .flatMap { getFileContent(macroUuid, it, user) }
                     .fold({
                         if (it.isEmpty()) {
-                                "<div>Document is empty</div>"
+                            "<div>Document is empty</div>"
                         } else {
                             "<div>$it</div>"
                         }
