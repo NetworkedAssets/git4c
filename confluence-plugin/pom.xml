@@ -21,7 +21,7 @@
         <lucene-compat-plugin.version>1.1.1</lucene-compat-plugin.version>
         <antlr-version>4.7</antlr-version>
         <timestamp>${maven.build.timestamp}</timestamp>
-        <jetty.version>9.4.7.v20170914</jetty.version>
+        <jetty.version>9.4.29.v20200521</jetty.version>
     </properties>
 
     <name>Git4C</name>
