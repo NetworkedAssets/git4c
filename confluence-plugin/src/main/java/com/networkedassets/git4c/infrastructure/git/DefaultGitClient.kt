@@ -348,7 +348,7 @@ class DefaultGitClient() : GitClient {
             }
         }
 
-        git.checkout().setName("refs/heads/$trueBranch").call()
+        git.checkout().setName("refs/heads/$trueBranch").setForced(true).call()
         log.debug { "Changing of a branch has been done for ${dir}" }
         return git
     }
