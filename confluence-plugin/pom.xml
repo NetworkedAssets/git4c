@@ -13,7 +13,7 @@
     <artifactId>confluence-plugin</artifactId>
     <organization>
         <name>NetworkedAssets Sp. z o.o</name>
-        <url>http://www.networkedassets.com/en/</url>
+        <url>https://www.networkedassets.com</url>
     </organization>
 
     <properties>
