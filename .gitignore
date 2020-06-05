@@ -130,3 +130,4 @@ nb-configuration.xml
 *.log
 
 .vagrant
+.DS_Store
