@@ -455,7 +455,7 @@
                     <compressResources>false</compressResources>
                     <instructions>
                         <Import-Package>
-
+                            com.atlassian.confluence.plugins.index.api;version="[1,2)",
                             *;resolution:=optional
                         </Import-Package>
                         <Require-Bundle>
