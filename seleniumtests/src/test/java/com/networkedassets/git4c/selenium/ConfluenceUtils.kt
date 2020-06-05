@@ -1,6 +1,7 @@
 package com.networkedassets.git4c.selenium
 
 import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.core.extensions.authentication
 import com.google.gson.JsonParser
 
 object ConfluenceUtils {
@@ -18,7 +19,7 @@ object ConfluenceUtils {
         val (req, resp, res) = Fuel.post("$url/rest/api/space")
                 .header("Content-Type" to "application/json")
                 .body(spaceJson)
-                .authenticate(username, password)
+                .authentication().basic(username, password)
                 .responseString()
 
         return JsonParser().parse(res.get()).asJsonObject.get("id").asInt
@@ -29,7 +30,7 @@ object ConfluenceUtils {
 
         Fuel.delete("$url/rest/api/space/$spaceId")
                 .header("Content-Type" to "application/json")
-                .authenticate(username, password)
+                .authentication().basic(username, password)
                 .response().third.get()
 
     }
@@ -49,7 +50,7 @@ object ConfluenceUtils {
         val (req, resp, res) = Fuel.post("$url/rest/api/content")
                 .header("Content-Type" to "application/json")
                 .body(page)
-                .authenticate(username, password)
+                .authentication().basic(username, password)
                 .responseString()
 
         return JsonParser().parse(res.get()).asJsonObject.get("id").asInt
@@ -76,7 +77,7 @@ object ConfluenceUtils {
 
         Fuel.delete("$url/api/content/$pageId")
                 .header("Content-Type" to "application/json")
-                .authenticate(username, password)
+                .authentication().basic(username, password)
                 .responseString().third.get()
     }
 
@@ -85,7 +86,7 @@ object ConfluenceUtils {
         val spaceKey = getSpaceKey(url, username, password, spaceId) ?: return null
 
         val (req, resp, res) = Fuel.get("$url/rest/api/space/$spaceKey/content")
-                .authenticate("admin", "admin")
+                .authentication().basic("admin", "admin")
                 .responseString()
 
         val pages = JsonParser().parse(res.get()).asJsonObject.getAsJsonObject("page").getAsJsonArray("results")
@@ -104,7 +105,7 @@ object ConfluenceUtils {
     private fun getSpaceId(url: String, username: String, password: String, spaceName: String): Int? {
 
         val (req, resp, res) = Fuel.get("$url/rest/api/space")
-                .authenticate(username, password)
+                .authentication().basic(username, password)
                 .responseString()
 
         val spacesJson = JsonParser().parse(res.get()).asJsonObject
@@ -121,7 +122,7 @@ object ConfluenceUtils {
     private fun getSpaceKey(url: String, username: String, password: String, spaceId: Int): String? {
 
         val (req, resp, res) = Fuel.get("$url/rest/api/space")
-                .authenticate(username, password)
+                .authentication().basic(username, password)
                 .responseString()
 
         val spacesJson = JsonParser().parse(res.get()).asJsonObject

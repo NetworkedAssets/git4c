@@ -5,7 +5,8 @@
     <parent>
         <artifactId>git4c</artifactId>
         <groupId>com.networkedassets.git4c</groupId>
-        <version>1.6.0-RELEASE</version>
+        <version>1.6.1-RELEASE</version>
+        <relativePath>..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,17 +17,38 @@
     </organization>
 
     <properties>
-        <kotlin.version>1.1.60</kotlin.version>
-        <confluence-extractor-api-plugin.version>1.0.1</confluence-extractor-api-plugin.version>
+        <kotlin.version>1.3.61</kotlin.version>
+        <confluence-extractor-api-plugin.version>2.0.8</confluence-extractor-api-plugin.version>
         <lucene-compat-plugin.version>1.1.1</lucene-compat-plugin.version>
-        <antlr-version>4.7</antlr-version>
+        <atlassian.spring.scanner.version>1.2.13</atlassian.spring.scanner.version>
+        <antlr-version>4.8-1</antlr-version>
         <timestamp>${maven.build.timestamp}</timestamp>
         <jetty.version>9.4.7.v20170914</jetty.version>
+        <jgit.version>5.6.1.202002131546-r</jgit.version>
+        <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     </properties>
 
     <name>Git4C</name>
     <description>Git4C macro displaying documentation in various forms on pages</description>
     <packaging>atlassian-plugin</packaging>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.atlassian.confluence</groupId>
+                <artifactId>confluence</artifactId>
+                <version>${confluence.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>jta</artifactId>
+                        <groupId>jta</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -52,6 +74,12 @@
             <artifactId>atlassian-plugins-osgi-testrunner</artifactId>
             <version>${plugin.testrunner.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>upm-api</artifactId>
+                    <groupId>com.atlassian.upm</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
@@ -94,37 +122,31 @@
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-plugin</artifactId>
-            <version>1.2.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.sal</groupId>
             <artifactId>sal-api</artifactId>
-            <version>2.7.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.templaterenderer</groupId>
             <artifactId>atlassian-template-renderer-api</artifactId>
-            <version>1.5.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.plugins.rest</groupId>
             <artifactId>atlassian-rest-common</artifactId>
-            <version>3.4.9</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>2.5.6.SEC02</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>11.0.2-atlassian-01</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -142,24 +164,24 @@
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
-            <version>4.9.1.201712030800-r</version>
+            <version>${jgit.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit.http.server</artifactId>
-            <version>4.9.1.201712030800-r</version>
+            <version>${jgit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit.junit.http</artifactId>
-            <version>4.9.1.201712030800-r</version>
+            <version>${jgit.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
-            <version>2.9.0</version>
+            <version>2.10.2</version>
         </dependency>
         <dependency>
             <groupId>org.jasypt</groupId>
@@ -176,17 +198,33 @@
         <dependency>
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
-            <version>1.1-groovy-2.4</version>
+            <version>1.3-groovy-2.5</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.kittinunf.result</groupId>
             <artifactId>result</artifactId>
-            <version>1.1.0</version>
+            <version>2.2.0</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>kotlin-stdlib</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jre8</artifactId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-common</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
         <dependency>
@@ -202,9 +240,27 @@
         </dependency>
         <dependency>
             <groupId>io.kotlintest</groupId>
-            <artifactId>kotlintest</artifactId>
-            <version>2.0.7</version>
+            <artifactId>kotlintest-core</artifactId>
+            <version>3.4.2</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>kotlin-stdlib</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>kotlin-stdlib-common</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>kotlin-stdlib-jdk7</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>kotlin-reflect</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>hsqldb</groupId>
@@ -215,13 +271,11 @@
         <dependency>
             <groupId>net.java.dev.activeobjects</groupId>
             <artifactId>activeobjects-test</artifactId>
-            <version>1.2.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-test</artifactId>
-            <version>1.2.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -245,7 +299,17 @@
         <dependency>
             <groupId>uy.kohesive.klutter</groupId>
             <artifactId>klutter-core</artifactId>
-            <version>2.2.0</version>
+            <version>2.6.0</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>kotlin-stdlib</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>kotlin-stdlib-jdk8</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.atlassian.confluence.plugins</groupId>
@@ -329,7 +393,8 @@
                     <dependency>
                         <groupId>org.codehaus.groovy</groupId>
                         <artifactId>groovy-all</artifactId>
-                        <version>2.4.0</version>
+                        <version>2.5.4</version>
+                        <type>pom</type>
                     </dependency>
                 </dependencies>
                 <configuration>
@@ -345,25 +410,52 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>com.atlassian.plugin</groupId>
+                <artifactId>atlassian-spring-scanner-maven-plugin</artifactId>
+                <version>${atlassian.spring.scanner.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>atlassian-spring-scanner</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <scannedDependencies>
+                        <dependency>
+                            <groupId>com.atlassian.plugin</groupId>
+                            <artifactId>atlassian-spring-scanner-external-jar</artifactId>
+                        </dependency>
+                    </scannedDependencies>
+                    <verbose>false</verbose>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19.1</version>
+                <version>2.22.2</version>
             </plugin>
             <plugin>
                 <groupId>com.atlassian.maven.plugins</groupId>
-                <artifactId>maven-confluence-plugin</artifactId>
+                <artifactId>amps-dispatcher-maven-plugin</artifactId>
+                <version>${amps.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>com.atlassian.maven.plugins</groupId>
+                <artifactId>confluence-maven-plugin</artifactId>
                 <version>${amps.version}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <productVersion>${confluence.version}</productVersion>
                     <productDataVersion>${confluence.data.version}</productDataVersion>
                     <enableQuickReload>true</enableQuickReload>
-                    <enableFastdev>false</enableFastdev>
-                    <extractDependencies>true</extractDependencies>
+                    <extractDependencies>false</extractDependencies>
+                    <allowGoogleTracking>false</allowGoogleTracking>
                     <compressResources>false</compressResources>
                     <instructions>
                         <Import-Package>
-                            com.atlassian.confluence.plugins.index.api;version="[1,2)",
+
                             *;resolution:=optional
                         </Import-Package>
                         <Require-Bundle>
@@ -400,7 +492,7 @@
                 <executions>
                     <execution>
                         <id>compile</id>
-                        <phase>process-sources</phase>
+                        <phase>compile</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
@@ -422,6 +514,16 @@
                     <target>1.8</target>
                 </configuration>
                 <executions>
+                    <!-- Replacing default-compile as it is treated specially by maven -->
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>none</phase>
+                    </execution>
+                    <!-- Replacing default-testCompile as it is treated specially by maven -->
+                    <execution>
+                        <id>default-testCompile</id>
+                        <phase>none</phase>
+                    </execution>
                     <execution>
                         <id>compile</id>
                         <phase>compile</phase>
@@ -441,7 +543,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
-                <version>2.5.1</version>
+                <version>2.5.2</version>
                 <configuration>
                     <groupId>net.sourceforge.plantuml</groupId>
                     <artifactId>plantuml-mit</artifactId>
@@ -463,15 +565,31 @@
             <plugin>
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
-                <version>2.1.13</version>
+                <version>4.0.0</version>
                 <executions>
                     <execution>
+                        <id>get-the-git-infos</id>
                         <goals>
                             <goal>revision</goal>
                         </goals>
-                        <phase>validate</phase>
+                        <!-- *NOTE*: The default phase of revision is initialize, but in case you want to
+                                     change it, you can do so by adding the phase here -->
+                        <phase>initialize</phase>
+                    </execution>
+                    <execution>
+                        <id>validate-the-git-infos</id>
+                        <goals>
+                            <goal>validateRevision</goal>
+                        </goals>
+                        <!-- *NOTE*: The default phase of validateRevision is verify, but in case you want to
+                                     change it, you can do so by adding the phase here -->
+                        <phase>package</phase>
                     </execution>
                 </executions>
+                <configuration>
+                    <dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
+                    <verbose>false</verbose>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.antlr</groupId>

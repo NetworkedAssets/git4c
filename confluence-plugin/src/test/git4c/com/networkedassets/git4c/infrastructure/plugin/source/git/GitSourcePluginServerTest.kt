@@ -194,7 +194,7 @@ class GitSourcePluginServerTest {
 
     private fun <A> forAll(gena: Gen<A>, iter: Int, fn: (a: A) -> Unit): Unit {
         for (k in 0..iter) {
-            fn(gena.generate())
+            fn(gena.next())
         }
     }
 

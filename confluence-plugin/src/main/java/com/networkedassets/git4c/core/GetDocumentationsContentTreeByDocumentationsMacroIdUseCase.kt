@@ -54,7 +54,7 @@ class GetDocumentationsContentTreeByDocumentationsMacroIdUseCase(
 
         return documentsViewCache.get(searchedMacroId)
                 ?.let { it.files }
-                ?.let { Result.of { DocumentsTreeConverter.treeify(it) } }
+                ?.let { Result.of<DocumentationsContentTree, NotFoundException> { DocumentsTreeConverter.treeify(it) } }
                 ?: Result.error(NotFoundException(request.transactionInfo, VerificationStatus.REMOVED))
     }
 }

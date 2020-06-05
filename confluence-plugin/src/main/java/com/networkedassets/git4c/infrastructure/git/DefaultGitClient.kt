@@ -95,7 +95,7 @@ class DefaultGitClient() : GitClient {
             }
 
         } catch (e: Exception) {
-            log.error({"Error during checking if branches are merged"}, e)
+            log.error({ "Error during checking if branches are merged" }, e)
             throwRepositoryError(repository, e)
         } finally {
             cache.unlock(repository)
@@ -143,11 +143,11 @@ class DefaultGitClient() : GitClient {
             throw RuntimeException(FILE_WRITE_ATTEMPT)
         }
 
-        if(e.isCausedBy(NoRemoteRepositoryException::class)) {
+        if (e.isCausedBy(NoRemoteRepositoryException::class)) {
             throw VerificationException(VerificationInfo(ACCESS_DENIED))
         }
 
-        if(e.message?.contains(JGitText.get().unknownHost) == true){
+        if (e.message?.contains(JGitText.get().unknownHost) == true) {
             throw VerificationException(VerificationInfo(UNKNOWN_HOST))
         }
 
@@ -321,8 +321,8 @@ class DefaultGitClient() : GitClient {
         val git = dir.toGit()
         val trueBranch = getBranchOrDefault(branch)
 
-        val headsRef : Ref? = git.repository.findRef("refs/heads/$trueBranch")
-        val ref : Ref? = git.repository.findRef(trueBranch)
+        val headsRef: Ref? = git.repository.findRef("refs/heads/$trueBranch")
+        val ref: Ref? = git.repository.findRef(trueBranch)
 
         if (headsRef == null) {
 

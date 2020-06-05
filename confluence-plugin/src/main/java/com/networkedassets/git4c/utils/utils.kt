@@ -43,13 +43,13 @@ fun <T, R> List<CompletableFuture<T>>.afterAllAsync(action: (List<T>) -> R): Com
  * if `this` was [Result.Failure] `this` will be returned
  */
 fun <T : Any, U : Any> Result<T, Exception>.andThenTry(action: (T) -> U) = this.flatMap { x ->
-    Result.of { action(x) }
+    Result.of<U, Exception> { action(x) }
 }
 
 private val log = LoggerFactory.getLogger(ConfluencePlugin::class.java)
 
 fun <R : Any> retry(maxRetries: Int = 10, retryDelayMillis: Long = 100, action: () -> R): Result<R, Exception> {
-    var res = Result.of(action)
+    var res = Result.of<R, Exception>(action)
     var retryNum = 0
     while (retryNum < maxRetries && res is Result.Failure) {
         Thread.sleep(retryDelayMillis)
@@ -164,32 +164,32 @@ fun getThisJarVersion(): String? = versionGetter.javaClass.classLoader.getResour
 }
 
 fun Logger.debug(log: () -> String) {
-    if (Intelij.isRunningFromIntelij) println("DEBUG - "+Thread.currentThread().name+" - "+log.invoke())
+    if (Intelij.isRunningFromIntelij) println("DEBUG - " + Thread.currentThread().name + " - " + log.invoke())
     if (this.isDebugEnabled) debug(log.invoke())
 }
 
 fun Logger.info(log: () -> String) {
-    if (Intelij.isRunningFromIntelij) println("INFO  - "+Thread.currentThread().name+" - "+log.invoke())
+    if (Intelij.isRunningFromIntelij) println("INFO  - " + Thread.currentThread().name + " - " + log.invoke())
     if (this.isInfoEnabled) info(log.invoke())
 }
 
 fun Logger.warn(log: () -> String) {
-    if (Intelij.isRunningFromIntelij) println("WARN  - "+Thread.currentThread().name+" - "+log.invoke())
+    if (Intelij.isRunningFromIntelij) println("WARN  - " + Thread.currentThread().name + " - " + log.invoke())
     if (this.isWarnEnabled) warn(log.invoke())
 }
 
 fun Logger.error(log: () -> String) {
-    if (Intelij.isRunningFromIntelij) println("ERROR - "+Thread.currentThread().name+" - "+log.invoke())
+    if (Intelij.isRunningFromIntelij) println("ERROR - " + Thread.currentThread().name + " - " + log.invoke())
     if (this.isErrorEnabled) error(log.invoke())
 }
 
 fun Logger.error(log: () -> String, exception: Throwable) {
-    if (Intelij.isRunningFromIntelij) println("ERROR - "+Thread.currentThread().name+" - "+log.invoke() + "${exception.javaClass.simpleName}: ${exception.message} at ${exception.stackTrace[0].className}:${exception.stackTrace[0].lineNumber}")
+    if (Intelij.isRunningFromIntelij) println("ERROR - " + Thread.currentThread().name + " - " + log.invoke() + "${exception.javaClass.simpleName}: ${exception.message} at ${exception.stackTrace[0].className}:${exception.stackTrace[0].lineNumber}")
     if (this.isErrorEnabled) error(log.invoke() + "${exception.javaClass.simpleName}: ${exception.message} at ${exception.stackTrace[0].className}:${exception.stackTrace[0].lineNumber}")
 }
 
 fun Logger.error(exception: Throwable, log: () -> String) {
-    if (Intelij.isRunningFromIntelij) println("ERROR - "+Thread.currentThread().name+" - "+log.invoke() + "${exception.javaClass.simpleName}: ${exception.message} at ${exception.stackTrace[0].className}:${exception.stackTrace[0].lineNumber}")
+    if (Intelij.isRunningFromIntelij) println("ERROR - " + Thread.currentThread().name + " - " + log.invoke() + "${exception.javaClass.simpleName}: ${exception.message} at ${exception.stackTrace[0].className}:${exception.stackTrace[0].lineNumber}")
     if (this.isErrorEnabled) error(log.invoke() + "${exception.javaClass.simpleName}: ${exception.message} at ${exception.stackTrace[0].className}:${exception.stackTrace[0].lineNumber}")
 }
 

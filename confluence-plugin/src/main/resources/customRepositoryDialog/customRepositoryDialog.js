@@ -12,7 +12,7 @@ var Git4CCustomRepositoryDialog = {
             }
         }
 
-        const UsernamePasswordCredentials = function (username, password){
+        const UsernamePasswordCredentials = function (username, password) {
             return {
                 username: username,
                 password: password,
@@ -20,20 +20,20 @@ var Git4CCustomRepositoryDialog = {
             }
         }
 
-        const SSHKeyCredentials = function(sshKey) {
+        const SSHKeyCredentials = function (sshKey) {
             return {
                 sshKey: sshKey,
                 type: "SSHKEY"
             }
         }
 
-        const NoAuthCredentials = function() {
+        const NoAuthCredentials = function () {
             return {
                 type: "NOAUTH"
             }
         }
 
-        const serverError =  Error("server_error", ["SERVER_ERROR"], "<p>Server error</p>")
+        const serverError = Error("server_error", ["SERVER_ERROR"], "<p>Server error</p>")
 
         const errors = [
             serverError,
@@ -41,12 +41,14 @@ var Git4CCustomRepositoryDialog = {
             Error("invalid_branch", ["WRONG_BRANCH"], "<p>Invalid branch name</p>"),
             Error("wrong_credentials", ["WRONG_CREDENTIALS"], "<p>Invalid credentials</p>"),
             Error("wrong_key_format", ["WRONG_KEY_FORMAT"], '<p>Could not parse the provided SSH key. It may be in wrong format. The key should look like:</p>' +
-            '<p>-----BEGIN RSA PRIVATE KEY-----</p>'+
-            '<p>....</p>' +
-            '<p>-----END RSA PRIVATE KEY-----</p>'),
+                '<p>-----BEGIN RSA PRIVATE KEY-----</p>' +
+                '<p>....</p>' +
+                '<p>-----END RSA PRIVATE KEY-----</p>' +
+                '<p>Use for OpenSSH 7.8 and above the following command: <br /><i>ssh-keygen -t rsa -m PEM</i></p>'
+            ),
             Error("captcha_required", ["CAPTCHA_REQUIRED"],
-               '<p>Your Git repository account has been locked. To unlock it and log in again you must solve a CAPTCHA. This is typically caused by too many attempts to login with an incorrect password. The account lock prevents your SCM client from accessing repository and its mirrors until it is solved, even if you enter your password correctly</p>' +
-               '<p>If you are currently logged in to Git repository via a browser you may need to logout and then log back in in order to solve the CAPTCHA.</p>'),
+                '<p>Your Git repository account has been locked. To unlock it and log in again you must solve a CAPTCHA. This is typically caused by too many attempts to login with an incorrect password. The account lock prevents your SCM client from accessing repository and its mirrors until it is solved, even if you enter your password correctly</p>' +
+                '<p>If you are currently logged in to Git repository via a browser you may need to logout and then log back in in order to solve the CAPTCHA.</p>'),
             Error("access_denied", ["ACCESS_DENIED"], "<p>Could not find repository, or permission has been denied.</p>"),
             Error("unknown_host", ["UNKNOWN_HOST"], "<p>Could not find host.</p>")
 
@@ -73,7 +75,7 @@ var Git4CCustomRepositoryDialog = {
                 }
             },
             computed: {
-                exitClass: function() {
+                exitClass: function () {
                     if (this.showBackArrow) {
                         return "aui-iconfont-back-page"
                     } else {
@@ -198,7 +200,9 @@ var Git4CCustomRepositoryDialog = {
 
                 },
                 showError: function (text) {
-                    const errors = _.flatMap(this.errors, function(e) {return e.serverError})
+                    const errors = _.flatMap(this.errors, function (e) {
+                        return e.serverError
+                    })
                     if (_.includes(errors, text)) {
                         this.currentError = text
                     } else {
@@ -228,83 +232,83 @@ var Git4CCustomRepositoryDialog = {
 
             },
             template:
-                    '<section role="dialog" id="custom_repository_dialog" class="aui-layer aui-dialog2 aui-dialog2-medium" aria-hidden="true">'+
-                    '<header class="aui-dialog2-header">'+
-                    '   <h2 class="aui-dialog2-header-main">Git4C macro parameters</h2>'+
-                    '   <a class="aui-dialog2-header-close" v-on:click="closeDialog()">'+
-                    '   <span class="aui-icon aui-icon-small" v-bind:class="[exitClass]" >Close</span>'+
-                    '   </a>'+
-                    '</header>'+
-                    '<div class="aui-dialog2-content">'+
-                    '   <div v-for="error in errors" >'+
-                    '      <div v-for="serverError in error.serverError" class="aui-message aui-message-error" v-show="serverError == currentError">'+
-                    '         <p class="title">'+
-                    '            <strong>Error!</strong>'+
-                    '         </p>'+
-                    '         <p v-html="error.text">'+
-                    '         </p>'+
-                    '      </div>'+
-                    '   </div>'+
-                    '   <!--</div>-->'+
-                    '   <form class="aui">'+
-                    '      <div id="git4c-custom-repository-dialog-content">'+
-                    '      <div class="aui-group">'+
-                    '      <div class="aui-item">'+
-                    '             <div class="field-group">'+
-                    '                <label for="doc_macro-repo_name">Name</label>'+
-                    '                <input id="doc_macro-repo_name" v-model="name" class="text" type="text" placeholder="custom">'+
-                    '                <div class="description">Please enter name for your repository</div>'+
-                    '             </div>'+
-                    '             <div class="field-group">'+
-                    '                <label for="doc_macro-repo_url">Repository url</label>'+
-                    '                <input id="doc_macro-repo_url" v-model="url" class="text" type="text" placeholder="git clone URL">'+
-                    '                <div class="description">Please enter repository URL</div>'+
-                    '             </div>'+
-                    '             <div class="field-group">'+
-                    '                 <label for="doc_macro-auth_type">Connection and Authorization type</label>'+
-                    '                 <select id="doc_macro-auth_type" class="select" v-model="authType">'+
-                    '                     <option v-bind:disabled="(urlType !== \'HTTP\' && urlType !== \'EMPTY\' && urlType != undefined && urlType !== \'UNKNOWN\')" value="USERNAMEPASSWORD">Http: Username + Password</option>'+
-                    '                     <option v-bind:disabled="(urlType !== \'HTTP\' && urlType !== \'EMPTY\' && urlType != undefined && urlType !== \'UNKNOWN\')" value="NOAUTH">Http: No Authorization</option>'+
-                    '                     <option v-bind:disabled="(urlType !== \'SSH\' && urlType !== \'EMPTY\' && urlType != undefined && urlType !== \'UNKNOWN\')" value="SSHKEY">SSH: Private Key</option>                            '+
-                    '                 </select>'+
-                    '             </div>'+
-                    '             <div class="field-group" v-if="authType === \'USERNAMEPASSWORD\'">'+
-                    '                <label for="doc_macro-username">Username</label>'+
-                    '                <input id="doc_macro-username" v-model="username" class="text" type="text" placeholder="username">'+
-                    '                <div class="description">Please enter username for the repository</div>'+
-                    '             </div>'+
-                    '             <div class="field-group" v-if="authType === \'USERNAMEPASSWORD\'">'+
-                    '                <label for="doc_macro-password">Password</label>'+
-                    '                <input id="doc_macro-password" v-model="password" class="password" type="password" placeholder="password">'+
-                    '                <div class="description">Please enter password for the repository</div>'+
-                    '             </div>'+
-                    '             <div class="field-group" v-if="authType === \'SSHKEY\'">'+
-                    '               <label for="doc_macro-sshkey">SSH key</label>'+
-                    '               <textarea id="doc_macro-sshkey" v-model="sshKey" class="text" style="height: auto" rows="10" placeholder="key" />'+
-                    '               <div class="description">Please paste SSH key for the repository</div>'+
-                    '             </div>'+
-                    '             <div class="field-group" v-if="editableOptionAvailable">'+
-                    '                  <label for="iseditable">Editable</label>'+
-                    '                  <div class="checkbox"> ' +
-                    '                      <input id="iseditable" class="checkbox" type="checkbox" v-model="editable" />'+
-                    '                      <div class="description">Define if files can be edited in this repository via Git4C macro</div> ' +
-                    '                  </div>'+
-                    '             </div>'+
-                    '      </div>'+
-                    '      </div>'+
-                    '      </div>'+
-                    '   </form>'+
-                    '</div>'+
-                    '<footer class="aui-dialog2-footer">'+
-                    '   <!-- Actions to render on the right of the footer -->'+
-                    '   <div class="aui-dialog2-footer-actions">'+
-                    '      <button id="custom_repository_dialog-close-button" v-on:click="defineRepository()" class="aui-button aui-button-primary" v-bind:disabled="!isFilled" v-show="saving == false">Save</button>'+
-                    '      <button id="custom_repository_dialog-close-button" class="aui-button aui-button-primary" disabled=true v-show="saving == true">Saving...</button>'+
-                    '   </div>'+
-                    '   <!-- Hint text is rendered on the left of the footer -->'+
-                    '   <!--<div class="aui-dialog2-footer-hint">this is a hint</div>-->'+
-                    '</footer>'+
-                    '</section>'
+                '<section role="dialog" id="custom_repository_dialog" class="aui-layer aui-dialog2 aui-dialog2-medium" aria-hidden="true">' +
+                '<header class="aui-dialog2-header">' +
+                '   <h2 class="aui-dialog2-header-main">Git4C macro parameters</h2>' +
+                '   <a class="aui-dialog2-header-close" v-on:click="closeDialog()">' +
+                '   <span class="aui-icon aui-icon-small" v-bind:class="[exitClass]" >Close</span>' +
+                '   </a>' +
+                '</header>' +
+                '<div class="aui-dialog2-content">' +
+                '   <div v-for="error in errors" >' +
+                '      <div v-for="serverError in error.serverError" class="aui-message aui-message-error" v-show="serverError == currentError">' +
+                '         <p class="title">' +
+                '            <strong>Error!</strong>' +
+                '         </p>' +
+                '         <p v-html="error.text">' +
+                '         </p>' +
+                '      </div>' +
+                '   </div>' +
+                '   <!--</div>-->' +
+                '   <form class="aui">' +
+                '      <div id="git4c-custom-repository-dialog-content">' +
+                '      <div class="aui-group">' +
+                '      <div class="aui-item">' +
+                '             <div class="field-group">' +
+                '                <label for="doc_macro-repo_name">Name</label>' +
+                '                <input id="doc_macro-repo_name" v-model="name" class="text" type="text" placeholder="custom">' +
+                '                <div class="description">Please enter name for your repository</div>' +
+                '             </div>' +
+                '             <div class="field-group">' +
+                '                <label for="doc_macro-repo_url">Repository url</label>' +
+                '                <input id="doc_macro-repo_url" v-model="url" class="text" type="text" placeholder="git clone URL">' +
+                '                <div class="description">Please enter repository URL</div>' +
+                '             </div>' +
+                '             <div class="field-group">' +
+                '                 <label for="doc_macro-auth_type">Connection and Authorization type</label>' +
+                '                 <select id="doc_macro-auth_type" class="select" v-model="authType">' +
+                '                     <option v-bind:disabled="(urlType !== \'HTTP\' && urlType !== \'EMPTY\' && urlType != undefined && urlType !== \'UNKNOWN\')" value="USERNAMEPASSWORD">Http: Username + Password</option>' +
+                '                     <option v-bind:disabled="(urlType !== \'HTTP\' && urlType !== \'EMPTY\' && urlType != undefined && urlType !== \'UNKNOWN\')" value="NOAUTH">Http: No Authorization</option>' +
+                '                     <option v-bind:disabled="(urlType !== \'SSH\' && urlType !== \'EMPTY\' && urlType != undefined && urlType !== \'UNKNOWN\')" value="SSHKEY">SSH: Private Key</option>                            ' +
+                '                 </select>' +
+                '             </div>' +
+                '             <div class="field-group" v-if="authType === \'USERNAMEPASSWORD\'">' +
+                '                <label for="doc_macro-username">Username</label>' +
+                '                <input id="doc_macro-username" v-model="username" class="text" type="text" placeholder="username">' +
+                '                <div class="description">Please enter username for the repository</div>' +
+                '             </div>' +
+                '             <div class="field-group" v-if="authType === \'USERNAMEPASSWORD\'">' +
+                '                <label for="doc_macro-password">Password</label>' +
+                '                <input id="doc_macro-password" v-model="password" class="password" type="password" placeholder="password">' +
+                '                <div class="description">Please enter password for the repository</div>' +
+                '             </div>' +
+                '             <div class="field-group" v-if="authType === \'SSHKEY\'">' +
+                '               <label for="doc_macro-sshkey">SSH key</label>' +
+                '               <textarea id="doc_macro-sshkey" v-model="sshKey" class="text" style="height: auto" rows="10" placeholder="key" />' +
+                '               <div class="description">Please paste SSH key for the repository</div>' +
+                '             </div>' +
+                '             <div class="field-group" v-if="editableOptionAvailable">' +
+                '                  <label for="iseditable">Editable</label>' +
+                '                  <div class="checkbox"> ' +
+                '                      <input id="iseditable" class="checkbox" type="checkbox" v-model="editable" />' +
+                '                      <div class="description">Define if files can be edited in this repository via Git4C macro</div> ' +
+                '                  </div>' +
+                '             </div>' +
+                '      </div>' +
+                '      </div>' +
+                '      </div>' +
+                '   </form>' +
+                '</div>' +
+                '<footer class="aui-dialog2-footer">' +
+                '   <!-- Actions to render on the right of the footer -->' +
+                '   <div class="aui-dialog2-footer-actions">' +
+                '      <button id="custom_repository_dialog-close-button" v-on:click="defineRepository()" class="aui-button aui-button-primary" v-bind:disabled="!isFilled" v-show="saving == false">Save</button>' +
+                '      <button id="custom_repository_dialog-close-button" class="aui-button aui-button-primary" disabled=true v-show="saving == true">Saving...</button>' +
+                '   </div>' +
+                '   <!-- Hint text is rendered on the left of the footer -->' +
+                '   <!--<div class="aui-dialog2-footer-hint">this is a hint</div>-->' +
+                '</footer>' +
+                '</section>'
         }
 
 
