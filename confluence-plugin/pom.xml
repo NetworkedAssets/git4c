@@ -294,7 +294,8 @@
             <groupId>net.sourceforge.plantuml</groupId>
             <artifactId>plantuml-mit</artifactId>
             <version>1.2020.11</version>
-            <scope>compile</scope>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/plantuml.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>uy.kohesive.klutter</groupId>
