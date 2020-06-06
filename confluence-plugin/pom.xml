@@ -542,28 +542,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>2.5.2</version>
-                <configuration>
-                    <groupId>net.sourceforge.plantuml</groupId>
-                    <artifactId>plantuml-mit</artifactId>
-                    <version>1.2020.11</version>
-                    <packaging>jar</packaging>
-                    <file>${basedir}/lib/plantuml.jar</file>
-                    <generatePom>true</generatePom>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>install-jar-lib</id>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <phase>validate</phase>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
                 <version>4.0.0</version>
