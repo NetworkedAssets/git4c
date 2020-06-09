@@ -92,6 +92,14 @@
             <name>public</name>
             <url>https://repo.maven.apache.org/maven2</url>
         </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>jgit</id>
+            <name>Eclipse jGit</name>
+            <url>https://repo.eclipse.org/content/repositories/jgit-releases/</url>
+        </repository>
     </repositories>
 
     <dependencies>
