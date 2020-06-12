@@ -25,7 +25,7 @@
         <atlassian.spring.scanner.version>1.2.6</atlassian.spring.scanner.version>
         <!-- This key is used to keep the consistency between the key in atlassian-plugin.xml and the key to generate bundle. -->
         <atlassian.plugin.key>${project.groupId}.${project.artifactId}</atlassian.plugin.key>
-        <amps.version>6.3.1</amps.version>
+        <amps.version>6.3.19</amps.version>
         <plugin.testrunner.version>1.2.3</plugin.testrunner.version>
         <kotlin.version>1.1.60</kotlin.version>
     </properties>
@@ -91,6 +91,14 @@
             <id>public</id>
             <name>public</name>
             <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>jgit</id>
+            <name>Eclipse jGit</name>
+            <url>https://repo.eclipse.org/content/repositories/jgit-releases/</url>
         </repository>
     </repositories>
 
