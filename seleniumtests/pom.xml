@@ -4,7 +4,7 @@
     <parent>
         <artifactId>git4c</artifactId>
         <groupId>com.networkedassets.git4c</groupId>
-        <version>1.6.1-RELEASE</version>
+        <version>1.6.2-RELEASE</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
