@@ -20,12 +20,12 @@
         <logbackVersion>1.0.13</logbackVersion>
         <jerseyVersion>2.24</jerseyVersion>
         <jackson.version>2.8.4</jackson.version>
-        <confluence.version>5.10.7</confluence.version>
-        <confluence.data.version>5.10.7</confluence.data.version>
+        <confluence.version>7.0.0</confluence.version>
+        <confluence.data.version>7.0.0</confluence.data.version>
         <atlassian.spring.scanner.version>1.2.6</atlassian.spring.scanner.version>
         <!-- This key is used to keep the consistency between the key in atlassian-plugin.xml and the key to generate bundle. -->
         <atlassian.plugin.key>${project.groupId}.${project.artifactId}</atlassian.plugin.key>
-        <amps.version>6.3.19</amps.version>
+        <amps.version>8.1.0</amps.version>
         <plugin.testrunner.version>1.2.3</plugin.testrunner.version>
         <kotlin.version>1.1.60</kotlin.version>
     </properties>
@@ -108,12 +108,6 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logbackVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jul-to-slf4j</artifactId>
-            <version>1.7.21</version>
         </dependency>
 
         <dependency>
