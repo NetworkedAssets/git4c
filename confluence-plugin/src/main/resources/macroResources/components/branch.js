@@ -3,7 +3,7 @@ Vue.component("branch", {
     template:
 '       <div class="git4c-branch" style="display: flex; justify-content: center">'+
 '           <div class="git4c-full-width" v-show="loading">'+
-'               <a disabled class="aui-button aui-style-default aui-dropdown2-trigger git4c-branches-dropdown git4c-white-aui-dropdown2 git4c-full-width" style="color: black">'+
+'               <a disabled class="aui-button aui-style-default aui-dropdown2-trigger git4c-branches-dropdown git4c-white-aui-dropdown2 git4c-full-width" aria-owns="git4c-branches" style="color: black">'+
 '                   <span class="aui-icon aui-icon-small aui-iconfont-devtools-branch">Branch</span>'+
 '                   Loading branches'+
 '               </a>'+
