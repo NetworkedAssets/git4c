@@ -305,7 +305,12 @@
             <version>1.7.0</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.4</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
