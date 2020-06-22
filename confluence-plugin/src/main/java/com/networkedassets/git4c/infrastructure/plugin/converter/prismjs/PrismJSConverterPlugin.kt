@@ -6,7 +6,7 @@ import com.networkedassets.git4c.core.bussiness.ImportedFileData
 import com.networkedassets.git4c.data.macro.documents.item.ConvertedDocumentsItem
 import com.networkedassets.git4c.data.macro.documents.item.TableOfContents
 import com.networkedassets.git4c.infrastructure.plugin.converter.main.markdown.InternalConverterPlugin
-import org.apache.commons.lang3.StringEscapeUtils
+import org.apache.commons.text.StringEscapeUtils
 
 class PrismJSConverterPlugin : InternalConverterPlugin {
 
