@@ -41,7 +41,7 @@ class SingleFileMacroView(
         //Yes, it can be null in some cases
         val macroUuid = params["uuid"] ?: return ""
 
-        val user = userManager.remoteUsername
+        val user  = userManager.remoteUser?.username!!
 
         if (conversionContext.outputType == "pdf" || conversionContext.outputType == "word") {
 

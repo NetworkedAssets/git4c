@@ -5,6 +5,7 @@
 #requireResource("com.atlassian.auiplugin:aui-experimental-iconfont")
 #requireResource("com.atlassian.auiplugin:aui-experimental-tooltips")
 #requireResource("com.atlassian.auiplugin:aui-spinner")
+#requireResourcesForContext('editor-v4,editor')
 #requireResourcesForContext("com.networkedassets.git4c.vuejs")
 #requireResourcesForContext("com.networkedassets.git4c.api")
 #requireResourcesForContext("com.networkedassets.git4c.ajscompat")
@@ -33,9 +34,6 @@
     <git4ceditdialog ref="editdialog"></git4ceditdialog>
     <git4cinfodialog :edit-branch="editBranch" :original-branch-name="originalBranchName" :branch-name="branchName" :file-location="locationPath" :repository-name="repositoryName" ref="infodialog"></git4cinfodialog>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ace.js" integrity="sha256-U//RSeH3TR3773Rk+1lAufJnRjEaG5LcdbvGV72kHEM=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ext-modelist.js" integrity="sha256-i0OqQaptcaStnjDX8HR+vkkvOLXoAUBAquwMvnqmLTU=" crossorigin="anonymous"></script>
 
 <script type="text/javascript">
 
