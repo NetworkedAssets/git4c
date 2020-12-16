@@ -22,6 +22,7 @@
     <resource key="icons" name="icons/" type="download" location="images"/>
 
     <web-resource key="ace-${timestamp}" name="Ace editor">
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
         <resource type="download" name="ace.js" location="lib/ace/ace.js"/>
         <context>com.networkedassets.git4c.ace</context>
     </web-resource>
@@ -199,6 +200,7 @@
     <web-resource key="multi-file-dialog-${timestamp}" name="DoC macro parameter autocompletion">
         <dependency>com.atlassian.auiplugin:aui-experimental-tooltips</dependency>
         <dependency>com.atlassian.auiplugin:aui-select2</dependency>
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:git4c-api-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:select2single-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:custom-repository-dialog-${timestamp}</dependency>
@@ -212,6 +214,7 @@
     <web-resource key="single-file-dialog-${timestamp}" name="Create Single file dialog">
         <dependency>com.atlassian.auiplugin:aui-experimental-iconfont</dependency>
         <dependency>confluence.editor.actions:editor-macro-browser</dependency>
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:git4c-api-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:nouislider-${timestamp}</dependency>
         <dependency>com.networkedassets.git4c.confluence-plugin:vuejs-${timestamp}</dependency>
@@ -241,6 +244,7 @@
     </web-resource>
 
     <web-resource key="macro-resources-${timestamp}" name="Macro web resources">
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
         <resource name="polyfill.js" type="download" location="js/polyfill.js"/>
 
         <resource type="download" name="macroResources/"
@@ -296,6 +300,7 @@
 
     <web-resource key="single-file-macro-resources-${timestamp}" name="Single file macro web resources">
         <dependency>com.atlassian.auiplugin:aui-experimental-tooltips</dependency>
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
         <resource type="download" name="images/" location="/images"/>
         <resource name="polyfill.js" type="download" location="js/polyfill.js"/>
         <resource type="download" name="singleFile/" location="/singleFile/"/>
@@ -305,7 +310,6 @@
                   location="singleFile/services/url-service.js"/>
         <resource type="download" name="topbartoggler.js" location="singleFile/components/topbartoggler.js"/>
         <resource type="download" name="topbar.js" location="singleFile/components/topbar.js"/>
-        <resource type="download" name="filecontent.js" location="singleFile/components/filecontent.js"/>
         <resource type="download" name="infodialog.js" location="singleFile/components/infodialog.js"/>
         <resource type="download" name="app.css" location="singleFile/app.css"/>
         <resource type="download" name="app.js" location="singleFile/app.js"/>

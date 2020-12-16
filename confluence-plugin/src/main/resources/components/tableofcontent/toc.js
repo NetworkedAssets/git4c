@@ -42,7 +42,7 @@ var Git4CToc = {
                 '       </span>' +
                 '    </li>' +
                 '    <ol v-show="data.children.length > 0 && open" style="margin: 0; padding-left: 15px;" v-bind:class="{ \'git4c-toc-first-ul\': level === 0 }">' +
-                '        <toc @anchor="anchor" v-for="t in data.children" :parent="parent" :data="t" :level="level+1" ></toc>' +
+                '        <toc @anchor="anchor" v-for="t in data.children" :parent="parent" :data="t" :level="level+1" v-bind:key="t.anchorName"></toc>' +
                 '    </ol>' +
                 '</div>'
             ,

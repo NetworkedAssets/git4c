@@ -22,7 +22,4 @@
 #requireResourcesForContext("com.networkedassets.git4c.macroResources")
 #requireResourcesForContext("com.networkedassets.git4c.sourcedialog")
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ace.js" integrity="sha256-U//RSeH3TR3773Rk+1lAufJnRjEaG5LcdbvGV72kHEM=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ext-modelist.js" integrity="sha256-i0OqQaptcaStnjDX8HR+vkkvOLXoAUBAquwMvnqmLTU=" crossorigin="anonymous"></script>
-
 $macroSectionHtml

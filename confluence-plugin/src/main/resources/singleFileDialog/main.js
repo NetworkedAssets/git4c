@@ -1207,8 +1207,8 @@
                 },
                 mounted: function () {
                     const vm = this
-                    this.init()
-                    this.getRepositoryList()
+                    vm.init()
+                    vm.getRepositoryList()
                     Bus.$on("closeCustomRepositoryDialog", function() {vm.closeCustomRepositoryDialog()})
                     Bus.$on("repositoryDefined", function(repository) {vm.processRepository(repository)})
                 }

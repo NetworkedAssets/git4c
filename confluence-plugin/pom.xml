@@ -5,7 +5,7 @@
     <parent>
         <artifactId>git4c</artifactId>
         <groupId>com.networkedassets.git4c</groupId>
-        <version>1.6.2-BETA1</version>
+        <version>1.6.2-BETA2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -28,6 +28,18 @@
     <description>Git4C macro displaying documentation in various forms on pages</description>
     <packaging>atlassian-plugin</packaging>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.atlassian.confluence</groupId>
+                <artifactId>confluence-plugins-platform-pom</artifactId>
+                <version>${confluence.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -46,12 +58,19 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <!-- WIRED TEST RUNNER DEPENDENCIES -->
         <dependency>
             <groupId>com.atlassian.plugins</groupId>
             <artifactId>atlassian-plugins-osgi-testrunner</artifactId>
             <version>${plugin.testrunner.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>upm-api</artifactId>
+                    <groupId>com.atlassian.upm</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
@@ -74,7 +93,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.6.6</version>
+            <version>1.7.25</version>
             <scope>provided</scope>
         </dependency>
 
@@ -94,13 +113,11 @@
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-plugin</artifactId>
-            <version>1.2.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.sal</groupId>
             <artifactId>sal-api</artifactId>
-            <version>2.7.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -118,13 +135,11 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>2.5.6.SEC02</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>11.0.2-atlassian-01</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -166,6 +181,12 @@
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
             <version>2.9.0</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>kotlin-reflect</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jasypt</groupId>
@@ -182,7 +203,13 @@
         <dependency>
             <groupId>com.github.kittinunf.result</groupId>
             <artifactId>result</artifactId>
-            <version>1.1.0</version>
+            <version>1.2.0</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>kotlin-stdlib</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -205,6 +232,16 @@
             <artifactId>kotlintest</artifactId>
             <version>2.0.7</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>kotlin-stdlib</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>kotlin-reflect</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>hsqldb</groupId>
@@ -215,13 +252,11 @@
         <dependency>
             <groupId>net.java.dev.activeobjects</groupId>
             <artifactId>activeobjects-test</artifactId>
-            <version>1.2.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.activeobjects</groupId>
             <artifactId>activeobjects-test</artifactId>
-            <version>1.2.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -246,11 +281,26 @@
             <groupId>uy.kohesive.klutter</groupId>
             <artifactId>klutter-core</artifactId>
             <version>2.2.0</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>kotlin-stdlib-jre8</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>kotlin-stdlib</artifactId>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.atlassian.confluence.plugins</groupId>
             <artifactId>confluence-extractor-api-plugin</artifactId>
             <version>${confluence-extractor-api-plugin.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.cache</groupId>
+            <artifactId>atlassian-cache-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -307,9 +357,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
-            <artifactId>commons-text</artifactId>
-            <version>1.4</version>
+            <artifactId>commons-lang3</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.6</version>
         </dependency>
     </dependencies>
 
@@ -365,13 +419,18 @@
                 <version>${amps.version}</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <jvmArgs>-Xms1g -Xmx2g -XX:MaxPermSize=1g -XX:-UseGCOverheadLimit -server</jvmArgs>
                     <productVersion>${confluence.version}</productVersion>
                     <productDataVersion>${confluence.data.version}</productDataVersion>
                     <enableQuickReload>true</enableQuickReload>
-                    <enableFastdev>false</enableFastdev>
                     <extractDependencies>false</extractDependencies>
                     <compressResources>false</compressResources>
                     <allowGoogleTracking>false</allowGoogleTracking>
+                    <compressJs>false</compressJs>
+                    <systemPropertyVariables>
+                        <webdriver.browser>chrome</webdriver.browser>
+                        <atlassian.dev.mode>false</atlassian.dev.mode>
+                    </systemPropertyVariables>
                     <instructions>
                         <Import-Package>
                             com.atlassian.confluence.plugins.index.api,
